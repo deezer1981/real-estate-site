@@ -1,53 +1,59 @@
+"""
+Atlas Amlak — Website API
+==========================
+این بک‌اند به دو منبع داده وصل است:
+
+1) گوگل‌شیت املاک (همون شیتی که ربات تلگرام "اطلس" هم ازش می‌خونه) — فقط خواندن.
+   هیچ تغییری روی کد یا رفتار ربات ایجاد نمی‌کند.
+2) دیتابیس Postgres (Supabase) — فقط برای ذخیره‌ی درخواست‌های تماس (لید) از سایت.
+
+متغیرهای محیطی لازم:
+- SPREADSHEET_ID   -> همون مقداری که در Environment سرویس ربات روی Render ست شده
+- DATABASE_URL     -> آدرس Postgres (Supabase)
+- API_KEY          -> رمز دلخواه برای مشاهده‌ی لیدها
+"""
+
+import csv
 import os
+import time
 from datetime import datetime
+from io import StringIO
 from typing import Optional, List
 
+import httpx
 from fastapi import FastAPI, HTTPException, Header
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from sqlalchemy import create_engine, Column, Integer, String, Float, DateTime, Text
+from sqlalchemy import create_engine, Column, Integer, String, Text, DateTime
 from sqlalchemy.orm import declarative_base, sessionmaker
 
-# ---------------------------------------------------------------------------
-# Database setup
-# ---------------------------------------------------------------------------
-# DATABASE_URL comes from an environment variable (set on Render / locally in .env)
-# Example (Supabase/Postgres): postgresql://user:pass@host:5432/dbname
-# For local testing without a real DB, it falls back to a SQLite file.
-DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./local.db")
+# --------------------------------------------------------------------------- #
+# پیکربندی
+# --------------------------------------------------------------------------- #
 
-# Render/Supabase sometimes give "postgres://" — SQLAlchemy needs "postgresql://"
+SPREADSHEET_ID = os.getenv("SPREADSHEET_ID", "")  # placeholder to keep diff minimal
+API_KEY = os.getenv("API_KEY", "change-me")
+
+# همون GID هایی که توی کد ربات هم استفاده شده (تب‌های گوگل‌شیت)
+SHEET_GIDS = {
+    "فروش": "883906283",
+    "رهن و اجاره": "388590955",
+}
+
+CACHE_TTL_SECONDS = 120
+
+DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./local.db")
 if DATABASE_URL.startswith("postgres://"):
     DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
-
 connect_args = {"check_same_thread": False} if DATABASE_URL.startswith("sqlite") else {}
 engine = create_engine(DATABASE_URL, connect_args=connect_args)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
-# A simple shared secret so only your bot / admin panel can create or delete data.
-# Set this in your environment too (Render dashboard + wherever your bot runs).
-API_KEY = os.getenv("API_KEY", "change-me")
 
-
-# ---------------------------------------------------------------------------
-# Models (tables)
-# ---------------------------------------------------------------------------
-class Property(Base):
-    __tablename__ = "properties"
-
-    id = Column(Integer, primary_key=True, index=True)
-    title = Column(String, nullable=False)
-    description = Column(Text, default="")
-    price = Column(Float, default=0)
-    area_m2 = Column(Float, default=0)
-    rooms = Column(Integer, default=0)
-    city = Column(String, default="")
-    district = Column(String, default="")
-    deal_type = Column(String, default="sale")  # sale | rent
-    image_url = Column(String, default="")
-    created_at = Column(DateTime, default=datetime.utcnow)
-
+# --------------------------------------------------------------------------- #
+# مدل دیتابیس — فقط برای لیدهای سایت
+# --------------------------------------------------------------------------- #
 
 class Lead(Base):
     __tablename__ = "leads"
@@ -56,42 +62,19 @@ class Lead(Base):
     name = Column(String, nullable=False)
     phone = Column(String, nullable=False)
     message = Column(Text, default="")
-    property_id = Column(Integer, nullable=True)
-    source = Column(String, default="website")  # website | bot
+    property_code = Column(String, nullable=True)  # کد آگهی مرتبط، اگر از صفحه‌ی یک ملک خاص ارسال شده
+    source = Column(String, default="website")
     created_at = Column(DateTime, default=datetime.utcnow)
 
 
 Base.metadata.create_all(bind=engine)
 
 
-# ---------------------------------------------------------------------------
-# Pydantic schemas (what the API accepts / returns)
-# ---------------------------------------------------------------------------
-class PropertyIn(BaseModel):
-    title: str
-    description: str = ""
-    price: float = 0
-    area_m2: float = 0
-    rooms: int = 0
-    city: str = ""
-    district: str = ""
-    deal_type: str = "sale"
-    image_url: str = ""
-
-
-class PropertyOut(PropertyIn):
-    id: int
-    created_at: datetime
-
-    class Config:
-        from_attributes = True
-
-
 class LeadIn(BaseModel):
     name: str
     phone: str
     message: str = ""
-    property_id: Optional[int] = None
+    property_code: Optional[str] = None
     source: str = "website"
 
 
@@ -103,12 +86,73 @@ class LeadOut(LeadIn):
         from_attributes = True
 
 
-# ---------------------------------------------------------------------------
-# App
-# ---------------------------------------------------------------------------
-app = FastAPI(title="Real Estate API")
+# --------------------------------------------------------------------------- #
+# خواندن آگهی‌ها از گوگل‌شیت (همون روش ربات) + کش ساده
+# --------------------------------------------------------------------------- #
 
-# Allow your website (any origin, for simplicity) to call this API.
+_sheet_cache: dict[str, tuple[float, list[dict]]] = {}
+
+
+async def fetch_sheet_records(deal_type: str) -> list[dict]:
+    now = time.time()
+    cached = _sheet_cache.get(deal_type)
+    if cached and (now - cached[0] < CACHE_TTL_SECONDS):
+        return cached[1]
+
+    if not SPREADSHEET_ID:
+        return []
+
+    gid = SHEET_GIDS.get(deal_type)
+    if not gid:
+        return []
+
+    url = f"https://docs.google.com/spreadsheets/d/{SPREADSHEET_ID}/gviz/tq?tqx=out:csv&gid={gid}"
+
+    try:
+        async with httpx.AsyncClient(timeout=10, follow_redirects=True) as client:
+            response = await client.get(url)
+        if response.status_code != 200:
+            return cached[1] if cached else []
+
+        f = StringIO(response.text)
+        reader = csv.DictReader(f)
+        rows = [row for row in reader if any((v or "").strip() for v in row.values())]
+        active_rows = [
+            row for row in rows
+            if (row.get("وضعیت") or "فعال").strip() not in ("لغو شده", "حذف شده", "غیرفعال")
+        ]
+        _sheet_cache[deal_type] = (now, active_rows)
+        return active_rows
+    except Exception:
+        return cached[1] if cached else []
+
+
+def row_to_property(row: dict, deal_type: str) -> dict:
+    """یک ردیف خام گوگل‌شیت را به فرمت ساده‌ای برای نمایش در سایت تبدیل می‌کند."""
+    result = {
+        "code": row.get("کد", ""),
+        "deal_type": deal_type,
+        "property_type": row.get("نوع ملک", ""),
+        "address": row.get("آدرس", ""),
+        "area_m2": row.get("متراژ", ""),
+        "rooms": row.get("خواب", ""),
+        "parking": (row.get("پارکینگ") or "").strip() == "دارد",
+        "elevator": (row.get("آسانسور") or "").strip() == "دارد",
+    }
+    if deal_type == "فروش":
+        result["price_total"] = row.get("قیمت کل", "") or "توافقی"
+    else:
+        result["rahn"] = row.get("رهن", "") or "-"
+        result["ejare"] = row.get("کرایه", "") or "-"
+    return result
+
+
+# --------------------------------------------------------------------------- #
+# اپ
+# --------------------------------------------------------------------------- #
+
+app = FastAPI(title="Atlas Amlak Website API")
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -117,66 +161,23 @@ app.add_middleware(
 )
 
 
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
-
-
-def check_key(x_api_key: Optional[str]):
-    if x_api_key != API_KEY:
-        raise HTTPException(status_code=401, detail="Invalid API key")
-
-
 @app.get("/")
 def root():
-    return {"status": "ok", "service": "real-estate-api"}
+    return {"status": "ok", "service": "atlas-amlak-website-api"}
 
 
-@app.get("/api/properties", response_model=List[PropertyOut])
-def list_properties(city: Optional[str] = None, deal_type: Optional[str] = None):
-    db = SessionLocal()
-    q = db.query(Property)
-    if city:
-        q = q.filter(Property.city == city)
-    if deal_type:
-        q = q.filter(Property.deal_type == deal_type)
-    result = q.order_by(Property.created_at.desc()).all()
-    db.close()
+@app.get("/api/properties")
+async def list_properties(deal_type: Optional[str] = None):
+    deal_types = [deal_type] if deal_type in SHEET_GIDS else list(SHEET_GIDS.keys())
+    result: list[dict] = []
+    for dt in deal_types:
+        rows = await fetch_sheet_records(dt)
+        result.extend(row_to_property(r, dt) for r in rows)
     return result
-
-
-@app.post("/api/properties", response_model=PropertyOut)
-def create_property(item: PropertyIn, x_api_key: Optional[str] = Header(None)):
-    check_key(x_api_key)
-    db = SessionLocal()
-    obj = Property(**item.dict())
-    db.add(obj)
-    db.commit()
-    db.refresh(obj)
-    db.close()
-    return obj
-
-
-@app.delete("/api/properties/{property_id}")
-def delete_property(property_id: int, x_api_key: Optional[str] = Header(None)):
-    check_key(x_api_key)
-    db = SessionLocal()
-    obj = db.query(Property).filter(Property.id == property_id).first()
-    if not obj:
-        db.close()
-        raise HTTPException(status_code=404, detail="Not found")
-    db.delete(obj)
-    db.commit()
-    db.close()
-    return {"status": "deleted"}
 
 
 @app.post("/api/leads", response_model=LeadOut)
 def create_lead(item: LeadIn):
-    # No API key needed here — anyone on the website should be able to send a lead.
     db = SessionLocal()
     obj = Lead(**item.dict())
     db.add(obj)
@@ -188,8 +189,8 @@ def create_lead(item: LeadIn):
 
 @app.get("/api/leads", response_model=List[LeadOut])
 def list_leads(x_api_key: Optional[str] = Header(None)):
-    # Protected — only you (or your bot) should see the leads.
-    check_key(x_api_key)
+    if x_api_key != API_KEY:
+        raise HTTPException(status_code=401, detail="Invalid API key")
     db = SessionLocal()
     result = db.query(Lead).order_by(Lead.created_at.desc()).all()
     db.close()
