@@ -6,60 +6,74 @@ document.getElementById("botLinkBig").href = botUrl;
 
 const grid = document.getElementById("propertyGrid");
 const resultCount = document.getElementById("resultCount");
-
-function formatPrice(num) {
-  if (!num) return "توافقی";
-  return new Intl.NumberFormat("fa-IR").format(num) + " تومان";
-}
+let allProperties = [];
 
 function propertyCard(p) {
-  const img = p.image_url
-    ? `<img src="${p.image_url}" alt="${p.title}">`
-    : `<div class="no-image">بدون تصویر</div>`;
+  const priceLine =
+    p.deal_type === "فروش"
+      ? `<p class="card-price">💰 ${p.price_total || "توافقی"}</p>`
+      : `<p class="card-price">💰 رهن: ${p.rahn || "-"} | اجاره: ${p.ejare || "-"}</p>`;
+
+  const extras = [];
+  if (p.parking) extras.push("🅿️ پارکینگ");
+  if (p.elevator) extras.push("🛗 آسانسور");
 
   return `
     <article class="card">
-      <div class="card-image">${img}</div>
       <div class="card-body">
-        <span class="deal-tag ${p.deal_type}">${p.deal_type === "rent" ? "رهن و اجاره" : "خرید"}</span>
-        <h3>${p.title}</h3>
-        <p class="card-meta">${p.city || ""} ${p.district ? "· " + p.district : ""}</p>
+        <span class="deal-tag ${p.deal_type === "فروش" ? "sale" : "rent"}">${p.deal_type}</span>
+        <h3>${p.property_type || "ملک"} · کد ${p.code || "-"}</h3>
+        <p class="card-meta">📍 ${p.address || "-"}</p>
         <p class="card-meta">${p.area_m2 ? p.area_m2 + " متر" : ""} ${p.rooms ? "· " + p.rooms + " خواب" : ""}</p>
-        <p class="card-price">${formatPrice(p.price)}</p>
+        ${extras.length ? `<p class="card-meta">${extras.join(" | ")}</p>` : ""}
+        ${priceLine}
       </div>
     </article>
   `;
 }
 
-async function loadProperties(city = "", dealType = "") {
+function renderProperties(list) {
+  if (!list.length) {
+    grid.innerHTML = `<p class="loading">فایلی با این مشخصات پیدا نشد.</p>`;
+    resultCount.textContent = "";
+    return;
+  }
+  grid.innerHTML = list.map(propertyCard).join("");
+  resultCount.textContent = `${list.length} آگهی`;
+}
+
+async function loadProperties() {
   grid.innerHTML = `<p class="loading">در حال بارگذاری آگهی‌ها...</p>`;
   try {
-    const params = new URLSearchParams();
-    if (city) params.set("city", city);
-    if (dealType) params.set("deal_type", dealType);
-
-    const res = await fetch(`${API_BASE_URL}/api/properties?${params.toString()}`);
+    const res = await fetch(`${API_BASE_URL}/api/properties`);
     if (!res.ok) throw new Error("request failed");
-    const data = await res.json();
-
-    if (!data.length) {
-      grid.innerHTML = `<p class="loading">فعلاً آگهی‌ای ثبت نشده. به‌زودی اضافه می‌شود.</p>`;
-      resultCount.textContent = "";
-      return;
-    }
-
-    grid.innerHTML = data.map(propertyCard).join("");
-    resultCount.textContent = `${data.length} آگهی`;
+    allProperties = await res.json();
+    applyFilters();
   } catch (err) {
-    grid.innerHTML = `<p class="loading">اتصال به سرور برقرار نشد. لطفاً بعداً دوباره تلاش کنید.</p>`;
+    grid.innerHTML = `<p class="loading">اتصال به سرور برقرار نشد. لطفاً چند لحظه صبر کنید و صفحه را رفرش کنید (سرور رایگان گاهی چند ثانیه طول می‌کشد بیدار شود).</p>`;
   }
 }
 
-document.getElementById("searchBtn").addEventListener("click", () => {
-  const city = document.getElementById("citySearch").value.trim();
+function applyFilters() {
+  const keyword = document.getElementById("citySearch").value.trim();
   const dealType = document.getElementById("dealType").value;
-  loadProperties(city, dealType);
-});
+
+  let filtered = allProperties;
+  if (dealType) {
+    filtered = filtered.filter((p) => p.deal_type === dealType);
+  }
+  if (keyword) {
+    filtered = filtered.filter(
+      (p) =>
+        (p.address || "").includes(keyword) ||
+        (p.property_type || "").includes(keyword) ||
+        (p.code || "").includes(keyword)
+    );
+  }
+  renderProperties(filtered);
+}
+
+document.getElementById("searchBtn").addEventListener("click", applyFilters);
 
 // Lead form
 document.getElementById("leadForm").addEventListener("submit", async (e) => {
