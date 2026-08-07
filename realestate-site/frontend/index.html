@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>کلید | مشاور املاک</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="wrap header-inner">
+    <div class="brand">
+      <span class="brand-mark">⌁</span>
+      <span class="brand-name">کلید</span>
+    </div>
+    <nav class="main-nav">
+      <a href="#listings">آگهی‌ها</a>
+      <a href="#contact">تماس با ما</a>
+      <a class="bot-cta-small" id="botLinkNav" href="#" target="_blank">شروع چت با ربات</a>
+    </nav>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="wrap hero-inner">
+    <p class="eyebrow">مشاور املاک آنلاین</p>
+    <h1>هر ملک، یک کلید<br>به یک زندگی تازه</h1>
+    <p class="hero-sub">لیست به‌روز آگهی‌های خرید و رهن‌واجاره را ببینید، یا مستقیم داخل تلگرام با ربات ما گفتگو کنید.</p>
+
+    <div class="search-bar">
+      <input type="text" id="citySearch" placeholder="شهر یا منطقه...">
+      <select id="dealType">
+        <option value="">همه</option>
+        <option value="sale">خرید</option>
+        <option value="rent">رهن و اجاره</option>
+      </select>
+      <button id="searchBtn">جستجو</button>
+    </div>
+  </div>
+  <div class="hero-line" aria-hidden="true"></div>
+</section>
+
+<section class="listings" id="listings">
+  <div class="wrap">
+    <div class="section-head">
+      <h2>آگهی‌های اخیر</h2>
+      <span class="section-note" id="resultCount"></span>
+    </div>
+    <div class="grid" id="propertyGrid">
+      <p class="loading">در حال بارگذاری آگهی‌ها...</p>
+    </div>
+  </div>
+</section>
+
+<section class="contact" id="contact">
+  <div class="wrap contact-inner">
+    <div class="contact-text">
+      <p class="eyebrow">همین حالا شروع کنید</p>
+      <h2>سوالی دارید؟<br>پیام بگذارید یا با ربات چت کنید</h2>
+      <p class="hero-sub">شماره‌تان را بگذارید تا در اسرع وقت با شما تماس بگیریم — یا مستقیم وارد ربات تلگرام شوید و آگهی‌ها را آنجا هم ببینید.</p>
+      <a class="bot-cta-big" id="botLinkBig" href="#" target="_blank">شروع گفتگو در تلگرام ↗</a>
+    </div>
+
+    <form class="lead-form" id="leadForm">
+      <label>نام</label>
+      <input type="text" id="leadName" required>
+
+      <label>شماره تماس</label>
+      <input type="tel" id="leadPhone" required placeholder="09xxxxxxxxx">
+
+      <label>پیام (اختیاری)</label>
+      <textarea id="leadMessage" rows="3"></textarea>
+
+      <button type="submit">ارسال درخواست</button>
+      <p class="form-status" id="formStatus"></p>
+    </form>
+  </div>
+</section>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <p>© <span id="year"></span> کلید — مشاور املاک</p>
+  </div>
+</footer>
+
+<script src="config.js"></script>
+<script src="script.js"></script>
+</body>
+</html>
