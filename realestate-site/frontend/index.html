@@ -182,6 +182,151 @@
       <span class="dot active" data-index="0"></span>
     </div>
   </div>
+  <div class="stats-ribbon">
+    <div class="wrap">
+      <span id="statsText">در حال بارگذاری آمار آگهی‌ها...</span>
+    </div>
+  </div>
+</section>
+
+<div class="caption-strip">
+  <div class="wrap">
+    <p class="carousel-caption active" data-index="0">
+      <strong>گروه مشاورین املاک اطلس</strong> — باغستان، خادم‌آباد.
+      همراه مطمئن شما در خرید، فروش، رهن و اجاره‌ی ملک.
+    </p>
+  </div>
+</div>
+
+<section class="quick-actions">
+  <div class="wrap">
+    <div class="quick-grid">
+      <a id="quickSale" href="#listings" class="quick-card">
+        <span class="quick-icon">🏢</span>
+        <span>آپارتمان‌های فروشی</span>
+      </a>
+      <a id="quickRent" href="#listings" class="quick-card">
+        <span class="quick-icon">🔑</span>
+        <span>رهن و اجاره</span>
+      </a>
+      <a href="#listings" class="quick-card">
+        <span class="quick-icon">🔍</span>
+        <span>جستجوی ملک</span>
+      </a>
+      <a href="#contact" class="quick-card">
+        <span class="quick-icon">🏠</span>
+        <span>ثبت ملک من</span>
+      </a>
+      <a href="#contact" class="quick-card">
+        <span class="quick-icon">📞</span>
+        <span>تماس با مشاور</span>
+      </a>
+      <a href="#office-intro" class="quick-card">
+        <span class="quick-icon">📍</span>
+        <span>درباره دفتر</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<section class="hero">
+  <div class="wrap hero-inner">
+    <p class="eyebrow">جستجوی سریع</p>
+    <h2 class="hero-search-title">دنبال چی می‌گردید؟</h2>
+    <p class="hero-sub">لیست به‌روز آگهی‌های خرید و رهن‌واجاره خادم‌آباد را ببینید، یا مستقیم داخل تلگرام با ربات ما گفتگو کنید.</p>
+
+    <div class="search-bar">
+      <input type="text" id="citySearch" placeholder="آدرس، کد ملک یا نوع ملک...">
+      <select id="dealType">
+        <option value="">همه</option>
+        <option value="فروش">خرید</option>
+        <option value="رهن و اجاره">رهن و اجاره</option>
+      </select>
+      <button id="searchBtn">جستجو</button>
+    </div>
+  </div>
+  <div class="hero-line" aria-hidden="true"></div>
+</section>
+
+<section class="listings" id="listings">
+  <div class="wrap">
+    <div class="section-head">
+      <h2>آگهی‌های اخیر</h2>
+      <span class="section-note" id="resultCount"></span>
+    </div>
+    <div class="grid" id="propertyGrid">
+      <p class="loading">در حال بارگذاری آگهی‌ها...</p>
+    </div>
+    <div class="load-more-wrap">
+      <button id="loadMoreBtn" class="load-more-btn" hidden>نمایش بیشتر</button>
+    </div>
+  </div>
+</section>
+
+<section class="contact" id="contact">
+  <div class="wrap contact-inner">
+    <div class="contact-text">
+      <p class="eyebrow">همین حالا شروع کنید</p>
+      <h2>سوالی دارید؟<br>پیام بگذارید یا با ربات چت کنید</h2>
+      <p class="hero-sub">شماره‌تان را بگذارید تا در اسرع وقت با شما تماس بگیریم — یا مستقیم از یکی از راه‌های زیر با ما در ارتباط باشید.</p>
+      <div class="contact-buttons">
+        <a class="bot-cta-big telegram" id="botLinkBig" href="#" target="_blank">تلگرام ↗</a>
+        <a class="bot-cta-big whatsapp" id="whatsappLinkBig" href="#" target="_blank">واتساپ ↗</a>
+        <a class="bot-cta-big rubika" id="rubikaLinkBig" href="#" target="_blank">روبیکا ↗</a>
+      </div>
+    </div>
+
+    <form class="lead-form" id="leadForm">
+      <label>نام</label>
+      <input type="text" id="leadName" required>
+
+      <label>شماره تماس</label>
+      <input type="tel" id="leadPhone" required placeholder="09xxxxxxxxx">
+
+      <label>پیام (اختیاری)</label>
+      <textarea id="leadMessage" rows="3"></textarea>
+
+      <button type="submit">ارسال درخواست</button>
+      <p class="form-status" id="formStatus"></p>
+    </form>
+  </div>
+</section>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <p>© <span id="year"></span> اطلس — مشاور املاک خادم‌آباد</p>
+  </div>
+</footer>
+
+<nav class="mobile-tabbar">
+  <a href="#top" class="tab-item active">
+    <span class="tab-icon">🏠</span>
+    <span>خانه</span>
+  </a>
+  <a href="#listings" class="tab-item">
+    <span class="tab-icon">📋</span>
+    <span>آگهی‌ها</span>
+  </a>
+  <a href="#contact" class="tab-item tab-item-cta">
+    <span class="tab-icon">➕</span>
+  </a>
+  <a href="#contact" class="tab-item">
+    <span class="tab-icon">📞</span>
+    <span>تماس</span>
+  </a>
+  <a id="tabTelegram" href="#" target="_blank" class="tab-item">
+    <span class="tab-icon">✈️</span>
+    <span>ربات</span>
+  </a>
+</nav>
+
+<script src="config.js"></script>
+<script src="script.js"></script>
+</body>
+</html>
+      <span class="dot active" data-index="0"></span>
+    </div>
+  </div>
   <div class="carousel-caption-wrap">
     <div class="wrap">
       <p class="carousel-caption active" data-index="0">
