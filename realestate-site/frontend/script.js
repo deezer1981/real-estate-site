@@ -70,12 +70,44 @@ async function loadProperties() {
   try {
     const res = await fetch(`${API_BASE_URL}/api/properties`);
     if (!res.ok) throw new Error("request failed");
-    allProperties = await res.json();
+    allProperties = (await res.json()).reverse(); // جدیدترین‌ها اول
+    updateStatsRibbon();
     applyFilters();
   } catch (err) {
     grid.innerHTML = `<p class="loading">اتصال به سرور برقرار نشد. لطفاً چند لحظه صبر کنید و صفحه را رفرش کنید (سرور رایگان گاهی چند ثانیه طول می‌کشد بیدار شود).</p>`;
   }
 }
+
+function updateStatsRibbon() {
+  const saleCount = allProperties.filter((p) => p.deal_type === "فروش").length;
+  const rentCount = allProperties.filter((p) => p.deal_type === "رهن و اجاره").length;
+  const el = document.getElementById("statsText");
+  if (el) {
+    el.textContent = `🏠 ${allProperties.length} فایل فعال — ${saleCount} فروشی، ${rentCount} رهن و اجاره`;
+  }
+}
+
+// اسلایدر تصاویر بالای صفحه
+function initCarousel() {
+  const slides = document.querySelectorAll(".carousel-slide");
+  const dots = document.querySelectorAll(".dot");
+  const captions = document.querySelectorAll(".carousel-caption");
+  if (slides.length <= 1) return; // فقط یک اسلاید یعنی نیازی به چرخش نیست
+
+  let current = 0;
+  function goTo(index) {
+    slides[current].classList.remove("active");
+    dots[current].classList.remove("active");
+    if (captions[current]) captions[current].classList.remove("active");
+    current = index;
+    slides[current].classList.add("active");
+    dots[current].classList.add("active");
+    if (captions[current]) captions[current].classList.add("active");
+  }
+  dots.forEach((dot, i) => dot.addEventListener("click", () => goTo(i)));
+  setInterval(() => goTo((current + 1) % slides.length), 4500);
+}
+initCarousel();
 
 function applyFilters() {
   const keyword = document.getElementById("citySearch").value.trim();
