@@ -8,7 +8,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 </head>
-<body>
+<body id="top">
 
 <header class="site-header">
   <div class="wrap header-inner">
@@ -26,7 +26,7 @@
   </div>
 </header>
 
-<section class="office-intro">
+<section class="office-intro">>
   <div class="wrap office-intro-inner">
     <img class="office-photo" src="assets/office.jpg" alt="دفتر گروه مشاورین املاک اطلس">
     <div class="office-text">
@@ -38,6 +38,37 @@
         محدوده‌های مختلف منطقه (از لاله‌های پایین تا بالا)، بهترین گزینه‌ها را متناسب با
         نیاز و بودجه‌ی شما پیشنهاد می‌دهد.
       </p>
+    </div>
+  </div>
+</section>
+
+<section class="quick-actions">
+  <div class="wrap">
+    <div class="quick-grid">
+      <a href="#listings" class="quick-card">
+        <span class="quick-icon">🔍</span>
+        <span>جستجوی ملک</span>
+      </a>
+      <a href="#contact" class="quick-card">
+        <span class="quick-icon">🏠</span>
+        <span>ثبت ملک من</span>
+      </a>
+      <a href="#contact" class="quick-card">
+        <span class="quick-icon">📞</span>
+        <span>تماس با مشاور</span>
+      </a>
+      <a id="quickTelegram" href="#" target="_blank" class="quick-card">
+        <span class="quick-icon">✈️</span>
+        <span>تلگرام</span>
+      </a>
+      <a id="quickWhatsapp" href="#" target="_blank" class="quick-card">
+        <span class="quick-icon">💬</span>
+        <span>واتساپ</span>
+      </a>
+      <a id="quickRubika" href="#" target="_blank" class="quick-card">
+        <span class="quick-icon">🎦</span>
+        <span>روبیکا</span>
+      </a>
     </div>
   </div>
 </section>
@@ -107,6 +138,28 @@
     <p>© <span id="year"></span> اطلس — مشاور املاک خادم‌آباد</p>
   </div>
 </footer>
+
+<nav class="mobile-tabbar">
+  <a href="#top" class="tab-item active">
+    <span class="tab-icon">🏠</span>
+    <span>خانه</span>
+  </a>
+  <a href="#listings" class="tab-item">
+    <span class="tab-icon">📋</span>
+    <span>آگهی‌ها</span>
+  </a>
+  <a href="#contact" class="tab-item tab-item-cta">
+    <span class="tab-icon">➕</span>
+  </a>
+  <a href="#contact" class="tab-item">
+    <span class="tab-icon">📞</span>
+    <span>تماس</span>
+  </a>
+  <a id="tabTelegram" href="#" target="_blank" class="tab-item">
+    <span class="tab-icon">✈️</span>
+    <span>ربات</span>
+  </a>
+</nav>
 
 <script src="config.js"></script>
 <script src="script.js"></script>
