@@ -93,6 +93,87 @@ a { color: inherit; text-decoration: none; }
   .office-intro-inner { grid-template-columns: 1fr; }
 }
 
+/* Quick actions grid (app-style, mobile-first) */
+.quick-actions {
+  background: var(--paper);
+  padding: 8px 0 32px;
+}
+.quick-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+.quick-card {
+  background: var(--card-bg);
+  border-radius: 16px;
+  padding: 18px 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 2px 8px rgba(20,33,61,0.08);
+  color: var(--ink) !important;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-align: center;
+  transition: transform 0.15s ease;
+}
+.quick-card:hover { transform: translateY(-2px); }
+.quick-icon {
+  font-size: 1.6rem;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--brass), var(--sage));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Mobile bottom tab bar (app-style, hidden on desktop) */
+.mobile-tabbar {
+  display: none;
+}
+
+@media (max-width: 720px) {
+  body { padding-bottom: 64px; }
+  .mobile-tabbar {
+    display: flex;
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    background: var(--card-bg);
+    border-top: 1px solid #E4DFD3;
+    box-shadow: 0 -2px 12px rgba(20,33,61,0.1);
+    z-index: 20;
+    padding: 6px 0;
+  }
+  .tab-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    color: var(--text) !important;
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 4px 0;
+  }
+  .tab-icon { font-size: 1.2rem; }
+  .tab-item.active { color: var(--brass) !important; }
+  .tab-item-cta .tab-icon {
+    background: var(--brass);
+    color: var(--ink);
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: -20px;
+    box-shadow: 0 2px 8px rgba(184,137,79,0.5);
+  }
+}
+
 /* Hero */
 .hero-search-title {
   font-size: clamp(1.5rem, 4vw, 2.2rem);
