@@ -271,6 +271,20 @@ a { color: inherit; text-decoration: none; }
 }
 .loading { color: #777; grid-column: 1 / -1; text-align: center; padding: 40px 0; }
 
+.load-more-wrap { text-align: center; margin-top: 24px; }
+.load-more-btn {
+  background: transparent;
+  border: 2px solid var(--brass);
+  color: var(--ink);
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 0.95rem;
+  padding: 10px 28px;
+  border-radius: 999px;
+  cursor: pointer;
+}
+.load-more-btn:hover { background: var(--brass); color: var(--ink); }
+
 .card {
   background: var(--card-bg);
   border-radius: var(--radius);
