@@ -50,7 +50,10 @@ a { color: inherit; text-decoration: none; }
   padding: 8px 16px;
   border-radius: var(--radius);
   font-weight: 700;
+  font-size: 0.9rem;
 }
+.bot-cta-small.whatsapp { background: #25D366; }
+.bot-cta-small.rubika { background: #4CA5DF; }
 
 /* Office intro */
 .office-intro {
@@ -223,6 +226,7 @@ a { color: inherit; text-decoration: none; }
 .bot-cta-big {
   display: inline-block;
   margin-top: 12px;
+  margin-left: 8px;
   background: var(--ink);
   color: var(--paper) !important;
   padding: 14px 24px;
@@ -230,6 +234,11 @@ a { color: inherit; text-decoration: none; }
   font-weight: 700;
 }
 .bot-cta-big:hover { background: #1c2c50; }
+.bot-cta-big.whatsapp { background: #25D366; }
+.bot-cta-big.whatsapp:hover { background: #1fb857; }
+.bot-cta-big.rubika { background: #4CA5DF; }
+.bot-cta-big.rubika:hover { background: #3b8fc9; }
+.contact-buttons { display: flex; flex-wrap: wrap; gap: 4px; }
 
 .lead-form {
   background: var(--card-bg);
