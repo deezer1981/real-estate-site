@@ -12,14 +12,16 @@ const rubikaUrl = `https://rubika.ir/${RUBIKA_USERNAME}`;
 document.getElementById("rubikaLinkNav").href = rubikaUrl;
 document.getElementById("rubikaLinkBig").href = rubikaUrl;
 
-document.getElementById("quickTelegram").href = botUrl;
-document.getElementById("quickWhatsapp").href = whatsappUrl;
-document.getElementById("quickRubika").href = rubikaUrl;
 document.getElementById("tabTelegram").href = botUrl;
 
 const grid = document.getElementById("propertyGrid");
 const resultCount = document.getElementById("resultCount");
+const loadMoreBtn = document.getElementById("loadMoreBtn");
 let allProperties = [];
+let currentFiltered = [];
+
+const PAGE_SIZE = 6;
+let visibleCount = PAGE_SIZE;
 
 function propertyCard(p) {
   const priceLine =
@@ -45,15 +47,23 @@ function propertyCard(p) {
   `;
 }
 
-function renderProperties(list) {
-  if (!list.length) {
+function renderProperties() {
+  if (!currentFiltered.length) {
     grid.innerHTML = `<p class="loading">فایلی با این مشخصات پیدا نشد.</p>`;
     resultCount.textContent = "";
+    loadMoreBtn.hidden = true;
     return;
   }
-  grid.innerHTML = list.map(propertyCard).join("");
-  resultCount.textContent = `${list.length} آگهی`;
+  const shown = currentFiltered.slice(0, visibleCount);
+  grid.innerHTML = shown.map(propertyCard).join("");
+  resultCount.textContent = `${shown.length} از ${currentFiltered.length} آگهی`;
+  loadMoreBtn.hidden = visibleCount >= currentFiltered.length;
 }
+
+loadMoreBtn.addEventListener("click", () => {
+  visibleCount += PAGE_SIZE;
+  renderProperties();
+});
 
 async function loadProperties() {
   grid.innerHTML = `<p class="loading">در حال بارگذاری آگهی‌ها...</p>`;
@@ -83,10 +93,25 @@ function applyFilters() {
         (p.code || "").includes(keyword)
     );
   }
-  renderProperties(filtered);
+  currentFiltered = filtered;
+  visibleCount = PAGE_SIZE;
+  renderProperties();
 }
 
 document.getElementById("searchBtn").addEventListener("click", applyFilters);
+
+document.getElementById("quickSale").addEventListener("click", (e) => {
+  e.preventDefault();
+  document.getElementById("dealType").value = "فروش";
+  applyFilters();
+  document.getElementById("listings").scrollIntoView({ behavior: "smooth" });
+});
+document.getElementById("quickRent").addEventListener("click", (e) => {
+  e.preventDefault();
+  document.getElementById("dealType").value = "رهن و اجاره";
+  applyFilters();
+  document.getElementById("listings").scrollIntoView({ behavior: "smooth" });
+});
 
 // Lead form
 document.getElementById("leadForm").addEventListener("submit", async (e) => {
