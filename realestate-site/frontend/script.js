@@ -4,6 +4,14 @@ const botUrl = `https://t.me/${TELEGRAM_BOT_USERNAME}`;
 document.getElementById("botLinkNav").href = botUrl;
 document.getElementById("botLinkBig").href = botUrl;
 
+const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}`;
+document.getElementById("whatsappLinkNav").href = whatsappUrl;
+document.getElementById("whatsappLinkBig").href = whatsappUrl;
+
+const rubikaUrl = `https://rubika.ir/${RUBIKA_USERNAME}`;
+document.getElementById("rubikaLinkNav").href = rubikaUrl;
+document.getElementById("rubikaLinkBig").href = rubikaUrl;
+
 const grid = document.getElementById("propertyGrid");
 const resultCount = document.getElementById("resultCount");
 let allProperties = [];
