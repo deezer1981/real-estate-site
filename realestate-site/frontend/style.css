@@ -57,42 +57,67 @@ a { color: inherit; text-decoration: none; }
 .bot-cta-small.whatsapp { background: #25D366; }
 .bot-cta-small.rubika { background: #4CA5DF; }
 
-/* Office intro */
+/* Hero image carousel */
 .office-intro {
-  background: var(--paper);
-  padding: 48px 0 32px;
+  padding: 0;
+  background: var(--ink);
 }
-.office-intro-inner {
-  display: grid;
-  grid-template-columns: 1fr 1.2fr;
-  gap: 40px;
-  align-items: center;
-}
-.office-photo {
+.carousel {
+  position: relative;
   width: 100%;
-  border-radius: var(--radius);
-  box-shadow: 0 8px 24px rgba(20,33,61,0.18);
-  object-fit: cover;
+  height: 260px;
+  overflow: hidden;
 }
-.office-text .eyebrow { color: var(--brass); }
-.office-text h1 {
-  font-size: clamp(1.6rem, 4vw, 2.4rem);
-  font-weight: 800;
-  color: var(--ink);
-  margin: 0 0 16px;
-  line-height: 1.4;
+.carousel-track { position: relative; width: 100%; height: 100%; }
+.carousel-slide {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 0.6s ease;
 }
-.office-sub-title {
-  color: var(--sage);
-  font-size: 0.65em;
-  font-weight: 600;
-  display: inline-block;
-  margin-top: 6px;
+.carousel-slide.active { opacity: 1; }
+.carousel-slide img { width: 100%; height: 100%; object-fit: cover; }
+.carousel-dots {
+  position: absolute;
+  bottom: 12px;
+  left: 0; right: 0;
+  display: flex;
+  justify-content: center;
+  gap: 6px;
 }
-.office-text .hero-sub { color: var(--text); max-width: 100%; }
+.dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.5);
+  cursor: pointer;
+}
+.dot.active { background: var(--brass); width: 20px; border-radius: 4px; }
+.carousel-caption-wrap {
+  background: var(--ink);
+  padding: 16px 0 20px;
+}
+.carousel-caption {
+  display: none;
+  color: var(--paper);
+  font-size: 0.95rem;
+  line-height: 1.8;
+  margin: 0;
+}
+.carousel-caption.active { display: block; }
+.carousel-caption strong { color: var(--brass); }
 
-@media (max-width: 720px) {
-  .office-intro-inner { grid-template-columns: 1fr; }
+@media (min-width: 720px) {
+  .carousel { height: 380px; }
+}
+
+/* Stats ribbon */
+.stats-ribbon {
+  background: var(--brass);
+  color: var(--ink);
+  font-weight: 700;
+  font-size: 0.9rem;
+  text-align: center;
+  padding: 10px 0;
 }
 
 /* Quick actions grid (app-style, mobile-first) */
