@@ -12,6 +12,11 @@ const rubikaUrl = `https://rubika.ir/${RUBIKA_USERNAME}`;
 document.getElementById("rubikaLinkNav").href = rubikaUrl;
 document.getElementById("rubikaLinkBig").href = rubikaUrl;
 
+document.getElementById("quickTelegram").href = botUrl;
+document.getElementById("quickWhatsapp").href = whatsappUrl;
+document.getElementById("quickRubika").href = rubikaUrl;
+document.getElementById("tabTelegram").href = botUrl;
+
 const grid = document.getElementById("propertyGrid");
 const resultCount = document.getElementById("resultCount");
 let allProperties = [];
