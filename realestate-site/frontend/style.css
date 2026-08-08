@@ -10,6 +10,8 @@
 
 * { box-sizing: border-box; }
 
+html, body { overflow-x: hidden; }
+
 body {
   margin: 0;
   font-family: "Vazirmatn", sans-serif;
@@ -137,6 +139,7 @@ a { color: inherit; text-decoration: none; }
 
 @media (max-width: 720px) {
   body { padding-bottom: 64px; }
+  .main-nav { display: none; }
   .mobile-tabbar {
     display: flex;
     position: fixed;
