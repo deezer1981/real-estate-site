@@ -161,6 +161,7 @@ app.add_middleware(
 )
 
 
+@app.head("/")
 @app.get("/")
 def root():
     return {"status": "ok", "service": "atlas-amlak-website-api"}
