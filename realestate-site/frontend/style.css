@@ -514,13 +514,23 @@ a { color: inherit; text-decoration: none; }
    MOBILE OVERRIDES (max-width: 720px)
    ===================================================================== */
 @media (max-width: 720px) {
-  /* تنظیم ارتفاع کادر دقیقاً هم‌اندازه نسبت تصویر تابلو */
+  body { padding-bottom: 64px; }
+
+  /* ۱. مخفی کردن منوی افقی دسکتاپ در موبایل */
+  .main-nav { display: none !important; }
+  .site-header .brand-name { display: none; }
+  .menu-toggle { display: flex; order: -1; }
+
+  /* ۲. تنظیم دقیق و تمیز بنر بدون فضای خالی */
   .carousel {
-    height: auto !important;
-    aspect-ratio: 2.3 / 1; /* حذف کامل فضای اضافه بالا و پایین */
+    height: 180px !important;
+    position: relative;
+    overflow: hidden;
   }
 
   .carousel-slide img {
+    width: 100%;
+    height: 100%;
     object-fit: cover !important;
     object-position: center !important;
   }
