@@ -520,7 +520,7 @@ a { color: inherit; text-decoration: none; }
   .site-header .brand-name { display: none; }
   .menu-toggle { display: flex; order: -1; }
 
-  .carousel { height: 220px; } /* ارتفاع مناسب در گوشی */
+  .carousel { height: 282px; } /* ارتفاع مناسب در گوشی */
 
   .quick-grid {
     grid-template-columns: repeat(3, 1fr);
