@@ -61,6 +61,7 @@ a { color: inherit; text-decoration: none; }
 }
 .bot-cta-small.whatsapp { background: #25D366; }
 .bot-cta-small.rubika { background: #4CA5DF; }
+.bot-cta-small.phone { background: var(--sage); color: var(--paper) !important; }
 
 /* Hamburger button (hidden on desktop, shown on mobile via media query below) */
 .menu-toggle {
@@ -435,6 +436,8 @@ a { color: inherit; text-decoration: none; }
 .bot-cta-big.whatsapp:hover { background: #1fb857; }
 .bot-cta-big.rubika { background: #4CA5DF; }
 .bot-cta-big.rubika:hover { background: #3b8fc9; }
+.bot-cta-big.phone { background: var(--sage); }
+.bot-cta-big.phone:hover { background: #3d5a50; }
 .contact-buttons { display: flex; flex-wrap: wrap; gap: 8px; }
 
 .lead-form {
@@ -505,7 +508,7 @@ a { color: inherit; text-decoration: none; }
      below the image, via .brand-heading — this removes the duplicate) */
   .main-nav { display: none; }
   .site-header .brand-name { display: none; }
-  .menu-toggle { display: flex; }
+  .menu-toggle { display: flex; order: -1; }
 
   .carousel { height: 130px; }
 
