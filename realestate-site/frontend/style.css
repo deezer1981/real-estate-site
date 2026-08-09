@@ -28,13 +28,13 @@ body {
 
 a { color: inherit; text-decoration: none; }
 
-/* Header */
+/* ===================== Header ===================== */
 .site-header {
   background: var(--ink);
   color: var(--paper);
   position: sticky;
   top: 0;
-  z-index: 10;
+  z-index: 100;
 }
 .header-inner {
   display: flex;
@@ -62,7 +62,7 @@ a { color: inherit; text-decoration: none; }
 .bot-cta-small.whatsapp { background: #25D366; }
 .bot-cta-small.rubika { background: #4CA5DF; }
 
-/* Hamburger menu button (mobile only) */
+/* Hamburger button (hidden on desktop, shown on mobile via media query below) */
 .menu-toggle {
   display: none;
   flex-direction: column;
@@ -88,34 +88,39 @@ a { color: inherit; text-decoration: none; }
 .menu-toggle.open span:nth-child(2) { opacity: 0; }
 .menu-toggle.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
 
-/* Mobile slide-in drawer */
+/* ===================== Mobile slide-in drawer ===================== */
+/* Note: the whole page is dir="rtl", so the drawer always sits on the
+   right edge and slides in from the right — no extra [dir] selector
+   needed (that was the bug: an attribute-selector variant had higher
+   specificity than `.mobile-drawer.open` and silently won, so the
+   drawer never visually opened even though JS toggled the class). */
 .drawer-backdrop {
   display: none;
   position: fixed;
   inset: 0;
   background: rgba(20,33,61,0.55);
-  z-index: 40;
+  z-index: 9990;
   opacity: 0;
+  pointer-events: none;
   transition: opacity 0.3s ease;
 }
-.drawer-backdrop.open { display: block; opacity: 1; }
+.drawer-backdrop.open { display: block; opacity: 1; pointer-events: auto; }
 
 .mobile-drawer {
   position: fixed;
-  top: 0; bottom: 0; left: 0;
+  top: 0; bottom: 0; right: 0;
   width: 78%;
   max-width: 320px;
   background: var(--ink);
   color: var(--paper);
-  z-index: 50;
-  transform: translateX(-100%);
+  z-index: 9991;
+  transform: translateX(100%);
   transition: transform 0.3s ease;
   display: flex;
   flex-direction: column;
   padding: 20px;
-  box-shadow: 4px 0 20px rgba(0,0,0,0.3);
+  box-shadow: -4px 0 20px rgba(0,0,0,0.3);
 }
-html[dir="rtl"] .mobile-drawer { left: auto; right: 0; transform: translateX(100%); }
 .mobile-drawer.open { transform: translateX(0); }
 
 .drawer-header {
@@ -158,7 +163,7 @@ html[dir="rtl"] .mobile-drawer { left: auto; right: 0; transform: translateX(100
 }
 .drawer-socials .bot-cta-small { width: 100%; }
 
-/* Hero image carousel */
+/* ===================== Hero image carousel ===================== */
 .office-intro {
   padding: 0;
   background: var(--ink);
@@ -194,11 +199,7 @@ html[dir="rtl"] .mobile-drawer { left: auto; right: 0; transform: translateX(100
 }
 .dot.active { background: var(--brass); width: 16px; border-radius: 4px; }
 
-@media (min-width: 720px) {
-  .carousel { height: 280px; }
-}
-
-/* Stats ribbon */
+/* Stats ribbon (sits directly under the image, no gap) */
 .stats-ribbon {
   background: var(--brass);
   color: var(--ink);
@@ -208,7 +209,7 @@ html[dir="rtl"] .mobile-drawer { left: auto; right: 0; transform: translateX(100
   padding: 8px 0;
 }
 
-/* Brand heading below ribbon */
+/* Brand heading — the ONE place the office name is shown on mobile */
 .brand-heading {
   background: var(--paper);
   padding: 14px 0 8px;
@@ -228,7 +229,7 @@ html[dir="rtl"] .mobile-drawer { left: auto; right: 0; transform: translateX(100
   margin: 0;
 }
 
-/* Quick actions grid (app-style, mobile-first) */
+/* ===================== Quick actions grid ===================== */
 .quick-actions {
   background: var(--paper);
   padding: 4px 0 24px;
@@ -267,127 +268,7 @@ html[dir="rtl"] .mobile-drawer { left: auto; right: 0; transform: translateX(100
   justify-content: center;
 }
 
-/* Mobile bottom tab bar (app-style, hidden on desktop) */
-.mobile-tabbar { display: none; }
-.filter-fab { display: none; }
-.sheet-backdrop { display: none; }
-
-@media (max-width: 720px) {
-  body { padding-bottom: 64px; }
-  .main-nav { display: none; }
-  .menu-toggle { display: flex; }
-
-  .mobile-tabbar {
-    display: flex;
-    position: fixed;
-    bottom: 0; left: 0; right: 0;
-    background: var(--card-bg);
-    border-top: 1px solid #E4DFD3;
-    box-shadow: 0 -2px 12px rgba(20,33,61,0.1);
-    z-index: 20;
-    padding: 6px 0;
-  }
-  .tab-item {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 2px;
-    min-height: 48px;
-    color: var(--text) !important;
-    font-size: 0.7rem;
-    font-weight: 600;
-    padding: 4px 0;
-  }
-  .tab-icon { font-size: 1.2rem; }
-  .tab-item.active { color: var(--brass) !important; }
-  .tab-item-cta .tab-icon {
-    background: var(--brass);
-    color: var(--ink);
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-top: -20px;
-    box-shadow: 0 2px 8px rgba(184,137,79,0.5);
-  }
-
-  /* Bottom-sheet filter */
-  .filter-fab {
-    display: block;
-    position: fixed;
-    bottom: 76px;
-    left: 16px;
-    z-index: 30;
-    background: var(--ink);
-    color: var(--paper);
-    border: none;
-    border-radius: 999px;
-    padding: 13px 20px;
-    min-height: 48px;
-    font-family: inherit;
-    font-weight: 700;
-    font-size: 0.9rem;
-    box-shadow: 0 4px 16px rgba(20,33,61,0.35);
-    cursor: pointer;
-  }
-  .sheet-backdrop {
-    display: block;
-    position: fixed;
-    inset: 0;
-    background: rgba(20,33,61,0.5);
-    z-index: 35;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.3s ease;
-  }
-  .sheet-backdrop.open { opacity: 1; pointer-events: auto; }
-
-  .hero { padding: 1px 0 24px; }
-  .hero-inner .eyebrow,
-  .hero-inner .hero-search-title,
-  .hero-inner .hero-sub { display: none; }
-
-  .search-bar {
-    position: fixed;
-    left: 0; right: 0; bottom: 0;
-    background: var(--card-bg);
-    border-radius: 20px 20px 0 0;
-    flex-direction: column;
-    max-width: none;
-    transform: translateY(110%);
-    transition: transform 0.3s ease;
-    z-index: 40;
-    padding: 10px 20px 24px;
-    box-shadow: 0 -4px 24px rgba(0,0,0,0.25);
-  }
-  .search-bar.open { transform: translateY(0); }
-  .sheet-handle {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 6px 0 14px;
-    border-bottom: 1px solid #E4DFD3;
-    margin-bottom: 12px;
-  }
-  .sheet-title { font-weight: 700; color: var(--ink); }
-  .sheet-close {
-    background: var(--paper);
-    border: none;
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    font-size: 1rem;
-    cursor: pointer;
-  }
-}
-
-.sheet-handle { display: none; }
-
-/* Hero */
+/* ===================== Hero / search (desktop default: inline bar) ===================== */
 .hero-search-title {
   font-size: clamp(1.5rem, 4vw, 2.2rem);
   font-weight: 800;
@@ -420,6 +301,8 @@ html[dir="rtl"] .mobile-drawer { left: auto; right: 0; transform: translateX(100
   height: 6px;
   background: linear-gradient(90deg, var(--brass) 0%, var(--sage) 100%);
 }
+
+.sheet-handle { display: none; } /* only shown on mobile, see bottom */
 
 .search-bar {
   display: flex;
@@ -456,7 +339,10 @@ html[dir="rtl"] .mobile-drawer { left: auto; right: 0; transform: translateX(100
 }
 .search-bar button:hover { filter: brightness(1.05); }
 
-/* Section headers */
+.filter-fab { display: none; }   /* mobile-only, see bottom */
+.sheet-backdrop { display: none; }  /* mobile-only, see bottom */
+
+/* ===================== Section headers ===================== */
 .section-head {
   display: flex;
   justify-content: space-between;
@@ -468,7 +354,7 @@ html[dir="rtl"] .mobile-drawer { left: auto; right: 0; transform: translateX(100
 .section-head h2 { margin: 0; font-size: 1.6rem; }
 .section-note { color: var(--sage); font-weight: 600; }
 
-/* Listings */
+/* ===================== Listings ===================== */
 .listings { padding: 40px 0 64px; }
 .grid {
   display: grid;
@@ -516,7 +402,7 @@ html[dir="rtl"] .mobile-drawer { left: auto; right: 0; transform: translateX(100
 .card-meta { margin: 0; color: #666; font-size: 0.9rem; }
 .card-price { margin: 10px 0 0; font-weight: 800; color: var(--ink); font-size: 1.05rem; }
 
-/* Contact */
+/* ===================== Contact ===================== */
 .contact { background: #EDE7D9; padding: 64px 0; }
 .contact-inner {
   display: grid;
@@ -587,7 +473,7 @@ html[dir="rtl"] .mobile-drawer { left: auto; right: 0; transform: translateX(100
 }
 .form-status { font-size: 0.85rem; color: var(--sage); min-height: 1.2em; }
 
-/* Footer */
+/* ===================== Footer ===================== */
 .site-footer {
   background: var(--ink);
   color: #A9A392;
@@ -596,11 +482,165 @@ html[dir="rtl"] .mobile-drawer { left: auto; right: 0; transform: translateX(100
   font-size: 0.85rem;
 }
 
-@media (max-width: 720px) {
-  .contact-inner { grid-template-columns: 1fr; }
-}
+/* ===================== Mobile tab bar (hidden on desktop) ===================== */
+.mobile-tabbar { display: none; }
 
 @media (prefers-reduced-motion: reduce) {
   .card { transition: none; }
   .mobile-drawer, .drawer-backdrop, .search-bar, .sheet-backdrop, .menu-toggle span { transition: none; }
+}
+
+/* =====================================================================
+   MOBILE OVERRIDES — kept as ONE block at the very end of the file on
+   purpose. Any override declared here is guaranteed to win the cascade
+   because nothing after it can un-override these properties again.
+   (The previous bug was having base/desktop rules for .search-bar and
+   .hero declared AFTER this media query elsewhere in the file, which
+   silently cancelled these mobile styles.)
+   ===================================================================== */
+@media (max-width: 720px) {
+  body { padding-bottom: 64px; }
+
+  /* Header: hide desktop nav + full brand text (name is shown once,
+     below the image, via .brand-heading — this removes the duplicate) */
+  .main-nav { display: none; }
+  .site-header .brand-name { display: none; }
+  .menu-toggle { display: flex; }
+
+  .carousel { height: 130px; }
+
+  .contact-inner { grid-template-columns: 1fr; }
+
+  /* Bottom tab bar */
+  .mobile-tabbar {
+    display: flex;
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    background: var(--card-bg);
+    border-top: 1px solid #E4DFD3;
+    box-shadow: 0 -2px 12px rgba(20,33,61,0.1);
+    z-index: 200;
+    padding: 6px 0;
+  }
+  .tab-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    min-height: 48px;
+    color: var(--text) !important;
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 4px 0;
+  }
+  .tab-icon { font-size: 1.2rem; }
+  .tab-item.active { color: var(--brass) !important; }
+  .tab-item-cta .tab-icon {
+    background: var(--brass);
+    color: var(--ink);
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: -20px;
+    box-shadow: 0 2px 8px rgba(184,137,79,0.5);
+  }
+
+  /* Hero section becomes an invisible spacer: its text is hidden and
+     the search bar is pulled out to a fixed bottom sheet, so the
+     section itself must collapse to ~0 height (this is what fixes the
+     "massive empty dark gap" bug — the old rule further down in the
+     file used to override this padding back to 64px/80px). */
+  .hero {
+    padding: 0;
+    background: transparent;
+    min-height: 0;
+  }
+  .hero-line { display: none; }
+  .hero-inner .eyebrow,
+  .hero-inner .hero-search-title,
+  .hero-inner .hero-sub {
+    display: none;
+  }
+
+  /* Floating filter button */
+  .filter-fab {
+    display: block;
+    position: fixed;
+    bottom: 76px;
+    left: 16px;
+    z-index: 9994;
+    background: var(--ink);
+    color: var(--paper);
+    border: none;
+    border-radius: 999px;
+    padding: 13px 20px;
+    min-height: 48px;
+    font-family: inherit;
+    font-weight: 700;
+    font-size: 0.9rem;
+    box-shadow: 0 4px 16px rgba(20,33,61,0.35);
+    cursor: pointer;
+  }
+
+  /* Backdrop behind the sheet */
+  .sheet-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(20,33,61,0.5);
+    z-index: 9995;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+  }
+  .sheet-backdrop.open { opacity: 1; pointer-events: auto; }
+
+  /* The bottom sheet itself — solid opaque background, sits ABOVE the
+     backdrop, fully clickable when open, safely off-screen when not. */
+  .search-bar {
+    position: fixed;
+    left: 0; right: 0; bottom: 0;
+    width: 100%;
+    max-width: none;
+    background-color: #ffffff;
+    border-radius: 20px 20px 0 0;
+    flex-direction: column;
+    transform: translateY(110%);
+    transition: transform 0.3s ease;
+    z-index: 9999;
+    padding: 10px 20px 24px;
+    box-shadow: 0 -4px 24px rgba(0,0,0,0.25);
+    pointer-events: auto;
+  }
+  .search-bar.open { transform: translateY(0); }
+  .search-bar input,
+  .search-bar select,
+  .search-bar button {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .sheet-handle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 0 14px;
+    border-bottom: 1px solid #E4DFD3;
+    margin-bottom: 12px;
+  }
+  .sheet-title { font-weight: 700; color: var(--ink); }
+  .sheet-close {
+    background: var(--paper);
+    border: none;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    font-size: 1rem;
+    cursor: pointer;
+  }
 }
