@@ -572,6 +572,24 @@ a { color: inherit; text-decoration: none; }
     min-height: 0;
   }
   .hero-line { display: none; }
+
+  /* --- THE FIX ---
+     .hero-inner has `position: relative; z-index: 2;` in the base
+     (desktop) rules above. On its own that creates a brand-new
+     stacking context. Since #searchBar lives INSIDE .hero-inner, its
+     z-index: 99999 only gets compared to siblings *inside* that
+     context — never against #filterBackdrop, which sits outside it
+     at the root level. Net effect: the backdrop (whole-screen,
+     semi-transparent) ends up painted ON TOP of the sheet and eats
+     every tap, even though the sheet itself renders looking correct.
+     Neutralizing position/z-index here on mobile removes that trap so
+     #searchBar's z-index is finally compared at the root level, where
+     99999 correctly beats the backdrop's 99998. */
+  .hero-inner {
+    position: static;
+    z-index: auto;
+  }
+
   .hero-inner .eyebrow,
   .hero-inner .hero-search-title,
   .hero-inner .hero-sub {
