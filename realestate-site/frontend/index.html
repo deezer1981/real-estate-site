@@ -16,6 +16,7 @@
       <span class="brand-mark">⌁</span>
       <span class="brand-name">گروه مشاورین املاک اطلس</span>
     </div>
+
     <nav class="main-nav">
       <a href="#listings">آگهی‌ها</a>
       <a href="#contact">تماس با ما</a>
@@ -23,19 +24,36 @@
       <a class="bot-cta-small whatsapp" id="whatsappLinkNav" href="#" target="_blank">واتساپ</a>
       <a class="bot-cta-small rubika" id="rubikaLinkNav" href="#" target="_blank">روبیکا</a>
     </nav>
+
+    <button id="menuToggle" class="menu-toggle" aria-label="باز کردن منو" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
   </div>
 </header>
+
+<div id="drawerBackdrop" class="drawer-backdrop"></div>
+<aside id="mobileDrawer" class="mobile-drawer" aria-hidden="true">
+  <div class="drawer-header">
+    <span class="brand-name">منو</span>
+    <button id="drawerClose" class="drawer-close" aria-label="بستن منو">✕</button>
+  </div>
+  <nav class="drawer-nav">
+    <a href="#listings" class="drawer-link">آگهی‌ها</a>
+    <a href="#contact" class="drawer-link">تماس با ما</a>
+    <a href="#office-intro" class="drawer-link">درباره دفتر</a>
+  </nav>
+  <div class="drawer-socials">
+    <a class="bot-cta-small telegram" id="drawerTelegram" href="#" target="_blank">تلگرام</a>
+    <a class="bot-cta-small whatsapp" id="drawerWhatsapp" href="#" target="_blank">واتساپ</a>
+    <a class="bot-cta-small rubika" id="drawerRubika" href="#" target="_blank">روبیکا</a>
+  </div>
+</aside>
 
 <section class="office-intro" id="office-intro">
   <div class="carousel" id="heroCarousel">
     <div class="carousel-track" id="carouselTrack">
       <div class="carousel-slide active" data-index="0">
         <img src="assets/office.jpg" alt="دفتر گروه مشاورین املاک اطلس">
-        <div class="carousel-overlay">
-          <p class="carousel-caption active" data-index="0">
-            <strong>گروه مشاورین املاک اطلس</strong> — باغستان، خادم‌آباد
-          </p>
-        </div>
       </div>
     </div>
     <div class="carousel-dots" id="carouselDots">
@@ -45,6 +63,12 @@
   <div class="stats-ribbon">
     <div class="wrap">
       <span id="statsText">در حال بارگذاری آمار آگهی‌ها...</span>
+    </div>
+  </div>
+  <div class="brand-heading">
+    <div class="wrap">
+      <h1>گروه مشاورین املاک اطلس</h1>
+      <p class="carousel-caption active" data-index="0">باغستان، خادم‌آباد</p>
     </div>
   </div>
 </section>
@@ -80,13 +104,17 @@
   </div>
 </section>
 
-<section class="hero">
+<section class="hero" id="searchSection">
   <div class="wrap hero-inner">
     <p class="eyebrow">جستجوی سریع</p>
-    <h2 class="hero-search-title">دنبال چی می‌گردید؟</h2>
+    <h2 class="hero-search-title">جستجوی هوشمند ملک</h2>
     <p class="hero-sub">لیست به‌روز آگهی‌های خرید و رهن‌واجاره خادم‌آباد را ببینید، یا مستقیم داخل تلگرام با ربات ما گفتگو کنید.</p>
 
-    <div class="search-bar">
+    <div class="search-bar" id="searchBar">
+      <div class="sheet-handle" id="sheetHandle">
+        <span class="sheet-title">فیلتر جستجو</span>
+        <button type="button" id="sheetClose" class="sheet-close" aria-label="بستن فیلتر">✕</button>
+      </div>
       <input type="text" id="citySearch" placeholder="آدرس، کد ملک یا نوع ملک...">
       <select id="dealType">
         <option value="">همه</option>
@@ -98,6 +126,9 @@
   </div>
   <div class="hero-line" aria-hidden="true"></div>
 </section>
+
+<button id="filterFab" class="filter-fab" type="button">🔍 فیلتر املاک</button>
+<div id="filterBackdrop" class="sheet-backdrop"></div>
 
 <section class="listings" id="listings">
   <div class="wrap">
@@ -119,7 +150,7 @@
     <div class="contact-text">
       <p class="eyebrow">همین حالا شروع کنید</p>
       <h2>سوالی دارید؟<br>پیام بگذارید یا با ربات چت کنید</h2>
-      <p class="hero-sub">شماره‌تان را بگذارید تا در اسرع وقت با شما تماس بگیریم — یا مستقیم از یکی از راه‌های زیر با ما در ارتباط باشید.</p>
+      <p class="contact-sub">شماره‌تان را بگذارید تا در اسرع وقت با شما تماس بگیریم — یا مستقیم از یکی از راه‌های زیر با ما در ارتباط باشید.</p>
       <div class="contact-buttons">
         <a class="bot-cta-big telegram" id="botLinkBig" href="#" target="_blank">تلگرام ↗</a>
         <a class="bot-cta-big whatsapp" id="whatsappLinkBig" href="#" target="_blank">واتساپ ↗</a>
@@ -137,7 +168,7 @@
       <label>پیام (اختیاری)</label>
       <textarea id="leadMessage" rows="3"></textarea>
 
-      <button type="submit">ارسال درخواست</button>
+      <button type="submit">ارسال پیام</button>
       <p class="form-status" id="formStatus"></p>
     </form>
   </div>
