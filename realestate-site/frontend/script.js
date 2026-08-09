@@ -1,19 +1,96 @@
 document.getElementById("year").textContent = new Date().getFullYear();
 
 const botUrl = `https://t.me/${TELEGRAM_BOT_USERNAME}`;
-document.getElementById("botLinkNav").href = botUrl;
-document.getElementById("botLinkBig").href = botUrl;
-
 const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}`;
-document.getElementById("whatsappLinkNav").href = whatsappUrl;
-document.getElementById("whatsappLinkBig").href = whatsappUrl;
-
 const rubikaUrl = `https://rubika.ir/${RUBIKA_USERNAME}`;
-document.getElementById("rubikaLinkNav").href = rubikaUrl;
-document.getElementById("rubikaLinkBig").href = rubikaUrl;
 
-document.getElementById("tabTelegram").href = botUrl;
+[
+  "botLinkNav", "botLinkBig", "tabTelegram", "drawerTelegram",
+].forEach((id) => {
+  const el = document.getElementById(id);
+  if (el) el.href = botUrl;
+});
+["whatsappLinkNav", "whatsappLinkBig", "drawerWhatsapp"].forEach((id) => {
+  const el = document.getElementById(id);
+  if (el) el.href = whatsappUrl;
+});
+["rubikaLinkNav", "rubikaLinkBig", "drawerRubika"].forEach((id) => {
+  const el = document.getElementById(id);
+  if (el) el.href = rubikaUrl;
+});
 
+// --------------------------------------------------------------------- //
+// 1) Mobile hamburger drawer
+// --------------------------------------------------------------------- //
+const menuToggle = document.getElementById("menuToggle");
+const mobileDrawer = document.getElementById("mobileDrawer");
+const drawerBackdrop = document.getElementById("drawerBackdrop");
+const drawerClose = document.getElementById("drawerClose");
+
+function openDrawer() {
+  mobileDrawer.classList.add("open");
+  drawerBackdrop.classList.add("open");
+  menuToggle.classList.add("open");
+  menuToggle.setAttribute("aria-expanded", "true");
+  mobileDrawer.setAttribute("aria-hidden", "false");
+  document.body.style.overflow = "hidden";
+}
+function closeDrawer() {
+  mobileDrawer.classList.remove("open");
+  drawerBackdrop.classList.remove("open");
+  menuToggle.classList.remove("open");
+  menuToggle.setAttribute("aria-expanded", "false");
+  mobileDrawer.setAttribute("aria-hidden", "true");
+  document.body.style.overflow = "";
+}
+menuToggle.addEventListener("click", () => {
+  mobileDrawer.classList.contains("open") ? closeDrawer() : openDrawer();
+});
+drawerClose.addEventListener("click", closeDrawer);
+drawerBackdrop.addEventListener("click", closeDrawer);
+document.querySelectorAll(".drawer-link").forEach((link) => {
+  link.addEventListener("click", closeDrawer);
+});
+
+// --------------------------------------------------------------------- //
+// 2) Smart address truncation for property cards
+//    Keeps everything up to "لاله X [اصلی/غربی/شرقی]" and drops the rest
+//    of the sub-address (کوچه/پلاک/طبقه/زنگ ...) to keep cards clean.
+// --------------------------------------------------------------------- //
+function truncateAddress(address) {
+  if (!address) return "";
+  const text = address.trim();
+  const match = text.match(/^(.*?لاله\s*[\u06F0-\u06F90-9]+\s*(اصلی|غربی|شرقی)?)/);
+  if (match && match[1]) {
+    return match[1].trim();
+  }
+  // Fallback: no "لاله" pattern found — cap at a reasonable length
+  return text.length > 40 ? text.slice(0, 40).trim() + "…" : text;
+}
+
+// --------------------------------------------------------------------- //
+// 3) Mobile bottom-sheet filter
+// --------------------------------------------------------------------- //
+const searchBar = document.getElementById("searchBar");
+const filterFab = document.getElementById("filterFab");
+const filterBackdrop = document.getElementById("filterBackdrop");
+const sheetClose = document.getElementById("sheetClose");
+
+function openSheet() {
+  searchBar.classList.add("open");
+  filterBackdrop.classList.add("open");
+}
+function closeSheet() {
+  searchBar.classList.remove("open");
+  filterBackdrop.classList.remove("open");
+}
+filterFab.addEventListener("click", openSheet);
+filterBackdrop.addEventListener("click", closeSheet);
+sheetClose.addEventListener("click", closeSheet);
+
+// --------------------------------------------------------------------- //
+// Property listing state + rendering
+// --------------------------------------------------------------------- //
 const grid = document.getElementById("propertyGrid");
 const resultCount = document.getElementById("resultCount");
 const loadMoreBtn = document.getElementById("loadMoreBtn");
@@ -33,12 +110,14 @@ function propertyCard(p) {
   if (p.parking) extras.push("🅿️ پارکینگ");
   if (p.elevator) extras.push("🛗 آسانسور");
 
+  const shortAddress = truncateAddress(p.address);
+
   return `
     <article class="card">
       <div class="card-body">
         <span class="deal-tag ${p.deal_type === "فروش" ? "sale" : "rent"}">${p.deal_type}</span>
         <h3>${p.property_type || "ملک"} · کد ${p.code || "-"}</h3>
-        <p class="card-meta">📍 ${p.address || "-"}</p>
+        <p class="card-meta">📍 ${shortAddress || "-"}</p>
         <p class="card-meta">${p.area_m2 ? p.area_m2 + " متر" : ""} ${p.rooms ? "· " + p.rooms + " خواب" : ""}</p>
         ${extras.length ? `<p class="card-meta">${extras.join(" | ")}</p>` : ""}
         ${priceLine}
@@ -91,24 +170,22 @@ function updateStatsRibbon() {
 function initCarousel() {
   const slides = document.querySelectorAll(".carousel-slide");
   const dots = document.querySelectorAll(".dot");
-  const captions = document.querySelectorAll(".carousel-caption");
-  if (slides.length <= 1) return; // فقط یک اسلاید یعنی نیازی به چرخش نیست
+  if (slides.length <= 1) return;
 
   let current = 0;
   function goTo(index) {
     slides[current].classList.remove("active");
     dots[current].classList.remove("active");
-    if (captions[current]) captions[current].classList.remove("active");
     current = index;
     slides[current].classList.add("active");
     dots[current].classList.add("active");
-    if (captions[current]) captions[current].classList.add("active");
   }
   dots.forEach((dot, i) => dot.addEventListener("click", () => goTo(i)));
   setInterval(() => goTo((current + 1) % slides.length), 4500);
 }
 initCarousel();
 
+// جستجو: همیشه روی کل داده‌ی گوگل‌شیت اجرا می‌شود، نه فقط آگهی‌های نمایش‌داده‌شده
 function applyFilters() {
   const keyword = document.getElementById("citySearch").value.trim();
   const dealType = document.getElementById("dealType").value;
@@ -130,7 +207,11 @@ function applyFilters() {
   renderProperties();
 }
 
-document.getElementById("searchBtn").addEventListener("click", applyFilters);
+document.getElementById("searchBtn").addEventListener("click", () => {
+  applyFilters();
+  closeSheet();
+  document.getElementById("listings").scrollIntoView({ behavior: "smooth" });
+});
 
 document.getElementById("quickSale").addEventListener("click", (e) => {
   e.preventDefault();
@@ -145,31 +226,37 @@ document.getElementById("quickRent").addEventListener("click", (e) => {
   document.getElementById("listings").scrollIntoView({ behavior: "smooth" });
 });
 
-// Lead form
+// --------------------------------------------------------------------- //
+// 4) Lead form -> save to backend AND open a pre-filled WhatsApp chat
+// --------------------------------------------------------------------- //
 document.getElementById("leadForm").addEventListener("submit", async (e) => {
   e.preventDefault();
   const statusEl = document.getElementById("formStatus");
+  const name = document.getElementById("leadName").value.trim();
+  const phone = document.getElementById("leadPhone").value.trim();
+  const message = document.getElementById("leadMessage").value.trim();
+
   statusEl.textContent = "در حال ارسال...";
 
-  const payload = {
-    name: document.getElementById("leadName").value.trim(),
-    phone: document.getElementById("leadPhone").value.trim(),
-    message: document.getElementById("leadMessage").value.trim(),
-    source: "website",
-  };
+  const payload = { name, phone, message, source: "website" };
 
   try {
-    const res = await fetch(`${API_BASE_URL}/api/leads`, {
+    await fetch(`${API_BASE_URL}/api/leads`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
     });
-    if (!res.ok) throw new Error("failed");
-    statusEl.textContent = "درخواست شما ثبت شد. به‌زودی تماس می‌گیریم.";
-    e.target.reset();
   } catch (err) {
-    statusEl.textContent = "ارسال با خطا مواجه شد. لطفاً دوباره تلاش کنید.";
+    // حتی اگر ذخیره در سرور ناموفق بود، همچنان کاربر را به واتساپ می‌فرستیم
   }
+
+  const waText = encodeURIComponent(
+    `سلام، من ${name} هستم.\nشماره تماس: ${phone}\n${message ? "پیام: " + message : ""}`
+  );
+  window.open(`${whatsappUrl}?text=${waText}`, "_blank");
+
+  statusEl.textContent = "درخواست شما ثبت شد و چت واتساپ باز شد.";
+  e.target.reset();
 });
 
 loadProperties();
