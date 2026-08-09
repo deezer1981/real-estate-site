@@ -3,6 +3,7 @@ document.getElementById("year").textContent = new Date().getFullYear();
 const botUrl = `https://t.me/${TELEGRAM_BOT_USERNAME}`;
 const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}`;
 const rubikaUrl = `https://rubika.ir/${RUBIKA_USERNAME}`;
+const phoneUrl = `tel:+${WHATSAPP_NUMBER}`;
 
 [
   "botLinkNav", "botLinkBig", "tabTelegram", "drawerTelegram",
@@ -17,6 +18,10 @@ const rubikaUrl = `https://rubika.ir/${RUBIKA_USERNAME}`;
 ["rubikaLinkNav", "rubikaLinkBig", "drawerRubika"].forEach((id) => {
   const el = document.getElementById(id);
   if (el) el.href = rubikaUrl;
+});
+["phoneLinkBig", "drawerPhone"].forEach((id) => {
+  const el = document.getElementById(id);
+  if (el) el.href = phoneUrl;
 });
 
 // --------------------------------------------------------------------- //
