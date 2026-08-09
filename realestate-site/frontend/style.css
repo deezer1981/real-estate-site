@@ -170,7 +170,7 @@ a { color: inherit; text-decoration: none; }
 .carousel {
   position: relative;
   width: 100%;
-  height: 380px; /* اصلاح ارتفاع دسکتاپ */
+  height: 480px; /* ارتفاع عریض برای دسکتاپ */
   overflow: hidden;
 }
 .carousel-track { position: relative; width: 100%; height: 100%; }
@@ -520,7 +520,7 @@ a { color: inherit; text-decoration: none; }
   .site-header .brand-name { display: none; }
   .menu-toggle { display: flex; order: -1; }
 
-  .carousel { height: 160px; } /* تنظیم مناسب ارتفاع تصویر در موبایل */
+  .carousel { height: 220px; } /* ارتفاع مناسب در گوشی */
 
   .quick-grid {
     grid-template-columns: repeat(3, 1fr);
