@@ -5,7 +5,7 @@
   --sage: #4A6B5F;
   --text: #2B2B2B;
   --card-bg: #FFFFFF;
-  --radius: 6px;
+  --radius: 8px;
 }
 
 * { box-sizing: border-box; }
@@ -35,35 +35,38 @@ a { color: inherit; text-decoration: none; }
   position: sticky;
   top: 0;
   z-index: 100;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.15);
 }
 .header-inner {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 10px 24px;
-  min-height: 56px;
+  padding: 12px 24px;
+  min-height: 60px;
 }
-.brand { display: flex; align-items: center; gap: 8px; font-weight: 800; font-size: 1.05rem; }
+.brand { display: flex; align-items: center; gap: 8px; font-weight: 800; font-size: 1.1rem; }
 .brand-mark { color: var(--brass); font-size: 1.4rem; }
 .main-nav { display: flex; align-items: center; gap: 20px; font-weight: 500; }
 .main-nav a:hover { color: var(--brass); }
 .bot-cta-small {
   background: var(--brass);
   color: var(--ink) !important;
-  padding: 12px 18px;
-  min-height: 44px;
+  padding: 10px 18px;
+  min-height: 40px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   border-radius: var(--radius);
   font-weight: 700;
   font-size: 0.9rem;
+  transition: opacity 0.2s;
 }
-.bot-cta-small.whatsapp { background: #25D366; }
-.bot-cta-small.rubika { background: #4CA5DF; }
+.bot-cta-small:hover { opacity: 0.9; }
+.bot-cta-small.whatsapp { background: #25D366; color: #fff !important; }
+.bot-cta-small.rubika { background: #4CA5DF; color: #fff !important; }
 .bot-cta-small.phone { background: var(--sage); color: var(--paper) !important; }
 
-/* Hamburger button (hidden on desktop, shown on mobile via media query below) */
+/* Hamburger button */
 .menu-toggle {
   display: none;
   flex-direction: column;
@@ -90,11 +93,6 @@ a { color: inherit; text-decoration: none; }
 .menu-toggle.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
 
 /* ===================== Mobile slide-in drawer ===================== */
-/* Note: the whole page is dir="rtl", so the drawer always sits on the
-   right edge and slides in from the right — no extra [dir] selector
-   needed (that was the bug: an attribute-selector variant had higher
-   specificity than `.mobile-drawer.open` and silently won, so the
-   drawer never visually opened even though JS toggled the class). */
 .drawer-backdrop {
   display: none;
   position: fixed;
@@ -172,7 +170,7 @@ a { color: inherit; text-decoration: none; }
 .carousel {
   position: relative;
   width: 100%;
-  height: 130px;
+  height: 380px; /* اصلاح ارتفاع دسکتاپ */
   overflow: hidden;
 }
 .carousel-track { position: relative; width: 100%; height: 100%; }
@@ -183,49 +181,60 @@ a { color: inherit; text-decoration: none; }
   transition: opacity 0.6s ease;
 }
 .carousel-slide.active { opacity: 1; }
-.carousel-slide img { width: 100%; height: 100%; object-fit: cover; object-position: center; display: block; }
+.carousel-slide img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+}
 .carousel-dots {
   position: absolute;
-  top: 8px;
+  bottom: 12px;
   left: 0; right: 0;
   display: flex;
   justify-content: center;
   gap: 6px;
+  z-index: 10;
 }
 .dot {
-  width: 6px; height: 6px;
+  width: 8px; height: 8px;
   border-radius: 50%;
   background: rgba(255,255,255,0.6);
   cursor: pointer;
 }
-.dot.active { background: var(--brass); width: 16px; border-radius: 4px; }
+.dot.active { background: var(--brass); width: 20px; border-radius: 4px; }
 
-/* Stats ribbon (sits directly under the image, no gap) */
+/* Stats ribbon */
 .stats-ribbon {
   background: var(--brass);
   color: var(--ink);
   font-weight: 700;
-  font-size: 0.85rem;
+  font-size: 0.95rem;
   text-align: center;
-  padding: 8px 0;
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
 }
 
-/* Brand heading — the ONE place the office name is shown on mobile */
+/* Brand heading */
 .brand-heading {
   background: var(--paper);
-  padding: 14px 0 8px;
+  padding: 20px 0 10px;
   text-align: center;
 }
 .brand-heading h1 {
   margin: 0 0 4px;
-  font-size: 1.15rem;
+  font-size: 1.4rem;
   font-weight: 800;
   color: var(--ink);
 }
 .brand-heading .carousel-caption {
   display: block;
   color: var(--sage);
-  font-size: 0.85rem;
+  font-size: 0.95rem;
   font-weight: 600;
   margin: 0;
 }
@@ -233,115 +242,122 @@ a { color: inherit; text-decoration: none; }
 /* ===================== Quick actions grid ===================== */
 .quick-actions {
   background: var(--paper);
-  padding: 4px 0 24px;
+  padding: 16px 0 32px;
 }
 .quick-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
+  gap: 16px;
 }
 .quick-card {
   background: var(--card-bg);
-  border-radius: 16px;
-  padding: 18px 8px;
-  min-height: 100px;
+  border-radius: 12px;
+  padding: 20px 12px;
+  min-height: 110px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  box-shadow: 0 2px 8px rgba(20,33,61,0.08);
+  gap: 10px;
+  box-shadow: 0 4px 12px rgba(20,33,61,0.05);
   color: var(--ink) !important;
-  font-size: 0.85rem;
-  font-weight: 600;
+  font-size: 0.95rem;
+  font-weight: 700;
   text-align: center;
-  transition: transform 0.15s ease;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  border: 1px solid rgba(20,33,61,0.05);
 }
-.quick-card:hover { transform: translateY(-2px); }
+.quick-card:hover { 
+  transform: translateY(-3px); 
+  box-shadow: 0 8px 20px rgba(20,33,61,0.1);
+}
 .quick-icon {
-  font-size: 1.6rem;
-  width: 48px;
-  height: 48px;
+  font-size: 1.5rem;
+  width: 52px;
+  height: 52px;
   border-radius: 50%;
-  background: linear-gradient(135deg, var(--brass), var(--sage));
+  background: rgba(184, 137, 79, 0.12);
+  color: var(--brass);
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-/* ===================== Hero / search (desktop default: inline bar) ===================== */
-.hero-search-title {
-  font-size: clamp(1.5rem, 4vw, 2.2rem);
-  font-weight: 800;
-  margin: 0 0 16px;
-}
+/* ===================== Hero / search ===================== */
 .hero {
   background: var(--ink);
   color: var(--paper);
-  padding: 64px 0 80px;
+  padding: 48px 0 56px;
   position: relative;
   overflow: hidden;
 }
 .hero-inner { position: relative; z-index: 2; }
+.hero-search-title {
+  font-size: clamp(1.5rem, 4vw, 2.2rem);
+  font-weight: 800;
+  margin: 0 0 12px;
+  color: #ffffff !important;
+}
 .eyebrow {
   color: var(--brass);
   font-weight: 700;
   letter-spacing: 0.04em;
-  margin: 0 0 12px;
+  margin: 0 0 8px;
   font-size: 0.95rem;
 }
 .hero-sub {
   max-width: 520px;
   color: #D9D4C8;
-  font-size: 1.05rem;
-  margin: 0 0 32px;
+  font-size: 1rem;
+  margin: 0 0 24px;
 }
 .hero-line {
   position: absolute;
   bottom: 0; left: 0; right: 0;
-  height: 6px;
+  height: 4px;
   background: linear-gradient(90deg, var(--brass) 0%, var(--sage) 100%);
 }
 
-.sheet-handle { display: none; } /* only shown on mobile, see bottom */
+.sheet-handle { display: none; }
 
 .search-bar {
   display: flex;
-  gap: 8px;
+  gap: 10px;
   background: var(--paper);
   padding: 10px;
   border-radius: var(--radius);
-  max-width: 560px;
+  max-width: 600px;
   flex-wrap: wrap;
 }
 .search-bar input, .search-bar select {
-  border: none;
-  background: transparent;
+  border: 1px solid #E4DFD3;
+  background: #ffffff;
   padding: 12px;
   min-height: 48px;
   font-family: inherit;
   font-size: 0.95rem;
   color: var(--text);
   flex: 1;
-  min-width: 120px;
+  min-width: 140px;
+  border-radius: 6px;
 }
-.search-bar input:focus, .search-bar select:focus { outline: 2px solid var(--brass); border-radius: 4px; }
+.search-bar input:focus, .search-bar select:focus { outline: 2px solid var(--brass); }
 .search-bar button {
   background: var(--brass);
   color: var(--ink);
   border: none;
   font-weight: 700;
-  padding: 12px 22px;
+  padding: 12px 28px;
   min-height: 48px;
-  border-radius: var(--radius);
+  border-radius: 6px;
   cursor: pointer;
   font-family: inherit;
   font-size: 0.95rem;
 }
 .search-bar button:hover { filter: brightness(1.05); }
 
-.filter-fab { display: none; }   /* mobile-only, see bottom */
-.sheet-backdrop { display: none; }  /* mobile-only, see bottom */
+.filter-fab { display: none; }
+.sheet-backdrop { display: none; }
 
 /* ===================== Section headers ===================== */
 .section-head {
@@ -352,19 +368,19 @@ a { color: inherit; text-decoration: none; }
   border-bottom: 2px solid var(--brass);
   padding-bottom: 12px;
 }
-.section-head h2 { margin: 0; font-size: 1.6rem; }
+.section-head h2 { margin: 0; font-size: 1.6rem; color: var(--ink); }
 .section-note { color: var(--sage); font-weight: 600; }
 
 /* ===================== Listings ===================== */
 .listings { padding: 40px 0 64px; }
 .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 24px;
 }
 .loading { color: #777; grid-column: 1 / -1; text-align: center; padding: 40px 0; }
 
-.load-more-wrap { text-align: center; margin-top: 24px; }
+.load-more-wrap { text-align: center; margin-top: 32px; }
 .load-more-btn {
   background: transparent;
   border: 2px solid var(--brass);
@@ -372,10 +388,11 @@ a { color: inherit; text-decoration: none; }
   font-family: inherit;
   font-weight: 700;
   font-size: 0.95rem;
-  padding: 12px 28px;
+  padding: 12px 32px;
   min-height: 48px;
   border-radius: 999px;
   cursor: pointer;
+  transition: all 0.2s;
 }
 .load-more-btn:hover { background: var(--brass); color: var(--ink); }
 
@@ -383,25 +400,26 @@ a { color: inherit; text-decoration: none; }
   background: var(--card-bg);
   border-radius: var(--radius);
   overflow: hidden;
-  box-shadow: 0 1px 3px rgba(20,33,61,0.1);
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  box-shadow: 0 2px 8px rgba(20,33,61,0.06);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  border: 1px solid rgba(20,33,61,0.05);
 }
-.card:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(20,33,61,0.15); }
-.card-body { padding: 16px; }
+.card:hover { transform: translateY(-4px); box-shadow: 0 12px 24px rgba(20,33,61,0.12); }
+.card-body { padding: 20px; }
 .deal-tag {
   display: inline-block;
-  font-size: 0.75rem;
+  font-size: 0.8rem;
   font-weight: 700;
-  padding: 3px 10px;
+  padding: 4px 12px;
   border-radius: 999px;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
   background: rgba(74,107,95,0.12);
   color: var(--sage);
 }
 .deal-tag.rent { background: rgba(184,137,79,0.15); color: var(--brass); }
-.card-body h3 { margin: 0 0 6px; font-size: 1.1rem; }
-.card-meta { margin: 0; color: #666; font-size: 0.9rem; }
-.card-price { margin: 10px 0 0; font-weight: 800; color: var(--ink); font-size: 1.05rem; }
+.card-body h3 { margin: 0 0 8px; font-size: 1.15rem; color: var(--ink); }
+.card-meta { margin: 4px 0; color: #666; font-size: 0.9rem; }
+.card-price { margin: 14px 0 0; font-weight: 800; color: var(--ink); font-size: 1.1rem; }
 
 /* ===================== Contact ===================== */
 .contact { background: #EDE7D9; padding: 64px 0; }
@@ -424,7 +442,6 @@ a { color: inherit; text-decoration: none; }
   justify-content: center;
   min-height: 48px;
   margin-top: 12px;
-  margin-left: 8px;
   background: var(--ink);
   color: var(--paper) !important;
   padding: 13px 24px;
@@ -438,7 +455,7 @@ a { color: inherit; text-decoration: none; }
 .bot-cta-big.rubika:hover { background: #3b8fc9; }
 .bot-cta-big.phone { background: var(--sage); }
 .bot-cta-big.phone:hover { background: #3d5a50; }
-.contact-buttons { display: flex; flex-wrap: wrap; gap: 8px; }
+.contact-buttons { display: flex; flex-wrap: wrap; gap: 10px; }
 
 .lead-form {
   background: var(--card-bg);
@@ -447,7 +464,7 @@ a { color: inherit; text-decoration: none; }
   display: flex;
   flex-direction: column;
   gap: 6px;
-  box-shadow: 0 1px 3px rgba(20,33,61,0.1);
+  box-shadow: 0 2px 10px rgba(20,33,61,0.08);
 }
 .lead-form label { font-weight: 600; font-size: 0.9rem; margin-top: 10px; color: var(--ink); }
 .lead-form input, .lead-form textarea {
@@ -456,11 +473,11 @@ a { color: inherit; text-decoration: none; }
   padding: 12px;
   min-height: 48px;
   border: 1px solid #D9D4C8;
-  border-radius: 4px;
+  border-radius: 6px;
   background: var(--paper);
   color: var(--text);
 }
-.lead-form textarea { min-height: 80px; }
+.lead-form textarea { min-height: 90px; }
 .lead-form input:focus, .lead-form textarea:focus { outline: 2px solid var(--brass); }
 .lead-form button {
   margin-top: 16px;
@@ -485,7 +502,7 @@ a { color: inherit; text-decoration: none; }
   font-size: 0.85rem;
 }
 
-/* ===================== Mobile tab bar (hidden on desktop) ===================== */
+/* ===================== Mobile tab bar ===================== */
 .mobile-tabbar { display: none; }
 
 @media (prefers-reduced-motion: reduce) {
@@ -494,23 +511,31 @@ a { color: inherit; text-decoration: none; }
 }
 
 /* =====================================================================
-   MOBILE OVERRIDES — kept as ONE block at the very end of the file on
-   purpose. Any override declared here is guaranteed to win the cascade
-   because nothing after it can un-override these properties again.
-   (The previous bug was having base/desktop rules for .search-bar and
-   .hero declared AFTER this media query elsewhere in the file, which
-   silently cancelled these mobile styles.)
+   MOBILE OVERRIDES (max-width: 720px)
    ===================================================================== */
 @media (max-width: 720px) {
   body { padding-bottom: 64px; }
 
-  /* Header: hide desktop nav + full brand text (name is shown once,
-     below the image, via .brand-heading — this removes the duplicate) */
   .main-nav { display: none; }
   .site-header .brand-name { display: none; }
   .menu-toggle { display: flex; order: -1; }
 
-  .carousel { height: 130px; }
+  .carousel { height: 160px; } /* تنظیم مناسب ارتفاع تصویر در موبایل */
+
+  .quick-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+  .quick-card {
+    padding: 12px 4px;
+    font-size: 0.75rem;
+    min-height: 90px;
+  }
+  .quick-icon {
+    width: 40px;
+    height: 40px;
+    font-size: 1.2rem;
+  }
 
   .contact-inner { grid-template-columns: 1fr; }
 
@@ -540,24 +565,7 @@ a { color: inherit; text-decoration: none; }
   }
   .tab-icon { font-size: 1.2rem; }
   .tab-item.active { color: var(--brass) !important; }
-  .tab-item-cta .tab-icon {
-    background: var(--brass);
-    color: var(--ink);
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-top: -20px;
-    box-shadow: 0 2px 8px rgba(184,137,79,0.5);
-  }
 
-  /* Hero section becomes an invisible spacer: its text is hidden and
-     the search bar is pulled out to a fixed bottom sheet, so the
-     section itself must collapse to ~0 height (this is what fixes the
-     "massive empty dark gap" bug — the old rule further down in the
-     file used to override this padding back to 64px/80px). */
   .hero {
     padding: 0;
     background: transparent;
@@ -570,7 +578,6 @@ a { color: inherit; text-decoration: none; }
     display: none;
   }
 
-  /* Floating filter button */
   .filter-fab {
     display: block;
     position: fixed;
@@ -590,7 +597,6 @@ a { color: inherit; text-decoration: none; }
     cursor: pointer;
   }
 
-  /* Backdrop behind the sheet */
   .sheet-backdrop {
     display: block;
     position: fixed;
@@ -603,18 +609,12 @@ a { color: inherit; text-decoration: none; }
   }
   .sheet-backdrop.open { opacity: 1; pointer-events: auto; }
 
-  /* The bottom sheet itself — solid opaque background, sits ABOVE the
-     backdrop, fully clickable when open, safely off-screen when not.
-     !important on the critical properties is intentional here: this
-     element has been fought over by conflicting rules before, so we
-     pin these down explicitly rather than rely on source order. */
   .search-bar {
     position: fixed !important;
     left: 0; right: 0; bottom: 0;
     width: 100%;
     max-width: none;
     background: #ffffff !important;
-    background-color: #ffffff !important;
     opacity: 1 !important;
     border-radius: 20px 20px 0 0;
     flex-direction: column;
