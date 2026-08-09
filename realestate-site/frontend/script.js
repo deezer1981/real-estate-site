@@ -88,6 +88,12 @@ filterFab.addEventListener("click", openSheet);
 filterBackdrop.addEventListener("click", closeSheet);
 sheetClose.addEventListener("click", closeSheet);
 
+// Defensive: prevent any tap/click inside the sheet itself from ever
+// bubbling out to the backdrop's close handler (this is what caused
+// "touching an input inside the sheet closes it").
+searchBar.addEventListener("click", (e) => e.stopPropagation());
+searchBar.addEventListener("touchstart", (e) => e.stopPropagation());
+
 // --------------------------------------------------------------------- //
 // Property listing state + rendering
 // --------------------------------------------------------------------- //
