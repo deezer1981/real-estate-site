@@ -523,7 +523,7 @@ a { color: inherit; text-decoration: none; }
 
   /* ۲. تنظیم دقیق و تمیز بنر بدون فضای خالی */
   .carousel {
-    height: 450px !important;
+    height: 180px !important;
     position: relative;
     overflow: hidden;
   }
