@@ -494,6 +494,35 @@ a { color: inherit; text-decoration: none; }
 }
 .form-status { font-size: 0.85rem; color: var(--sage); min-height: 1.2em; }
 
+/* ===================== Simple content pages (about/baghestan/etc) ===================== */
+.page-hero {
+  background: var(--ink);
+  color: var(--paper);
+  padding: 32px 0;
+  text-align: center;
+}
+.page-hero h1 { margin: 0 0 6px; font-size: 1.6rem; font-weight: 800; }
+.page-hero-sub { margin: 0; color: var(--brass); font-weight: 600; }
+.page-content { padding: 40px 0 64px; max-width: 720px; }
+.page-content .wrap { max-width: 720px; }
+.page-photo {
+  width: 100%;
+  border-radius: 12px;
+  margin-bottom: 24px;
+  box-shadow: 0 4px 16px rgba(20,33,61,0.12);
+}
+.page-content p { font-size: 1.02rem; margin: 0 0 18px; color: var(--text); }
+.page-list { margin: 0 0 18px; padding-inline-start: 20px; }
+.page-list li { margin-bottom: 8px; font-size: 1.02rem; }
+.page-cta { display: flex; flex-wrap: wrap; gap: 10px; margin: 24px 0; }
+.back-link {
+  display: inline-block;
+  margin-top: 12px;
+  color: var(--sage);
+  font-weight: 700;
+}
+.back-link:hover { color: var(--ink); }
+
 /* ===================== Footer ===================== */
 .site-footer {
   background: var(--ink);
