@@ -682,14 +682,14 @@ a { color: inherit; text-decoration: none; }
     cursor: pointer;
   }
 }
-/* حذف کامل باکس سرمه‌ای اضافه بالای سایت */
-.hero {
-  padding: 0 !important;
-  margin: 0 !important;
-  min-height: 0 !important;
-  background: transparent !important;
-}
-
-.hero-inner {
-  display: none !important;
+/* کاهش ارتفاع هدر سرمه‌ای در موبایل */
+@media (max-width: 720px) {
+  .site-header {
+    padding: 8px 12px !important;
+    min-height: unset !important;
+  }
+  .site-header .header-inner {
+    padding: 0 !important;
+    min-height: 44px !important;
+  }
 }
