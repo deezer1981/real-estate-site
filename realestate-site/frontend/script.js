@@ -56,6 +56,41 @@ let currentFiltered = [];
 const PAGE_SIZE = 6;
 let visibleCount = PAGE_SIZE;
 
+function shareText(p) {
+  const priceInfo =
+    p.deal_type === "فروش"
+      ? `قیمت: ${p.price_total || "توافقی"}`
+      : `رهن: ${p.rahn || "-"} | اجاره: ${p.ejare || "-"}`;
+  const url = `${location.origin}${location.pathname}?code=${encodeURIComponent(p.code || "")}`;
+  const text =
+    `${p.property_type || "ملک"} · کد ${p.code || "-"}\n` +
+    `📍 ${truncateAddress(p.address)}\n` +
+    `${p.area_m2 ? p.area_m2 + " متر" : ""} ${p.rooms ? "· " + p.rooms + " خواب" : ""}\n` +
+    `💰 ${priceInfo}\n\n${url}`;
+  return { url, text };
+}
+
+async function handleShareClick(code) {
+  const p = allProperties.find((item) => String(item.code) === String(code));
+  if (!p) return;
+  const { url, text } = shareText(p);
+
+  if (navigator.share) {
+    try {
+      await navigator.share({ text });
+    } catch (err) {
+      // کاربر منوی اشتراک‌گذاری رو بست، کاری لازم نیست
+    }
+  } else {
+    try {
+      await navigator.clipboard.writeText(text);
+      alert("لینک و اطلاعات آگهی کپی شد.");
+    } catch (err) {
+      prompt("این متن رو کپی کن:", text);
+    }
+  }
+}
+
 function propertyCard(p) {
   const priceLine =
     p.deal_type === "فروش"
@@ -67,11 +102,15 @@ function propertyCard(p) {
   if (p.elevator) extras.push("🛗 آسانسور");
 
   const shortAddress = truncateAddress(p.address);
+  const cardId = `card-${p.code || Math.random().toString(36).slice(2)}`;
 
   return `
-    <article class="card">
+    <article class="card" id="${cardId}" data-code="${p.code || ""}">
       <div class="card-body">
-        <span class="deal-tag ${p.deal_type === "فروش" ? "sale" : "rent"}">${p.deal_type}</span>
+        <div class="card-top-row">
+          <span class="deal-tag ${p.deal_type === "فروش" ? "sale" : "rent"}">${p.deal_type}</span>
+          <button class="share-btn" data-code="${p.code || ""}" aria-label="اشتراک‌گذاری آگهی" type="button">🔗 اشتراک</button>
+        </div>
         <h3>${p.property_type || "ملک"} · کد ${p.code || "-"}</h3>
         <p class="card-meta">📍 ${shortAddress || "-"}</p>
         <p class="card-meta">${p.area_m2 ? p.area_m2 + " متر" : ""} ${p.rooms ? "· " + p.rooms + " خواب" : ""}</p>
@@ -94,6 +133,33 @@ function renderProperties() {
   resultCount.textContent = `${shown.length} از ${currentFiltered.length} آگهی`;
   loadMoreBtn.hidden = visibleCount >= currentFiltered.length;
 }
+
+// اشتراک‌گذاری هر کارت (delegation، چون کارت‌ها مرتب دوباره ساخته میشن)
+grid.addEventListener("click", (e) => {
+  const btn = e.target.closest(".share-btn");
+  if (btn) handleShareClick(btn.dataset.code);
+});
+
+// اگه لینک با ?code=XXX باز شده باشه، فقط همون آگهی رو نشون بده و اسکرول کن
+function applyDeepLinkIfPresent() {
+  const params = new URLSearchParams(location.search);
+  const code = params.get("code");
+  const clearBtn = document.getElementById("clearDeepLinkBtn");
+  if (!code) return;
+  const match = allProperties.find((p) => String(p.code) === String(code));
+  if (!match) return;
+  currentFiltered = [match];
+  visibleCount = PAGE_SIZE;
+  renderProperties();
+  if (clearBtn) clearBtn.hidden = false;
+  document.getElementById("listings").scrollIntoView({ behavior: "smooth" });
+}
+
+document.getElementById("clearDeepLinkBtn").addEventListener("click", () => {
+  history.replaceState(null, "", location.pathname);
+  document.getElementById("clearDeepLinkBtn").hidden = true;
+  applyFilters();
+});
 
 loadMoreBtn.addEventListener("click", () => {
   visibleCount += PAGE_SIZE;
@@ -124,6 +190,8 @@ async function loadProperties() {
   const hadSnapshot = loadSnapshotData();
   if (!hadSnapshot) {
     grid.innerHTML = `<p class="loading">در حال بارگذاری آگهی‌ها...</p>`;
+  } else {
+    applyDeepLinkIfPresent();
   }
   try {
     const res = await fetch(`${API_BASE_URL}/api/properties`);
@@ -131,6 +199,7 @@ async function loadProperties() {
     allProperties = (await res.json()).reverse(); // جدیدترین‌ها اول
     updateStatsRibbon();
     applyFilters();
+    applyDeepLinkIfPresent();
   } catch (err) {
     if (!hadSnapshot) {
       grid.innerHTML = `<p class="loading">اتصال به سرور برقرار نشد. لطفاً چند لحظه صبر کنید و صفحه را رفرش کنید (سرور رایگان گاهی چند ثانیه طول می‌کشد بیدار شود).</p>`;
