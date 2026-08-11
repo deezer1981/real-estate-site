@@ -68,9 +68,12 @@ def property_card_html(p: dict) -> str:
     )
 
     return f"""
-    <article class="card">
+    <article class="card" id="card-{p.get("code") or ""}" data-code="{p.get("code") or ""}">
       <div class="card-body">
-        <span class="deal-tag {tag_class}">{deal_type}</span>
+        <div class="card-top-row">
+          <span class="deal-tag {tag_class}">{deal_type}</span>
+          <button class="share-btn" data-code="{p.get("code") or ""}" aria-label="اشتراک‌گذاری آگهی" type="button">🔗 اشتراک</button>
+        </div>
         <h3>{p.get("property_type") or "ملک"} · کد {p.get("code") or "-"}</h3>
         <p class="card-meta">📍 {address or "-"}</p>
         <p class="card-meta">{meta2}</p>
