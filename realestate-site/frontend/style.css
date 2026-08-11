@@ -364,13 +364,27 @@ a { color: inherit; text-decoration: none; }
 .section-head {
   display: flex;
   justify-content: space-between;
-  align-items: baseline;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
   margin-bottom: 24px;
   border-bottom: 2px solid var(--brass);
   padding-bottom: 12px;
 }
 .section-head h2 { margin: 0; font-size: 1.6rem; color: var(--ink); }
 .section-note { color: var(--sage); font-weight: 600; }
+.clear-deeplink-btn {
+  background: var(--brass);
+  color: var(--ink);
+  border: none;
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 0.85rem;
+  padding: 8px 16px;
+  min-height: 40px;
+  border-radius: 999px;
+  cursor: pointer;
+}
 
 /* ===================== Listings ===================== */
 .listings { padding: 40px 0 64px; }
@@ -407,6 +421,28 @@ a { color: inherit; text-decoration: none; }
 }
 .card:hover { transform: translateY(-4px); box-shadow: 0 12px 24px rgba(20,33,61,0.12); }
 .card-body { padding: 20px; }
+.card-top-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  gap: 8px;
+}
+.card-top-row .deal-tag { margin-bottom: 0; }
+.share-btn {
+  background: transparent;
+  border: 1px solid #D9D4C8;
+  color: var(--sage);
+  font-family: inherit;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 6px 10px;
+  min-height: 32px;
+  border-radius: 999px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.share-btn:hover { background: var(--paper); border-color: var(--brass); color: var(--brass); }
 .deal-tag {
   display: inline-block;
   font-size: 0.8rem;
