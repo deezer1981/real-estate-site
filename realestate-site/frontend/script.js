@@ -100,8 +100,31 @@ loadMoreBtn.addEventListener("click", () => {
   renderProperties();
 });
 
+// اگه build_snapshot.py قبلاً دیتای آگهی‌ها رو توی صفحه جاسازی کرده باشه،
+// همون‌ها رو فوراً (بدون صبر برای fetch) نشون می‌دیم؛ بعدش هنوز هم زنده
+// از سرور آخرین نسخه رو می‌گیریم و جایگزین می‌کنیم.
+function loadSnapshotData() {
+  const el = document.getElementById("snapshotData");
+  if (!el) return false;
+  try {
+    const data = JSON.parse(el.textContent);
+    if (Array.isArray(data) && data.length) {
+      allProperties = data;
+      updateStatsRibbon();
+      applyFilters();
+      return true;
+    }
+  } catch (err) {
+    // نادیده گرفتن خطای پارس، می‌ریم سراغ fetch زنده
+  }
+  return false;
+}
+
 async function loadProperties() {
-  grid.innerHTML = `<p class="loading">در حال بارگذاری آگهی‌ها...</p>`;
+  const hadSnapshot = loadSnapshotData();
+  if (!hadSnapshot) {
+    grid.innerHTML = `<p class="loading">در حال بارگذاری آگهی‌ها...</p>`;
+  }
   try {
     const res = await fetch(`${API_BASE_URL}/api/properties`);
     if (!res.ok) throw new Error("request failed");
@@ -109,7 +132,10 @@ async function loadProperties() {
     updateStatsRibbon();
     applyFilters();
   } catch (err) {
-    grid.innerHTML = `<p class="loading">اتصال به سرور برقرار نشد. لطفاً چند لحظه صبر کنید و صفحه را رفرش کنید (سرور رایگان گاهی چند ثانیه طول می‌کشد بیدار شود).</p>`;
+    if (!hadSnapshot) {
+      grid.innerHTML = `<p class="loading">اتصال به سرور برقرار نشد. لطفاً چند لحظه صبر کنید و صفحه را رفرش کنید (سرور رایگان گاهی چند ثانیه طول می‌کشد بیدار شود).</p>`;
+    }
+    // اگه snapshot داشتیم، همون همچنان نمایش داده‌شده می‌مونه؛ کاربر بی‌نصیب نمی‌مونه.
   }
 }
 
