@@ -67,6 +67,17 @@ def property_card_html(p: dict) -> str:
         filter(None, [f"{area} متر" if area else "", f"· {rooms} خواب" if rooms else ""])
     )
 
+    agent_name = p.get("agent_name") or ""
+    agent_phone = p.get("agent_phone") or ""
+    agent_line = (
+        f'<p class="card-agent">👤 ثبت‌شده توسط: <strong>{agent_name}</strong></p>'
+        if agent_name else ""
+    )
+    agent_call_btn = (
+        f'<a class="agent-call-btn" href="tel:{agent_phone}">📞 تماس با {agent_name or "مشاور"}</a>'
+        if agent_phone else ""
+    )
+
     return f"""
     <article class="card" id="card-{p.get("code") or ""}" data-code="{p.get("code") or ""}">
       <div class="card-body">
@@ -79,6 +90,8 @@ def property_card_html(p: dict) -> str:
         <p class="card-meta">{meta2}</p>
         {extras_line}
         {price_line}
+        {agent_line}
+        {agent_call_btn}
       </div>
     </article>
     """.strip()
