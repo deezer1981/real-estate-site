@@ -58,6 +58,8 @@ def property_card_html(p: dict) -> str:
         extras.append("🅿️ پارکینگ")
     if p.get("elevator"):
         extras.append("🛗 آسانسور")
+    if p.get("storage"):
+        extras.append("📦 انباری")
     extras_line = f'<p class="card-meta">{" | ".join(extras)}</p>' if extras else ""
 
     address = truncate_address(p.get("address", ""))
