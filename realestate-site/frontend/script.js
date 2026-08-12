@@ -86,7 +86,8 @@ function shareText(p) {
   if (p.agent_name) lines.push(`👤 مشاور: ${p.agent_name}`);
   if (p.agent_phone) lines.push(`📞 ${p.agent_phone}`);
   lines.push("");
-  lines.push("🌐 www.atlas-amlak.ir — برای مشاهده این آگهی:");
+  lines.push("🌐 www.atlas-amlak.ir");
+  lines.push("برای مشاهده این آگهی:");
   lines.push(url);
 
   return { url, text: lines.join("\n") };
