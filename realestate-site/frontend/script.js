@@ -75,6 +75,21 @@ async function handleShareClick(code) {
   if (!p) return;
   const { url, text } = shareText(p);
 
+  // تشخیص دستگاه موبایل/تبلت
+  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
+  // در دسکتاپ همیشه کپی مستقیماً اجرا می‌شود
+  if (!isMobile) {
+    try {
+      await navigator.clipboard.writeText(text);
+      alert("لینک و اطلاعات آگهی کپی شد.");
+    } catch (err) {
+      prompt("این متن رو کپی کن:", text);
+    }
+    return;
+  }
+
+  // در دستگاه‌های موبایل از منوی bative اشتراک‌گذاری استفاده می‌شود
   if (navigator.share) {
     try {
       await navigator.share({ text });
