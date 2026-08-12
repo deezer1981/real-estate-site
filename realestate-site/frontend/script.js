@@ -62,11 +62,12 @@ function shareText(p) {
       ? `قیمت: ${p.price_total || "توافقی"}`
       : `رهن: ${p.rahn || "-"} | اجاره: ${p.ejare || "-"}`;
   const url = `${location.origin}${location.pathname}?code=${encodeURIComponent(p.code || "")}`;
+  const agentLine = p.agent_name ? `\n👤 ثبت‌شده توسط: ${p.agent_name}` : "";
   const text =
     `${p.property_type || "ملک"} · کد ${p.code || "-"}\n` +
     `📍 ${truncateAddress(p.address)}\n` +
     `${p.area_m2 ? p.area_m2 + " متر" : ""} ${p.rooms ? "· " + p.rooms + " خواب" : ""}\n` +
-    `💰 ${priceInfo}\n\n${url}`;
+    `💰 ${priceInfo}${agentLine}\n\n${url}`;
   return { url, text };
 }
 
@@ -75,21 +76,6 @@ async function handleShareClick(code) {
   if (!p) return;
   const { url, text } = shareText(p);
 
-  // تشخیص دستگاه موبایل/تبلت
-  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-
-  // در دسکتاپ همیشه کپی مستقیماً اجرا می‌شود
-  if (!isMobile) {
-    try {
-      await navigator.clipboard.writeText(text);
-      alert("لینک و اطلاعات آگهی کپی شد.");
-    } catch (err) {
-      prompt("این متن رو کپی کن:", text);
-    }
-    return;
-  }
-
-  // در دستگاه‌های موبایل از منوی bative اشتراک‌گذاری استفاده می‌شود
   if (navigator.share) {
     try {
       await navigator.share({ text });
@@ -119,6 +105,13 @@ function propertyCard(p) {
   const shortAddress = truncateAddress(p.address);
   const cardId = `card-${p.code || Math.random().toString(36).slice(2)}`;
 
+  const agentLine = p.agent_name
+    ? `<p class="card-agent">👤 ثبت‌شده توسط: <strong>${p.agent_name}</strong></p>`
+    : "";
+  const agentCallBtn = p.agent_phone
+    ? `<a class="agent-call-btn" href="tel:${p.agent_phone}">📞 تماس با ${p.agent_name || "مشاور"}</a>`
+    : "";
+
   return `
     <article class="card" id="${cardId}" data-code="${p.code || ""}">
       <div class="card-body">
@@ -131,6 +124,8 @@ function propertyCard(p) {
         <p class="card-meta">${p.area_m2 ? p.area_m2 + " متر" : ""} ${p.rooms ? "· " + p.rooms + " خواب" : ""}</p>
         ${extras.length ? `<p class="card-meta">${extras.join(" | ")}</p>` : ""}
         ${priceLine}
+        ${agentLine}
+        ${agentCallBtn}
       </div>
     </article>
   `;
