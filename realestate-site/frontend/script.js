@@ -56,39 +56,91 @@ let currentFiltered = [];
 const PAGE_SIZE = 6;
 let visibleCount = PAGE_SIZE;
 
+function buildExtras(p) {
+  const extras = [];
+  if (p.parking) extras.push("🅿️ پارکینگ");
+  if (p.elevator) extras.push("🛗 آسانسور");
+  if (p.storage) extras.push("📦 انباری");
+  return extras;
+}
+
 function shareText(p) {
   const priceInfo =
     p.deal_type === "فروش"
-      ? `قیمت: ${p.price_total || "توافقی"}`
-      : `رهن: ${p.rahn || "-"} | اجاره: ${p.ejare || "-"}`;
+      ? `💰 قیمت: ${p.price_total || "توافقی"}`
+      : `💰 رهن: ${p.rahn || "-"} | اجاره: ${p.ejare || "-"}`;
   const url = `${location.origin}${location.pathname}?code=${encodeURIComponent(p.code || "")}`;
-  const agentLine = p.agent_name ? `\n👤 ثبت‌شده توسط: ${p.agent_name}` : "";
-  const text =
-    `${p.property_type || "ملک"} · کد ${p.code || "-"}\n` +
-    `📍 ${truncateAddress(p.address)}\n` +
-    `${p.area_m2 ? p.area_m2 + " متر" : ""} ${p.rooms ? "· " + p.rooms + " خواب" : ""}\n` +
-    `💰 ${priceInfo}${agentLine}\n\n${url}`;
-  return { url, text };
+  const extras = buildExtras(p);
+  const metaLine = [
+    p.area_m2 ? `${p.area_m2} متر` : "",
+    p.rooms ? `${p.rooms} خواب` : "",
+  ].filter(Boolean).join(" · ");
+
+  const lines = [
+    `${p.property_type || "ملک"} · کد ${p.code || "-"}`,
+    `📍 ${truncateAddress(p.address)}`,
+  ];
+  if (metaLine) lines.push(`📐 ${metaLine}`);
+  if (extras.length) lines.push(extras.join("  "));
+  lines.push(priceInfo);
+  if (p.agent_name) lines.push(`👤 مشاور: ${p.agent_name}`);
+  if (p.agent_phone) lines.push(`📞 ${p.agent_phone}`);
+  lines.push("");
+  lines.push("🌐 www.atlas-amlak.ir — برای مشاهده این آگهی:");
+  lines.push(url);
+
+  return { url, text: lines.join("\n") };
 }
 
-async function handleShareClick(code) {
+async function copyToClipboard(text) {
+  try {
+    await navigator.clipboard.writeText(text);
+    return true;
+  } catch (err) {
+    // Fallback برای مرورگرهایی که Clipboard API رو محدود کردن
+    try {
+      const textarea = document.createElement("textarea");
+      textarea.value = text;
+      textarea.style.position = "fixed";
+      textarea.style.opacity = "0";
+      document.body.appendChild(textarea);
+      textarea.focus();
+      textarea.select();
+      const ok = document.execCommand("copy");
+      document.body.removeChild(textarea);
+      return ok;
+    } catch (err2) {
+      return false;
+    }
+  }
+}
+
+async function handleShareClick(code, btnEl) {
   const p = allProperties.find((item) => String(item.code) === String(code));
   if (!p) return;
-  const { url, text } = shareText(p);
+  const { text } = shareText(p);
 
   if (navigator.share) {
     try {
       await navigator.share({ text });
+      return;
     } catch (err) {
-      // کاربر منوی اشتراک‌گذاری رو بست، کاری لازم نیست
+      return; // کاربر منوی اشتراک‌گذاری رو بست
     }
-  } else {
-    try {
-      await navigator.clipboard.writeText(text);
-      alert("لینک و اطلاعات آگهی کپی شد.");
-    } catch (err) {
-      prompt("این متن رو کپی کن:", text);
-    }
+  }
+
+  const copied = await copyToClipboard(text);
+  if (btnEl) {
+    const original = btnEl.textContent;
+    btnEl.textContent = copied ? "✅ کپی شد" : "⚠️ کپی نشد";
+    btnEl.disabled = true;
+    setTimeout(() => {
+      btnEl.textContent = original;
+      btnEl.disabled = false;
+    }, 1800);
+  }
+  if (!copied) {
+    prompt("این متن رو کپی کن:", text);
   }
 }
 
@@ -98,9 +150,7 @@ function propertyCard(p) {
       ? `<p class="card-price">💰 ${p.price_total || "توافقی"}</p>`
       : `<p class="card-price">💰 رهن: ${p.rahn || "-"} | اجاره: ${p.ejare || "-"}</p>`;
 
-  const extras = [];
-  if (p.parking) extras.push("🅿️ پارکینگ");
-  if (p.elevator) extras.push("🛗 آسانسور");
+  const extras = buildExtras(p);
 
   const shortAddress = truncateAddress(p.address);
   const cardId = `card-${p.code || Math.random().toString(36).slice(2)}`;
@@ -147,7 +197,7 @@ function renderProperties() {
 // اشتراک‌گذاری هر کارت (delegation، چون کارت‌ها مرتب دوباره ساخته میشن)
 grid.addEventListener("click", (e) => {
   const btn = e.target.closest(".share-btn");
-  if (btn) handleShareClick(btn.dataset.code);
+  if (btn) handleShareClick(btn.dataset.code, btn);
 });
 
 // اگه لینک با ?code=XXX باز شده باشه، فقط همون آگهی رو نشون بده و اسکرول کن
