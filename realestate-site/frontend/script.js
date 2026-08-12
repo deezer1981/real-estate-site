@@ -81,13 +81,16 @@ function shareText(p) {
     `📍 ${truncateAddress(p.address)}`,
   ];
   if (metaLine) lines.push(`📐 ${metaLine}`);
-  if (extras.length) lines.push(extras.join("  "));
+  if (extras.length) lines.push(extras.join(" "));
   lines.push(priceInfo);
-  if (p.agent_name) lines.push(`👤 مشاور: ${p.agent_name}`);
-  if (p.agent_phone) lines.push(`📞 ${p.agent_phone}`);
-  lines.push("");
-  lines.push("🌐 www.atlas-amlak.ir");
-  lines.push("برای مشاهده این آگهی:");
+  if (p.agent_name && p.agent_phone) {
+    lines.push(`👤 ${p.agent_name} · 📞 ${p.agent_phone}`);
+  } else if (p.agent_name) {
+    lines.push(`👤 مشاور: ${p.agent_name}`);
+  } else if (p.agent_phone) {
+    lines.push(`📞 ${p.agent_phone}`);
+  }
+  lines.push("🌐 atlas-amlak.ir");
   lines.push(url);
 
   return { url, text: lines.join("\n") };
