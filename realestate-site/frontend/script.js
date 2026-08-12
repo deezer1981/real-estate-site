@@ -116,12 +116,19 @@ async function copyToClipboard(text) {
   }
 }
 
+function isMobileLike() {
+  return (
+    window.matchMedia("(max-width: 720px)").matches ||
+    /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent)
+  );
+}
+
 async function handleShareClick(code, btnEl) {
   const p = allProperties.find((item) => String(item.code) === String(code));
   if (!p) return;
   const { text } = shareText(p);
 
-  if (navigator.share) {
+  if (isMobileLike() && navigator.share) {
     try {
       await navigator.share({ text });
       return;
