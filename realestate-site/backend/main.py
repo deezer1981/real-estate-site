@@ -138,6 +138,7 @@ def row_to_property(row: dict, deal_type: str) -> dict:
         "rooms": row.get("خواب", ""),
         "parking": (row.get("پارکینگ") or "").strip() == "دارد",
         "elevator": (row.get("آسانسور") or "").strip() == "دارد",
+        "storage": (row.get("انباری") or "").strip() == "دارد",
         "agent_name": (row.get("مشاور") or "").strip(),
         "agent_phone": (row.get("شماره مشاور") or "").strip(),
     }
