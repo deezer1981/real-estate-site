@@ -430,19 +430,21 @@ a { color: inherit; text-decoration: none; }
 }
 .card-top-row .deal-tag { margin-bottom: 0; }
 .share-btn {
-  background: transparent;
-  border: 1px solid #D9D4C8;
-  color: var(--sage);
+  background: var(--sage);
+  border: none;
+  color: #fff;
   font-family: inherit;
-  font-size: 0.75rem;
+  font-size: 0.78rem;
   font-weight: 700;
-  padding: 6px 10px;
-  min-height: 32px;
+  padding: 7px 12px;
+  min-height: 34px;
   border-radius: 999px;
   cursor: pointer;
   white-space: nowrap;
+  transition: background 0.15s ease;
 }
-.share-btn:hover { background: var(--paper); border-color: var(--brass); color: var(--brass); }
+.share-btn:hover { background: #3d5a50; }
+.share-btn:disabled { opacity: 0.85; cursor: default; }
 .deal-tag {
   display: inline-block;
   font-size: 0.8rem;
