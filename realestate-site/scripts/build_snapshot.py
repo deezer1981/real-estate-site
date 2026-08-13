@@ -10,13 +10,9 @@ from pathlib import Path
 # آدرس API بک‌اند شما
 API_URL = os.getenv("PROPERTIES_API_URL", "https://api.atlas-amlak.ir/api/properties")
 
-# یافتن مسیر فایل index.html بر اساس ساختار پروژه
-BASE_DIR = Path(__file__).resolve().parent.parent
-INDEX_HTML = BASE_DIR / "index.html"
-
-if not INDEX_HTML.exists():
-    # اگر فایل در ریشه اصلی بود
-    INDEX_HTML = Path(__file__).resolve().parent.parent.parent / "index.html"
+# یافتن مسیر دقیق پوشه اسکریپت و فایل index.html هم‌سطح با پوشه scripts
+SCRIPT_DIR = Path(__file__).resolve().parent
+INDEX_HTML = SCRIPT_DIR.parent / "index.html"
 
 def update_snapshot():
     try:
@@ -28,6 +24,8 @@ def update_snapshot():
         if not INDEX_HTML.exists():
             print(f"Error: Could not find index.html at {INDEX_HTML}")
             exit(1)
+
+        print(f"Found index.html at: {INDEX_HTML}")
 
         with open(INDEX_HTML, "r", encoding="utf-8") as f:
             content = f.read()
