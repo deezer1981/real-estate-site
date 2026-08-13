@@ -13,34 +13,7 @@ const PAGE_SIZE = 6;
 let visibleCount = PAGE_SIZE;
 
 // --------------------------------------------------------------------- //
-// ۱. بررسی ورود با لینک اختصاصی (?code=1013)
-// --------------------------------------------------------------------- //
-function getQueryParam(param) {
-  const urlParams = new URLSearchParams(window.location.search);
-  return urlParams.get(param);
-}
-
-function checkSinglePropertyMode() {
-  const targetCode = getQueryParam("code");
-  if (!targetCode) return false;
-
-  const found = allProperties.find((p) => String(p.code) === String(targetCode));
-  if (found) {
-    currentFiltered = [found];
-    visibleCount = 1;
-
-    if (resultCount) {
-      resultCount.textContent = `نمایش آگهی کد ${targetCode}`;
-    }
-    renderProperties();
-    if (loadMoreBtn) loadMoreBtn.hidden = true;
-    return true;
-  }
-  return false;
-}
-
-// --------------------------------------------------------------------- //
-// ۲. توابع ساخت کارت و لاین بازگشت شکیل
+// ۱. توابع کمکی ساخت کارت و لاین بازگشت شکیل
 // --------------------------------------------------------------------- //
 function truncateAddress(address) {
   if (!address) return "";
@@ -59,15 +32,16 @@ function buildExtras(p) {
 }
 
 function propertyCard(p) {
-  const isSingleMode = Boolean(getQueryParam("code"));
+  const urlParams = new URLSearchParams(window.location.search);
+  const isSingleMode = Boolean(urlParams.get("code"));
   
-  // لاین خوش‌رنگ بالای کارت فقط در حالت تک‌آگهی
+  // لاین خوش‌رنگ و شکیل بالای کارت فقط در حالت تک‌آگهی
   const backBanner = isSingleMode ? `
     <div style="background: linear-gradient(135deg, #0284c7, #2563eb); color: #ffffff; border-radius: 12px; padding: 10px 16px; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; font-size: 13px; font-weight: 600; box-shadow: 0 4px 12px rgba(37,99,235,0.15);">
       <span>📍 آگهی انتخاب‌شده</span>
-      <a href="${window.location.pathname}" style="color: #ffffff; text-decoration: none; display: inline-flex; align-items: center; gap: 4px; background: rgba(255,255,255,0.2); padding: 4px 12px; border-radius: 8px; transition: background 0.2s;">
+      <a href="${window.location.pathname}" style="color: #ffffff; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; background: rgba(255,255,255,0.22); padding: 5px 12px; border-radius: 8px; transition: background 0.2s;">
         <span>مشاهده همه آگهی‌ها</span>
-        <span style="font-size: 15px;">➔</span>
+        <span style="font-size: 14px;">➔</span>
       </a>
     </div>
   ` : "";
@@ -104,10 +78,31 @@ function propertyCard(p) {
 }
 
 // --------------------------------------------------------------------- //
-// ۳. رندر آگهی‌ها و آمار
+// ۲. بررسی حالت تک‌آگهی (?code=1013)
+// --------------------------------------------------------------------- //
+function checkSinglePropertyMode() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const targetCode = urlParams.get("code");
+  if (!targetCode) return false;
+
+  const found = allProperties.find((p) => String(p.code) === String(targetCode));
+  if (found) {
+    currentFiltered = [found];
+    visibleCount = 1;
+    if (resultCount) resultCount.textContent = `نمایش آگهی کد ${targetCode}`;
+    renderProperties();
+    if (loadMoreBtn) loadMoreBtn.hidden = true;
+    return true;
+  }
+  return false;
+}
+
+// --------------------------------------------------------------------- //
+// ۳. رندر کارت‌ها و بروزرسانی آمار
 // --------------------------------------------------------------------- //
 function updateStatsRibbon() {
-  if (!statsText || !allProperties.length || getQueryParam("code")) return;
+  const urlParams = new URLSearchParams(window.location.search);
+  if (!statsText || !allProperties.length || urlParams.get("code")) return;
   const saleCount = allProperties.filter((p) => p.deal_type === "فروش").length;
   const rentCount = allProperties.filter((p) => p.deal_type === "رهن و اجاره").length;
   statsText.textContent = `🏠 ${allProperties.length} فایل فعال — ${saleCount} فروشی، ${rentCount} رهن و اجاره`;
@@ -115,10 +110,11 @@ function updateStatsRibbon() {
 
 function renderProperties() {
   if (!grid || !currentFiltered.length) return;
+  const urlParams = new URLSearchParams(window.location.search);
   const shown = currentFiltered.slice(0, visibleCount);
   grid.innerHTML = shown.map(propertyCard).join("");
   
-  if (!getQueryParam("code")) {
+  if (!urlParams.get("code")) {
     if (resultCount) resultCount.textContent = `${shown.length} از ${currentFiltered.length} آگهی`;
     if (loadMoreBtn) loadMoreBtn.hidden = visibleCount >= currentFiltered.length;
   }
@@ -203,7 +199,7 @@ if (loadMoreBtn) {
 }
 
 // --------------------------------------------------------------------- //
-// ۶. اشتراک‌گذاری هوشمند
+// ۶. سیستم کپی و اشتراک‌گذاری
 // --------------------------------------------------------------------- //
 document.addEventListener("click", async (e) => {
   const shareBtn = e.target.closest(".share-btn");
@@ -289,7 +285,7 @@ function showCopySuccess(btnElement) {
 }
 
 // --------------------------------------------------------------------- //
-// ۷. اجرای اولیه
+// ۷. اجرای فوری پس از لود شدن اسکریپت
 // --------------------------------------------------------------------- //
 if (allProperties.length > 0) {
   if (!checkSinglePropertyMode()) {
