@@ -34,7 +34,7 @@ function buildExtras(p) {
 function propertyCard(p) {
   const urlParams = new URLSearchParams(window.location.search);
   const isSingleMode = Boolean(urlParams.get("code"));
-  
+
   const backBanner = isSingleMode ? `
     <div style="background: var(--ink); color: var(--paper); border-radius: 12px; padding: 12px 18px; margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between; gap: 12px; border: 1px solid var(--brass);">
       <span style="font-weight: 700; font-size: 0.9rem;">📍 آگهی انتخاب‌شده (کد ${p.code})</span>
@@ -54,8 +54,8 @@ function propertyCard(p) {
   const agentLine = p.agent_name ? `<p class="card-agent">👤 ثبت‌شده توسط: <strong>${p.agent_name}</strong></p>` : "";
   const agentCallBtn = p.agent_phone ? `<a class="agent-call-btn" href="tel:${p.agent_phone}">📞 تماس با ${p.agent_name || "مشاور"}</a>` : "";
 
-  const wrapperStyle = isSingleMode 
-    ? 'grid-column: 1 / -1; max-width: 540px; margin: 0 auto; width: 100%;' 
+  const wrapperStyle = isSingleMode
+    ? 'grid-column: 1 / -1; max-width: 540px; margin: 0 auto; width: 100%;'
     : 'width: 100%;';
 
   return `
@@ -116,7 +116,7 @@ function renderProperties() {
   const urlParams = new URLSearchParams(window.location.search);
   const shown = currentFiltered.slice(0, visibleCount);
   grid.innerHTML = shown.map(propertyCard).join("");
-  
+
   if (!urlParams.get("code")) {
     if (resultCount) resultCount.textContent = `${shown.length} از ${currentFiltered.length} آگهی`;
     if (loadMoreBtn) loadMoreBtn.hidden = visibleCount >= currentFiltered.length;
@@ -202,182 +202,302 @@ if (loadMoreBtn) {
 }
 
 // --------------------------------------------------------------------- //
-// ۶. ساخت تصویر کارت آگهی (طراحی فوق‌العاده مدرن، شیک و منظم)
+// ۶. ساخت تصویر کارت آگهی — طراحی شیک، مدرن و هماهنگ با هویت سایت
 // --------------------------------------------------------------------- //
-function generateStoryImage(p) {
+// پالت رنگ دقیقاً از خانواده رنگی خود سایت (کرم/عاج، جوهری تیره، برنجی طلایی)
+const STORY_THEME = {
+  paper: "#FBF6EC",
+  paperShade: "#F0E6D2",
+  white: "#FFFFFF",
+  ink: "#201C15",
+  inkSoft: "#57503F",
+  muted: "#8A8172",
+  brass: "#B4894F",
+  brassLight: "#E7D6AF",
+  brassDark: "#8A6836",
+  sale: "#1E6B4C",
+  saleDark: "#154F38",
+  rent: "#B4732A",
+  rentDark: "#8C5A20",
+  hairline: "rgba(32,28,21,0.12)",
+};
+
+const RTL_MARK = "\u202B";
+
+function rr(ctx, x, y, w, h, r) {
+  const radius = typeof r === "number" ? { tl: r, tr: r, br: r, bl: r } : r;
+  ctx.beginPath();
+  if (ctx.roundRect) {
+    ctx.roundRect(x, y, w, h, r);
+    return;
+  }
+  ctx.moveTo(x + radius.tl, y);
+  ctx.lineTo(x + w - radius.tr, y);
+  ctx.arcTo(x + w, y, x + w, y + radius.tr, radius.tr);
+  ctx.lineTo(x + w, y + h - radius.br);
+  ctx.arcTo(x + w, y + h, x + w - radius.br, y + h, radius.br);
+  ctx.lineTo(x + radius.bl, y + h);
+  ctx.arcTo(x, y + h, x, y + h - radius.bl, radius.bl);
+  ctx.lineTo(x, y + radius.tl);
+  ctx.arcTo(x, y, x + radius.tl, y, radius.tl);
+  ctx.closePath();
+}
+
+function setFont(ctx, weight, size) {
+  ctx.font = `${weight} ${size}px Vazirmatn, Tahoma, sans-serif`;
+}
+
+// متن راست‌به‌چپ را با فاصله‌گذاری اختیاری رسم می‌کند
+function rtlText(ctx, text, x, y, { align = "center", spacing = 0 } = {}) {
+  ctx.textAlign = align;
+  if ("letterSpacing" in ctx) ctx.letterSpacing = spacing ? `${spacing}px` : "0px";
+  ctx.fillText(`${RTL_MARK}${text}`, x, y);
+  if ("letterSpacing" in ctx) ctx.letterSpacing = "0px";
+}
+
+// یک نوار برنجی نازک و ظریف با یک لوزی کوچک در وسط (امضای بصری کارت)
+function drawOrnamentDivider(ctx, centerX, y, width) {
+  ctx.strokeStyle = STORY_THEME.brass;
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.moveTo(centerX - width / 2, y);
+  ctx.lineTo(centerX - 14, y);
+  ctx.moveTo(centerX + 14, y);
+  ctx.lineTo(centerX + width / 2, y);
+  ctx.stroke();
+
+  ctx.save();
+  ctx.translate(centerX, y);
+  ctx.rotate(Math.PI / 4);
+  ctx.fillStyle = STORY_THEME.brass;
+  ctx.fillRect(-6, -6, 12, 12);
+  ctx.restore();
+}
+
+async function ensureStoryFontsReady() {
+  if (!document.fonts) return;
   try {
+    await Promise.all([
+      document.fonts.load('500 32px "Vazirmatn"'),
+      document.fonts.load('600 32px "Vazirmatn"'),
+      document.fonts.load('700 40px "Vazirmatn"'),
+      document.fonts.load('800 56px "Vazirmatn"'),
+    ]);
+    if (document.fonts.ready) await document.fonts.ready;
+  } catch (e) {
+    // اگر فونت در دسترس نبود، از فونت جایگزین سیستم استفاده می‌شود
+  }
+}
+
+async function generateStoryImage(p) {
+  try {
+    await ensureStoryFontsReady();
+
     const canvas = document.createElement("canvas");
-    canvas.width = 1080;
-    canvas.height = 1920;
+    const W = 1080;
+    const H = 1920;
+    canvas.width = W;
+    canvas.height = H;
     const ctx = canvas.getContext("2d");
+    if ("direction" in ctx) ctx.direction = "rtl";
 
-    if ('direction' in ctx) {
-      ctx.direction = 'rtl';
-    }
+    const T = STORY_THEME;
+    const cx = W / 2;
 
-    const rtl = "\u202B";
+    // ۱. پس‌زمینه کرم گرم (هم‌خانواده با پس‌زمینه سایت)
+    const bg = ctx.createLinearGradient(0, 0, 0, H);
+    bg.addColorStop(0, T.paper);
+    bg.addColorStop(1, T.paperShade);
+    ctx.fillStyle = bg;
+    ctx.fillRect(0, 0, W, H);
 
-    // ۱. پس‌زمینه اصلی (گرادیان مدرن)
-    const bgGradient = ctx.createLinearGradient(0, 0, 0, 1920);
-    bgGradient.addColorStop(0, "#0F172A");
-    bgGradient.addColorStop(1, "#1E293B");
-    ctx.fillStyle = bgGradient;
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    // ۲. سربرگ برند
+    ctx.fillStyle = T.brass;
+    setFont(ctx, 600, 28);
+    rtlText(ctx, "سامانه تخصصی املاک", cx, 108, { spacing: 3 });
 
-    // ۲. هدر بالای کارت
-    ctx.fillStyle = "#94A3B8";
-    ctx.font = "500 32px Vazirmatn, Tahoma, sans-serif";
-    ctx.textAlign = "center";
-    ctx.fillText(`${rtl}سامانه تخصصی املاک`, 540, 130);
+    ctx.fillStyle = T.ink;
+    setFont(ctx, 800, 56);
+    rtlText(ctx, "اطلس املاک خادم‌آباد", cx, 178);
 
-    ctx.fillStyle = "#FFFFFF";
-    ctx.font = "bold 52px Vazirmatn, Tahoma, sans-serif";
-    ctx.fillText(`${rtl}اطلس املاک خادم آباد`, 540, 200);
+    drawOrnamentDivider(ctx, cx, 218, 220);
 
-    // ۳. بدنه اصلی کارت سفید
-    const cardX = 70;
-    const cardY = 260;
-    const cardW = 940;
-    const cardH = 1560;
+    // ۳. بدنه کارت سفید با حاشیه برنجی ظریف و سایه‌ی نرم
+    const cardX = 68, cardY = 262, cardW = W - cardX * 2, cardH = 1500;
 
-    ctx.fillStyle = "#FFFFFF";
-    if (ctx.roundRect) {
-      ctx.beginPath();
-      ctx.roundRect(cardX, cardY, cardW, cardH, 40);
-      ctx.fill();
-    } else {
-      ctx.fillRect(cardX, cardY, cardW, cardH);
-    }
+    ctx.save();
+    ctx.shadowColor = "rgba(32,28,21,0.18)";
+    ctx.shadowBlur = 40;
+    ctx.shadowOffsetY = 18;
+    ctx.fillStyle = T.white;
+    rr(ctx, cardX, cardY, cardW, cardH, 36);
+    ctx.fill();
+    ctx.restore();
 
-    // ۴. نشانگر معامله (فروش/اجاره)
-    const dealColor = p.deal_type === "فروش" ? "#059669" : "#D97706";
-    ctx.fillStyle = dealColor;
-    if (ctx.roundRect) {
-      ctx.beginPath();
-      ctx.roundRect(120, 310, 160, 60, 30);
-      ctx.fill();
-    } else {
-      ctx.fillRect(120, 310, 160, 60);
-    }
-    ctx.fillStyle = "#FFFFFF";
-    ctx.font = "bold 28px Vazirmatn, Tahoma, sans-serif";
-    ctx.fillText(p.deal_type || "آگهی", 200, 352);
-
-    // ۵. عنوان ملک و کد
-    ctx.fillStyle = "#0F172A";
-    ctx.font = "bold 58px Vazirmatn, Tahoma, sans-serif";
-    ctx.textAlign = "center";
-    ctx.fillText(`${rtl}${p.property_type || "آپارتمان"}`, 540, 420);
-
-    ctx.fillStyle = "#64748B";
-    ctx.font = "500 34px Vazirmatn, Tahoma, sans-serif";
-    ctx.fillText(`${rtl}کد آگهی: ${p.code || "-"}`, 540, 480);
-
-    // ۶. باکس مشخصات اصلی (متراژ و تعداد خواب)
-    ctx.fillStyle = "#F8FAFC";
-    ctx.strokeStyle = "#E2E8F0";
+    ctx.strokeStyle = T.brassLight;
     ctx.lineWidth = 2;
-    if (ctx.roundRect) {
-      ctx.beginPath();
-      ctx.roundRect(120, 520, 840, 120, 20);
-      ctx.fill();
-      ctx.stroke();
-    }
+    rr(ctx, cardX, cardY, cardW, cardH, 36);
+    ctx.stroke();
 
-    ctx.fillStyle = "#1E293B";
-    ctx.font = "bold 38px Vazirmatn, Tahoma, sans-serif";
-    const specsText = `${p.area_m2 ? p.area_m2 + " متر مربع" : ""}   ${p.rooms ? "•   " + p.rooms + " خواب" : ""}`;
-    ctx.fillText(`${rtl}${specsText}`, 540, 595);
+    const padX = cardX + 64;
+    const contentW = cardW - 128;
 
-    // ۷. آدرس ملک
-    ctx.fillStyle = "#475569";
-    ctx.font = "500 34px Vazirmatn, Tahoma, sans-serif";
-    ctx.fillText(`${rtl}📍 ${truncateAddress(p.address) || "محدوده خادم آباد"}`, 540, 700);
-
-    // ۸. امکانات (در صورت وجود)
-    const extras = buildExtras(p);
-    if (extras.length > 0) {
-      ctx.fillStyle = "#64748B";
-      ctx.font = "400 32px Vazirmatn, Tahoma, sans-serif";
-      ctx.fillText(`${rtl}${extras.join("   |   ")}`, 540, 770);
-    }
-
-    // ۹. باکس قیمت (بزرگ و شیک)
-    const priceY = extras.length > 0 ? 830 : 770;
-    ctx.fillStyle = "#F1F5F9";
-    if (ctx.roundRect) {
-      ctx.beginPath();
-      ctx.roundRect(120, priceY, 840, 130, 24);
-      ctx.fill();
-    }
-
+    // ۴. ردیف بالا: کد آگهی (چپ) + برچسب نوع معامله (راست)
     const isSale = p.deal_type === "فروش";
+    const dealColor = isSale ? T.sale : T.rent;
+    const dealColorDark = isSale ? T.saleDark : T.rentDark;
+
+    ctx.fillStyle = T.paperShade;
+    ctx.strokeStyle = T.hairline;
+    ctx.lineWidth = 1;
+    rr(ctx, padX, cardY + 56, 168, 56, 16);
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = T.inkSoft;
+    setFont(ctx, 600, 26);
+    rtlText(ctx, `کد ${p.code || "-"}`, padX + 84, cardY + 91);
+
+    const dealLabel = p.deal_type || "آگهی";
+    setFont(ctx, 700, 26);
+    const dealW = Math.max(150, ctx.measureText(dealLabel).width + 64);
+    const dealX = cardX + cardW - 64 - dealW;
+    ctx.fillStyle = dealColor;
+    rr(ctx, dealX, cardY + 56, dealW, 56, 16);
+    ctx.fill();
+    ctx.fillStyle = T.white;
+    rtlText(ctx, dealLabel, dealX + dealW / 2, cardY + 91);
+
+    // ۵. عنوان ملک
+    ctx.fillStyle = T.ink;
+    setFont(ctx, 800, 60);
+    rtlText(ctx, p.property_type || "ملک", cx, cardY + 210);
+
+    ctx.strokeStyle = T.hairline;
+    ctx.setLineDash([6, 8]);
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(padX, cardY + 250);
+    ctx.lineTo(cardX + cardW - 64, cardY + 250);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // ۶. باکس مشخصات (متراژ / خواب)
+    const specsY = cardY + 288;
+    ctx.fillStyle = T.paper;
+    ctx.strokeStyle = T.brassLight;
+    ctx.lineWidth = 1.5;
+    rr(ctx, padX, specsY, contentW, 108, 20);
+    ctx.fill();
+    ctx.stroke();
+
+    const specParts = [];
+    if (p.area_m2) specParts.push(`${p.area_m2} متر`);
+    if (p.rooms) specParts.push(`${p.rooms} خواب`);
+    ctx.fillStyle = T.ink;
+    setFont(ctx, 700, 40);
+    rtlText(ctx, specParts.join("   •   "), cx, specsY + 68);
+
+    // ۷. آدرس
+    const addrY = specsY + 168;
+    ctx.fillStyle = T.inkSoft;
+    setFont(ctx, 500, 32);
+    rtlText(ctx, `📍 ${truncateAddress(p.address) || "خادم‌آباد"}`, cx, addrY);
+
+    // ۸. امکانات
+    const extras = buildExtras(p);
+    let extrasBottom = addrY;
+    if (extras.length) {
+      const extrasY = addrY + 64;
+      setFont(ctx, 600, 26);
+      const gap = 20;
+      const widths = extras.map((e) => ctx.measureText(e).width + 40);
+      const totalW = widths.reduce((a, b) => a + b, 0) + gap * (extras.length - 1);
+      let ex = cx + totalW / 2;
+      extras.forEach((label, i) => {
+        const w = widths[i];
+        ex -= w;
+        ctx.fillStyle = T.paperShade;
+        ctx.strokeStyle = T.hairline;
+        ctx.lineWidth = 1;
+        rr(ctx, ex, extrasY - 34, w, 48, 24);
+        ctx.fill();
+        ctx.stroke();
+        ctx.fillStyle = T.inkSoft;
+        rtlText(ctx, label, ex + w / 2, extrasY - 2);
+        ex -= gap;
+      });
+      extrasBottom = extrasY + 20;
+    }
+
+    // ۹. باکس قیمت — عنصر برجسته و طلایی
+    const priceY = extrasBottom + 40;
+    const priceH = 168;
+    const priceGrad = ctx.createLinearGradient(padX, priceY, padX + contentW, priceY);
+    priceGrad.addColorStop(0, T.brassLight);
+    priceGrad.addColorStop(1, "#F3E7C9");
+    ctx.fillStyle = priceGrad;
+    rr(ctx, padX, priceY, contentW, priceH, 24);
+    ctx.fill();
+    ctx.strokeStyle = T.brass;
+    ctx.lineWidth = 1.5;
+    rr(ctx, padX, priceY, contentW, priceH, 24);
+    ctx.stroke();
+
+    ctx.fillStyle = T.brassDark;
+    setFont(ctx, 600, 26);
+    rtlText(ctx, isSale ? "قیمت فروش" : "شرایط رهن و اجاره", cx, priceY + 48);
+
     const priceText = isSale
-      ? `قیمت: ${p.price_total || "توافقی"}`
-      : `رهن: ${p.rahn || "-"}  |  اجاره: ${p.ejare || "-"}`;
+      ? `${p.price_total || "توافقی"} تومان`
+      : `رهن ${p.rahn || "-"}  |  اجاره ${p.ejare || "-"}`;
+    ctx.fillStyle = T.ink;
+    setFont(ctx, 800, isSale ? 50 : 38);
+    rtlText(ctx, priceText, cx, priceY + 118);
 
-    ctx.fillStyle = "#0F172A";
-    ctx.font = "bold 44px Vazirmatn, Tahoma, sans-serif";
-    ctx.fillText(`${rtl}💰 ${priceText}`, 540, priceY + 80);
-
-    // ۱۰. اطلاعات مشاور
-    const agentY = priceY + 180;
+    // ۱۰. مشاور
+    const agentY = priceY + priceH + 76;
     if (p.agent_name || p.agent_phone) {
-      ctx.fillStyle = "#334155";
-      ctx.font = "500 34px Vazirmatn, Tahoma, sans-serif";
-      ctx.fillText(`${rtl}👤 مشاور: ${p.agent_name || "املاک اطلس"}`, 540, agentY);
+      ctx.fillStyle = T.inkSoft;
+      setFont(ctx, 500, 30);
+      rtlText(ctx, `👤 مشاور: ${p.agent_name || "اطلس املاک"}`, cx, agentY);
 
       if (p.agent_phone) {
-        ctx.fillStyle = "#059669";
-        ctx.font = "bold 38px Vazirmatn, Tahoma, sans-serif";
-        ctx.fillText(`${rtl}📞 ${p.agent_phone}`, 540, agentY + 60);
+        ctx.fillStyle = T.sale;
+        setFont(ctx, 700, 34);
+        rtlText(ctx, `📞 ${p.agent_phone}`, cx, agentY + 54);
       }
     }
 
-    // ۱۱. بنر انتهایی و مدرن دعوت به سایت (CTA)
-    const ctaY = 1320;
-    ctx.fillStyle = "#0F172A";
-    if (ctx.roundRect) {
-      ctx.beginPath();
-      ctx.roundRect(120, ctaY, 840, 420, 28);
-      ctx.fill();
-    }
+    // ۱۱. بنر پایانی — دعوت به بازدید از سایت
+    const ctaY = cardY + cardH - 316;
+    ctx.fillStyle = T.ink;
+    rr(ctx, padX, ctaY, contentW, 252, 26);
+    ctx.fill();
 
-    ctx.fillStyle = "#94A3B8";
-    ctx.font = "400 28px Vazirmatn, Tahoma, sans-serif";
-    ctx.fillText(`${rtl}جهت مشاهده جزئیات بیشتر این ملک و بررسی`, 540, ctaY + 80);
-    ctx.fillText(`${rtl}آگهی‌های مشابه در خادم آباد و باغستان،`, 540, ctaY + 130);
+    ctx.fillStyle = "rgba(251,246,236,0.72)";
+    setFont(ctx, 500, 26);
+    rtlText(ctx, "برای مشاهده جزئیات کامل این ملک و آگهی‌های مشابه", cx, ctaY + 62);
+    rtlText(ctx, "در خادم‌آباد و باغستان، به سایت مراجعه کنید", cx, ctaY + 104);
 
-    ctx.fillStyle = "#38BDF8";
-    ctx.font = "bold 32px Vazirmatn, Tahoma, sans-serif";
-    ctx.fillText(`${rtl}لطفاً به سایت اطلس املاک مراجعه کنید:`, 540, ctaY + 200);
+    ctx.fillStyle = T.brass;
+    rr(ctx, padX + 60, ctaY + 138, contentW - 120, 84, 16);
+    ctx.fill();
 
-    // آدرس دامنه‌ی انگلیسی در کادر برجسته
-    ctx.fillStyle = "#1E293B";
-    if (ctx.roundRect) {
-      ctx.beginPath();
-      ctx.roundRect(180, ctaY + 250, 720, 100, 20);
-      ctx.fill();
-    }
-
-    ctx.fillStyle = "#38BDF8";
-    ctx.font = "bold 44px sans-serif";
+    ctx.fillStyle = T.ink;
     ctx.direction = "ltr";
-    ctx.fillText("www.atlas-amlak.com", 540, ctaY + 315);
+    ctx.textAlign = "center";
+    setFont(ctx, 700, 38);
+    ctx.fillText("atlas-amlak.ir", cx, ctaY + 190);
+    ctx.direction = "rtl";
 
-    // دانلود عکس
-    const downloadCanvas = () => {
-      const dataUrl = canvas.toDataURL("image/png");
-      const a = document.createElement("a");
-      a.href = dataUrl;
-      a.download = `card-${p.code || 'property'}.png`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-    };
-
-    downloadCanvas();
-
+    // دانلود تصویر نهایی
+    const dataUrl = canvas.toDataURL("image/png");
+    const a = document.createElement("a");
+    a.href = dataUrl;
+    a.download = `card-${p.code || "property"}.png`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
   } catch (err) {
     console.error("خطا در ساخت تصویر آگهی:", err);
   }
@@ -392,7 +512,7 @@ function showShareModal(p, shareBtn) {
 
   const shareUrl = `${window.location.origin}${window.location.pathname}?code=${p.code}`;
   const extras = buildExtras(p);
-  const priceText = p.deal_type === "فروش" 
+  const priceText = p.deal_type === "فروش"
     ? `💰 قیمت: ${p.price_total || "توافقی"}`
     : `💰 رهن: ${p.rahn || "-"} | اجاره: ${p.ejare || "-"}`;
 
@@ -410,7 +530,7 @@ ${shareUrl}`;
       <div style="background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 20px; width: 100%; max-width: 380px; padding: 24px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.15); animation: popIn 0.2s ease-out;">
         <h3 style="margin: 0 0 8px; color: #1E293B; font-size: 1.15rem; font-weight: 800;">نحوه اشتراک‌گذاری آگهی</h3>
         <p style="margin: 0 0 20px; color: #64748B; font-size: 0.85rem;">کدام قالب را برای ارسال تمایل دارید؟</p>
-        
+
         <div style="display: flex; flex-direction: column; gap: 12px;">
           <button id="modalStoryBtn" type="button" style="background: #0F172A; color: #FFFFFF; border: none; padding: 12px; border-radius: 12px; font-weight: 700; font-size: 0.9rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
             🖼️ دانلود کارت آگهی
@@ -441,8 +561,11 @@ ${shareUrl}`;
     if (e.target === modal) closeModal();
   });
 
-  modalStoryBtn.addEventListener("click", () => {
-    generateStoryImage(p);
+  modalStoryBtn.addEventListener("click", async () => {
+    const original = modalStoryBtn.innerHTML;
+    modalStoryBtn.innerHTML = "⏳ در حال ساخت...";
+    modalStoryBtn.disabled = true;
+    await generateStoryImage(p);
     showCopySuccess(shareBtn, "🖼️ کارت دانلود شد");
     closeModal();
   });
