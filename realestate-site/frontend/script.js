@@ -13,7 +13,7 @@ const PAGE_SIZE = 6;
 let visibleCount = PAGE_SIZE;
 
 // --------------------------------------------------------------------- //
-// ۱. توابع کمکی ساخت کارت و لاین بازگشت شکیل
+// ۱. توابع کمکی ساخت کارت و لاین بازگشت
 // --------------------------------------------------------------------- //
 function truncateAddress(address) {
   if (!address) return "";
@@ -35,12 +35,12 @@ function propertyCard(p) {
   const urlParams = new URLSearchParams(window.location.search);
   const isSingleMode = Boolean(urlParams.get("code"));
   
-  // لاین بازگشت شکیل و هماهنگ با تم طلایی/سرمه‌ای
+  // بنر بازگشت متناسب با رنگ‌های برند (فقط در حالت تک‌آگهی)
   const backBanner = isSingleMode ? `
-    <div style="background: var(--ink); color: var(--paper); border-radius: 12px; padding: 12px 18px; margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between; gap: 12px; box-shadow: 0 4px 14px rgba(20,33,61,0.18); border: 1px solid var(--brass);">
-      <span style="font-weight: 700; font-size: 0.9rem;">📍 نمایش آگهی کد ${p.code}</span>
-      <a href="${window.location.pathname}" style="color: var(--ink); text-decoration: none; display: inline-flex; align-items: center; gap: 6px; background: var(--brass); font-weight: 700; font-size: 0.85rem; padding: 6px 14px; border-radius: 6px; transition: opacity 0.2s;">
-        <span>مشاهده همه آگهی‌ها</span>
+    <div style="background: var(--ink); color: var(--paper); border-radius: 12px; padding: 12px 18px; margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between; gap: 12px; border: 1px solid var(--brass);">
+      <span style="font-weight: 700; font-size: 0.9rem;">📍 آگهی انتخاب‌شده (کد ${p.code})</span>
+      <a href="${window.location.pathname}" style="color: var(--ink); text-decoration: none; display: inline-flex; align-items: center; gap: 6px; background: var(--brass); font-weight: 700; font-size: 0.85rem; padding: 6px 14px; border-radius: 6px;">
+        <span>همه آگهی‌ها</span>
         <span style="font-size: 1rem; line-height: 1;">←</span>
       </a>
     </div>
@@ -55,14 +55,18 @@ function propertyCard(p) {
   const agentLine = p.agent_name ? `<p class="card-agent">👤 ثبت‌شده توسط: <strong>${p.agent_name}</strong></p>` : "";
   const agentCallBtn = p.agent_phone ? `<a class="agent-call-btn" href="tel:${p.agent_phone}">📞 تماس با ${p.agent_name || "مشاور"}</a>` : "";
 
+  const wrapperStyle = isSingleMode 
+    ? 'grid-column: 1 / -1; max-width: 540px; margin: 0 auto; width: 100%;' 
+    : 'width: 100%;';
+
   return `
-    <div style="grid-column: 1 / -1; max-width: ${isSingleMode ? '540px' : '100%'}; margin: 0 auto; width: 100%;">
+    <div style="${wrapperStyle}">
       ${backBanner}
       <article class="card" id="card-${p.code || ''}" data-code="${p.code || ''}">
         <div class="card-body">
           <div class="card-top-row">
             <span class="deal-tag ${p.deal_type === "فروش" ? "sale" : "rent"}">${p.deal_type || "آگهی"}</span>
-            <button class="share-btn" data-code="${p.code || ''}" type="button" aria-label="اشتراک‌گذاری آگهی">📸 دانلود استوری / 🔗 کپی</button>
+            <button class="share-btn" data-code="${p.code || ''}" type="button" aria-label="اشتراک‌گذاری آگهی">🔗 اشتراک</button>
           </div>
           <h3>${p.property_type || "ملک"} · کد ${p.code || "-"}</h3>
           <p class="card-meta">📍 ${shortAddress || "-"}</p>
@@ -199,130 +203,144 @@ if (loadMoreBtn) {
 }
 
 // --------------------------------------------------------------------- //
-// ۶. تولید تصویر استوری (Canvas) و سیستم کپی/اشتراک
+// ۶. ساخت تصویر استوری و سیستم اشتراک‌گذاری
 // --------------------------------------------------------------------- //
 function generateStoryImage(p) {
-  const canvas = document.createElement("canvas");
-  canvas.width = 1080;
-  canvas.height = 1920;
-  const ctx = canvas.getContext("2d");
+  try {
+    const canvas = document.createElement("canvas");
+    canvas.width = 1080;
+    canvas.height = 1920;
+    const ctx = canvas.getContext("2d");
 
-  // پس‌زمینه اصلی (رنگ سرمه‌ای برند --ink)
-  ctx.fillStyle = "#14213D";
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-  // حاشیه طلایی تزیینی دور کارت استوری (--brass)
-  ctx.strokeStyle = "#B8894F";
-  ctx.lineWidth = 12;
-  ctx.strokeRect(40, 40, canvas.width - 80, canvas.height - 80);
-
-  // سربرگ استوری (عنوان برند)
-  ctx.fillStyle = "#B8894F";
-  ctx.font = "bold 52px Vazirmatn, Tahoma, sans-serif";
-  ctx.textAlign = "center";
-  ctx.fillText("گروه مشاورین املاک اطلس", 540, 160);
-
-  ctx.fillStyle = "#F5F1EA";
-  ctx.font = "32px Vazirmatn, Tahoma, sans-serif";
-  ctx.fillText("atlas-amlak.ir", 540, 220);
-
-  // کادر سفید کارت اصلی
-  const cardX = 90;
-  const cardY = 280;
-  const cardWidth = 900;
-  const cardHeight = 1320;
-  const cornerRadius = 32;
-
-  ctx.fillStyle = "#FFFFFF";
-  ctx.beginPath();
-  ctx.roundRect(cardX, cardY, cardWidth, cardHeight, cornerRadius);
-  ctx.fill();
-
-  // تگ نوع معامله (فروش / اجاره)
-  const isSale = p.deal_type === "فروش";
-  ctx.fillStyle = isSale ? "#4A6B5F" : "#B8894F";
-  ctx.beginPath();
-  ctx.roundRect(140, 340, 220, 64, 32);
-  ctx.fill();
-
-  ctx.fillStyle = "#FFFFFF";
-  ctx.font = "bold 32px Vazirmatn, Tahoma, sans-serif";
-  ctx.textAlign = "center";
-  ctx.fillText(p.deal_type || "آگهی", 250, 384);
-
-  // عنوان و کد ملک
-  ctx.fillStyle = "#14213D";
-  ctx.font = "bold 56px Vazirmatn, Tahoma, sans-serif";
-  ctx.textAlign = "right";
-  ctx.fillText(`${p.property_type || "ملک"} · کد ${p.code || "-"}`, 930, 490);
-
-  // آدرس
-  ctx.fillStyle = "#555555";
-  ctx.font = "38px Vazirmatn, Tahoma, sans-serif";
-  ctx.fillText(`📍 ${truncateAddress(p.address) || "-"}`, 930, 580);
-
-  // متراژ و تعداد خواب
-  ctx.fillStyle = "#2B2B2B";
-  ctx.font = "bold 42px Vazirmatn, Tahoma, sans-serif";
-  const areaText = `${p.area_m2 ? p.area_m2 + " متر" : ""} ${p.rooms ? "· " + p.rooms + " خواب" : ""}`;
-  ctx.fillText(`📐 ${areaText}`, 930, 670);
-
-  // امکانات (آسانسور، پارکینگ، انباری)
-  const extras = buildExtras(p);
-  if (extras.length > 0) {
-    ctx.font = "36px Vazirmatn, Tahoma, sans-serif";
-    ctx.fillStyle = "#4A6B5F";
-    ctx.fillText(extras.join("  |  "), 930, 750);
-  }
-
-  // خط جداکننده
-  ctx.strokeStyle = "#E4DFD3";
-  ctx.lineWidth = 3;
-  ctx.beginPath();
-  ctx.moveTo(140, 830);
-  ctx.lineTo(940, 830);
-  ctx.stroke();
-
-  // قیمت
-  ctx.fillStyle = "#14213D";
-  ctx.font = "bold 50px Vazirmatn, Tahoma, sans-serif";
-  const priceText = isSale
-    ? `💰 قیمت: ${p.price_total || "توافقی"}`
-    : `💰 رهن: ${p.rahn || "-"} | اجاره: ${p.ejare || "-"}`;
-  ctx.fillText(priceText, 930, 930);
-
-  // اطلاعات مشاور
-  if (p.agent_name) {
-    ctx.fillStyle = "#4A6B5F";
-    ctx.font = "bold 38px Vazirmatn, Tahoma, sans-serif";
-    ctx.fillText(`👤 مشاور: ${p.agent_name}`, 930, 1040);
-  }
-  if (p.agent_phone) {
+    // پس‌زمینه سرمه‌ای
     ctx.fillStyle = "#14213D";
-    ctx.font = "bold 42px Vazirmatn, Tahoma, sans-serif";
-    ctx.fillText(`📞 ${p.agent_phone}`, 930, 1120);
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // حاشیه طلایی
+    ctx.strokeStyle = "#B8894F";
+    ctx.lineWidth = 12;
+    ctx.strokeRect(40, 40, canvas.width - 80, canvas.height - 80);
+
+    // سربرگ
+    ctx.fillStyle = "#B8894F";
+    ctx.font = "bold 52px sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText("گروه مشاورین املاک اطلس", 540, 160);
+
+    ctx.fillStyle = "#F5F1EA";
+    ctx.font = "32px sans-serif";
+    ctx.fillText("atlas-amlak.ir", 540, 220);
+
+    // کارت اصلی سفید
+    ctx.fillStyle = "#FFFFFF";
+    if (ctx.roundRect) {
+      ctx.beginPath();
+      ctx.roundRect(90, 280, 900, 1320, 32);
+      ctx.fill();
+    } else {
+      ctx.fillRect(90, 280, 900, 1320);
+    }
+
+    // تگ معامله
+    const isSale = p.deal_type === "فروش";
+    ctx.fillStyle = isSale ? "#4A6B5F" : "#B8894F";
+    if (ctx.roundRect) {
+      ctx.beginPath();
+      ctx.roundRect(140, 340, 220, 64, 32);
+      ctx.fill();
+    } else {
+      ctx.fillRect(140, 340, 220, 64);
+    }
+
+    ctx.fillStyle = "#FFFFFF";
+    ctx.font = "bold 32px sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText(p.deal_type || "آگهی", 250, 384);
+
+    // عنوان و کد ملک
+    ctx.fillStyle = "#14213D";
+    ctx.font = "bold 52px sans-serif";
+    ctx.textAlign = "right";
+    ctx.fillText(`${p.property_type || "ملک"} · کد ${p.code || "-"}`, 930, 490);
+
+    // آدرس
+    ctx.fillStyle = "#555555";
+    ctx.font = "36px sans-serif";
+    ctx.fillText(`📍 ${truncateAddress(p.address) || "-"}`, 930, 580);
+
+    // متراژ
+    ctx.fillStyle = "#2B2B2B";
+    ctx.font = "bold 40px sans-serif";
+    const areaText = `${p.area_m2 ? p.area_m2 + " متر" : ""} ${p.rooms ? "· " + p.rooms + " خواب" : ""}`;
+    ctx.fillText(`📐 ${areaText}`, 930, 670);
+
+    // امکانات
+    const extras = buildExtras(p);
+    if (extras.length > 0) {
+      ctx.font = "34px sans-serif";
+      ctx.fillStyle = "#4A6B5F";
+      ctx.fillText(extras.join("  |  "), 930, 750);
+    }
+
+    // خط جداکننده
+    ctx.strokeStyle = "#E4DFD3";
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(140, 830);
+    ctx.lineTo(940, 830);
+    ctx.stroke();
+
+    // قیمت
+    ctx.fillStyle = "#14213D";
+    ctx.font = "bold 46px sans-serif";
+    const priceText = isSale
+      ? `💰 قیمت: ${p.price_total || "توافقی"}`
+      : `💰 رهن: ${p.rahn || "-"} | اجاره: ${p.ejare || "-"}`;
+    ctx.fillText(priceText, 930, 930);
+
+    // اطلاعات مشاور
+    if (p.agent_name) {
+      ctx.fillStyle = "#4A6B5F";
+      ctx.font = "bold 36px sans-serif";
+      ctx.fillText(`👤 مشاور: ${p.agent_name}`, 930, 1040);
+    }
+    if (p.agent_phone) {
+      ctx.fillStyle = "#14213D";
+      ctx.font = "bold 40px sans-serif";
+      ctx.fillText(`📞 ${p.agent_phone}`, 930, 1120);
+    }
+
+    // باکس پایین
+    ctx.fillStyle = "#14213D";
+    if (ctx.roundRect) {
+      ctx.beginPath();
+      ctx.roundRect(140, 1240, 800, 260, 24);
+      ctx.fill();
+    } else {
+      ctx.fillRect(140, 1240, 800, 260);
+    }
+
+    ctx.fillStyle = "#B8894F";
+    ctx.font = "bold 34px sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText("مشاهده جزئیات کامل در سایت:", 540, 1330);
+
+    ctx.fillStyle = "#FFFFFF";
+    ctx.font = "bold 38px sans-serif";
+    ctx.fillText(`atlas-amlak.ir/?code=${p.code}`, 540, 1410);
+
+    // دانلود خودکار تصویر استوری
+    const dataUrl = canvas.toDataURL("image/png");
+    const a = document.createElement("a");
+    a.href = dataUrl;
+    a.download = `story-${p.code || 'property'}.png`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+
+  } catch (err) {
+    console.error("خطا در ساخت تصویر استوری:", err);
   }
-
-  // کادر دعوت به اقدام پایین کارت (QR یا لینک)
-  ctx.fillStyle = "#14213D";
-  ctx.beginPath();
-  ctx.roundRect(140, 1240, 800, 260, 24);
-  ctx.fill();
-
-  ctx.fillStyle = "#B8894F";
-  ctx.font = "bold 36px Vazirmatn, Tahoma, sans-serif";
-  ctx.textAlign = "center";
-  ctx.fillText("برای مشاهده جزئیات بیشتر آگهی در سایت:", 540, 1330);
-
-  ctx.fillStyle = "#FFFFFF";
-  ctx.font = "bold 40px Vazirmatn, Tahoma, sans-serif";
-  ctx.fillText(`atlas-amlak.ir/?code=${p.code}`, 540, 1410);
-
-  // دانلود خودکار عکس استوری
-  const link = document.createElement("a");
-  link.download = `Story-Property-${p.code}.png`;
-  link.href = canvas.toDataURL("image/png");
-  link.click();
 }
 
 document.addEventListener("click", async (e) => {
@@ -335,12 +353,12 @@ document.addEventListener("click", async (e) => {
   const p = allProperties.find((item) => String(item.code) === String(code));
   const shareUrl = `${window.location.origin}${window.location.pathname}?code=${code}`;
 
-  // ۱. ساخت و دانلود خودکار عکس استوری
+  // تولید و دانلود تصویر استوری
   if (p) {
     generateStoryImage(p);
   }
 
-  // ۲. آماده‌سازی متن اشتراک‌گذاری
+  // آماده‌سازی و کپی متن آگهی
   let shareText = "";
   if (p) {
     const extras = buildExtras(p);
@@ -360,20 +378,6 @@ ${shareUrl}`;
     shareText = `مشاهده مشخصات کامل آگهی کد ${code} در املاک اطلس:\n${shareUrl}`;
   }
 
-  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-
-  if (isMobile && navigator.share) {
-    try {
-      await navigator.share({
-        title: `آگهی ملک کد ${code}`,
-        text: shareText
-      });
-      return;
-    } catch (err) {
-      if (err.name === "AbortError") return;
-    }
-  }
-
   forceCopyText(shareText, shareBtn);
 });
 
@@ -387,30 +391,19 @@ function forceCopyText(text, btnElement) {
   textArea.focus();
   textArea.select();
 
-  let successful = false;
   try {
-    successful = document.execCommand('copy');
-  } catch (err) {
-    successful = false;
-  }
+    document.execCommand('copy');
+  } catch (err) {}
   document.body.removeChild(textArea);
 
-  if (successful) {
-    showCopySuccess(btnElement);
-  } else if (navigator.clipboard) {
-    navigator.clipboard.writeText(text).then(() => {
-      showCopySuccess(btnElement);
-    });
-  }
+  showCopySuccess(btnElement);
 }
 
 function showCopySuccess(btnElement) {
   const originalText = btnElement.innerHTML;
-  btnElement.innerHTML = "📸 استوری دانلود شد / ✅ لینک کپی شد";
-  btnElement.style.color = "#10b981";
+  btnElement.innerHTML = "📸 استوری دانلود شد / ✅ کپی شد";
   setTimeout(() => {
     btnElement.innerHTML = originalText;
-    btnElement.style.color = "";
   }, 2500);
 }
 
