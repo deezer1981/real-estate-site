@@ -202,7 +202,7 @@ if (loadMoreBtn) {
 }
 
 // --------------------------------------------------------------------- //
-// ۶. ساخت تصویر کارت آگهی (با نام و شماره مشاور به‌جای دکمه)
+// ۶. ساخت تصویر کارت آگهی (با تنظیم دقیق جهت راست به چپ - RTL)
 // --------------------------------------------------------------------- //
 function generateStoryImage(p) {
   try {
@@ -211,13 +211,18 @@ function generateStoryImage(p) {
     canvas.height = 1920;
     const ctx = canvas.getContext("2d");
 
+    // تنظیم جهت کلی بوم به راست‌چین کامل (RTL)
+    if ('direction' in ctx) {
+      ctx.direction = 'rtl';
+    }
+
     // پس‌زمینه کرم-بژ گرم و مینیمال سایت (#F5F3EF)
     ctx.fillStyle = "#F5F3EF";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
     // سربرگ بالایی برند
     ctx.fillStyle = "#1E293B";
-    ctx.font = "bold 44px sans-serif";
+    ctx.font = "bold 44px Tahoma, sans-serif";
     ctx.textAlign = "center";
     ctx.fillText("گروه مشاورین املاک اطلس", 540, 160);
 
@@ -241,7 +246,7 @@ function generateStoryImage(p) {
       ctx.fillRect(760, 280, 180, 64);
     }
     ctx.fillStyle = "#436353";
-    ctx.font = "bold 32px sans-serif";
+    ctx.font = "bold 32px Tahoma, sans-serif";
     ctx.textAlign = "center";
     ctx.fillText(p.deal_type || "فروش", 850, 324);
 
@@ -255,32 +260,35 @@ function generateStoryImage(p) {
       ctx.fillRect(140, 280, 180, 64);
     }
     ctx.fillStyle = "#FFFFFF";
-    ctx.font = "bold 28px sans-serif";
+    ctx.font = "bold 28px Tahoma, sans-serif";
     ctx.fillText("🔗 اشتراک", 230, 322);
+
+    // کاراکتر \u202B برای تحمیل راست به چپ روی ترکیب اعداد و حروف
+    const rtl = "\u202B";
 
     // عنوان ملک و کد
     ctx.fillStyle = "#1E293B";
-    ctx.font = "bold 54px sans-serif";
+    ctx.font = "bold 54px Tahoma, sans-serif";
     ctx.textAlign = "center";
-    ctx.fillText(`${p.property_type || "آپارتمان"} · کد ${p.code || "-"}`, 540, 440);
+    ctx.fillText(`${rtl}${p.property_type || "آپارتمان"} · کد ${p.code || "-"}`, 540, 440);
 
     // آدرس
     ctx.fillStyle = "#64748B";
-    ctx.font = "36px sans-serif";
-    ctx.fillText(`📍 ${truncateAddress(p.address) || "-"}`, 540, 530);
+    ctx.font = "36px Tahoma, sans-serif";
+    ctx.fillText(`${rtl}📍 ${truncateAddress(p.address) || "-"}`, 540, 530);
 
     // متراژ و تعداد خواب
     ctx.fillStyle = "#334155";
-    ctx.font = "bold 38px sans-serif";
+    ctx.font = "bold 38px Tahoma, sans-serif";
     const areaText = `${p.area_m2 ? p.area_m2 + " متر" : ""} ${p.rooms ? "· " + p.rooms + " خواب" : ""}`;
-    ctx.fillText(areaText, 540, 610);
+    ctx.fillText(`${rtl}${areaText}`, 540, 610);
 
     // امکانات
     const extras = buildExtras(p);
     if (extras.length > 0) {
-      ctx.font = "34px sans-serif";
+      ctx.font = "34px Tahoma, sans-serif";
       ctx.fillStyle = "#64748B";
-      ctx.fillText(extras.join("  |  "), 540, 690);
+      ctx.fillText(`${rtl}${extras.join("  |  ")}`, 540, 690);
     }
 
     // قیمت
@@ -290,8 +298,8 @@ function generateStoryImage(p) {
       : `💰 رهن: ${p.rahn || "-"} | اجاره: ${p.ejare || "-"}`;
 
     ctx.fillStyle = "#1E293B";
-    ctx.font = "bold 52px sans-serif";
-    ctx.fillText(priceText, 540, 800);
+    ctx.font = "bold 52px Tahoma, sans-serif";
+    ctx.fillText(`${rtl}${priceText}`, 540, 800);
 
     // خط جداکننده
     ctx.strokeStyle = "#E2E8F0";
@@ -301,16 +309,16 @@ function generateStoryImage(p) {
     ctx.lineTo(940, 870);
     ctx.stroke();
 
-    // نام و شماره مشاور (به‌صورت متنی و خوانا به‌جای دکمه)
+    // نام و شماره مشاور
     if (p.agent_name) {
       ctx.fillStyle = "#475569";
-      ctx.font = "36px sans-serif";
-      ctx.fillText(`👤 مشاور: ${p.agent_name}`, 540, 940);
+      ctx.font = "36px Tahoma, sans-serif";
+      ctx.fillText(`${rtl}👤 مشاور: ${p.agent_name}`, 540, 940);
     }
     if (p.agent_phone) {
       ctx.fillStyle = "#436353";
-      ctx.font = "bold 42px sans-serif";
-      ctx.fillText(`📞 ${p.agent_phone}`, 540, 1010);
+      ctx.font = "bold 42px Tahoma, sans-serif";
+      ctx.fillText(`${rtl}📞 ${p.agent_phone}`, 540, 1010);
     }
 
     // باکس پایین کارت (پیوند به وب‌سایت)
@@ -328,15 +336,16 @@ function generateStoryImage(p) {
     }
 
     ctx.fillStyle = "#64748B";
-    ctx.font = "30px sans-serif";
+    ctx.font = "30px Tahoma, sans-serif";
     ctx.fillText("جهت مشاهده جزئیات بیشتر به سایت مراجعه کنید", 540, 1200);
 
     ctx.fillStyle = "#1E293B";
     ctx.font = "bold 40px sans-serif";
+    ctx.direction = "ltr"; // آدرس سایت LTR باقی می‌ماند
     ctx.fillText(`atlas-amlak.ir/?code=${p.code}`, 540, 1280);
 
     // آدرس دامنه و لوگوی پایین کارت
-    const logoUrl = ""; // جایگاه لوگو
+    const logoUrl = "";
 
     const downloadCanvas = () => {
       const dataUrl = canvas.toDataURL("image/png");
