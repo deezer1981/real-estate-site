@@ -118,7 +118,6 @@ async function copyToClipboard(text) {
 async function handleShareTextClick(code, btnEl) {
   const p = allProperties.find((item) => String(item.code) === String(code));
   if (!p) {
-    // اگر دیتای API لود نشده بود از متن آماده استفاده کن
     const cardEl = document.getElementById(`card-${code}`) || document.querySelector(`[data-code="${code}"]`);
     if (cardEl) {
       const copied = await copyToClipboard(cardEl.innerText + `\n🌐 atlas-amlak.ir/?code=${code}`);
@@ -476,65 +475,39 @@ if (grid) {
   });
 }
 
-function applyDeepLinkIfPresent() {
-  const params = new URLSearchParams(location.search);
-  const code = params.get("code");
-  const clearBtn = document.getElementById("clearDeepLinkBtn");
-  if (!code || !allProperties.length) return;
-  const match = allProperties.find((p) => String(p.code) === String(code));
-  if (!match) return;
-  currentFiltered = [match];
-  visibleCount = PAGE_SIZE;
-  renderProperties();
-  if (clearBtn) clearBtn.hidden = false;
-  const listingsEl = document.getElementById("listings");
-  if (listingsEl) listingsEl.scrollIntoView({ behavior: "smooth" });
-}
+function parseExistingDomCards() {
+  if (!grid) return false;
+  const cards = grid.querySelectorAll(".card");
+  if (!cards.length) return false;
 
-const clearDeepLinkBtn = document.getElementById("clearDeepLinkBtn");
-if (clearDeepLinkBtn) {
-  clearDeepLinkBtn.addEventListener("click", () => {
-    history.replaceState(null, "", location.pathname);
-    clearDeepLinkBtn.hidden = true;
-    applyFilters();
+  const parsed = [];
+  cards.forEach((card) => {
+    const code = card.dataset.code || card.id.replace("card-", "");
+    const dealTag = card.querySelector(".deal-tag")?.textContent.trim() || "";
+    const title = card.querySelector("h3")?.textContent.trim() || "";
+    const typeMatch = title.split("·")[0]?.trim();
+    
+    parsed.push({
+      code: code,
+      deal_type: dealTag.includes("فروش") ? "فروش" : "رهن و اجاره",
+      property_type: typeMatch || "ملک",
+      address: card.querySelector(".card-meta")?.textContent.replace("📍", "").trim() || "",
+    });
   });
-}
 
-if (loadMoreBtn) {
-  loadMoreBtn.addEventListener("click", () => {
-    visibleCount += PAGE_SIZE;
-    renderProperties();
-  });
-}
-
-// خواندن اسنپ‌شات (JSON یا کارت‌های HTML موجود در DOM)
-function checkExistingSnapshot() {
-  const jsonEl = document.getElementById("snapshotData");
-  if (jsonEl) {
-    try {
-      const data = JSON.parse(jsonEl.textContent);
-      if (Array.isArray(data) && data.length) {
-        allProperties = data;
-        updateStatsRibbon();
-        applyFilters();
-        return true;
-      }
-    } catch (err) {}
+  if (parsed.length > 0) {
+    allProperties = parsed;
+    currentFiltered = parsed;
+    return true;
   }
-
-  // اگر کارت‌های HTML مستقیماً در HTML رندر شده باشند
-  if (grid && grid.querySelectorAll(".card").length > 0) {
-    return true; // یعنی محتوا در DOM هست و نباید پاک/لودینگ شود
-  }
-
   return false;
 }
 
 async function loadProperties() {
-  const hasSnapshot = checkExistingSnapshot();
+  const hasDomCards = parseExistingDomCards();
 
-  // فقط اگر هیچ کارت یا اسنپ‌شاتی در HTML نبود، کلمه در حال بارگذاری نمایش داده شود
-  if (!hasSnapshot && grid) {
+  // تنها در صورتی که هیچ کارت HTML در DOM نباشد، کلمه در حال بارگذاری نشان داده می‌شود
+  if (!hasDomCards && grid) {
     grid.innerHTML = `<p class="loading">در حال بارگذاری آگهی‌ها...</p>`;
   }
 
@@ -550,7 +523,7 @@ async function loadProperties() {
     }
   } catch (err) {
     console.error("Fetch error:", err);
-    if (!hasSnapshot && grid) {
+    if (!hasDomCards && grid) {
       grid.innerHTML = `<p class="loading">اتصال به سرور برقرار نشد. لطفاً صفحه را رفرش کنید.</p>`;
     }
   }
@@ -585,7 +558,7 @@ function initCarousel() {
 initCarousel();
 
 function applyFilters() {
-  if (!allProperties.length) return; // اگر دیتای زنده بارگذاری نشده، کارت‌های HTML موجود را تغییر نده
+  if (!allProperties.length) return;
 
   const citySearchEl = document.getElementById("citySearch");
   const dealTypeEl = document.getElementById("dealType");
@@ -609,35 +582,26 @@ function applyFilters() {
   renderProperties();
 }
 
+function applyDeepLinkIfPresent() {
+  const params = new URLSearchParams(location.search);
+  const code = params.get("code");
+  const clearBtn = document.getElementById("clearDeepLinkBtn");
+  if (!code || !allProperties.length) return;
+  const match = allProperties.find((p) => String(p.code) === String(code));
+  if (!match) return;
+  currentFiltered = [match];
+  visibleCount = PAGE_SIZE;
+  renderProperties();
+  if (clearBtn) clearBtn.hidden = false;
+  const listingsEl = document.getElementById("listings");
+  if (listingsEl) listingsEl.scrollIntoView({ behavior: "smooth" });
+}
+
 const searchBtn = document.getElementById("searchBtn");
 if (searchBtn) {
   searchBtn.addEventListener("click", () => {
     applyFilters();
     closeSheet();
-    const listingsEl = document.getElementById("listings");
-    if (listingsEl) listingsEl.scrollIntoView({ behavior: "smooth" });
-  });
-}
-
-const quickSale = document.getElementById("quickSale");
-if (quickSale) {
-  quickSale.addEventListener("click", (e) => {
-    e.preventDefault();
-    const dt = document.getElementById("dealType");
-    if (dt) dt.value = "فروش";
-    applyFilters();
-    const listingsEl = document.getElementById("listings");
-    if (listingsEl) listingsEl.scrollIntoView({ behavior: "smooth" });
-  });
-}
-
-const quickRent = document.getElementById("quickRent");
-if (quickRent) {
-  quickRent.addEventListener("click", (e) => {
-    e.preventDefault();
-    const dt = document.getElementById("dealType");
-    if (dt) dt.value = "رهن و اجاره";
-    applyFilters();
     const listingsEl = document.getElementById("listings");
     if (listingsEl) listingsEl.scrollIntoView({ behavior: "smooth" });
   });
