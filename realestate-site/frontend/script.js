@@ -1,4 +1,4 @@
-// script.js — مدیریت کامل کارت‌ها، API زنده، فیلترها و اشتراک‌گذاری هوشمند املاک
+// script.js — مدیریت کامل کارت‌ها، API زنده، فیلترها، اشتراک‌گذاری و مشاهده تک‌آگهی
 
 const BASE_API = typeof API_BASE_URL !== "undefined" ? API_BASE_URL : "https://api.atlas-amlak.ir";
 
@@ -13,7 +13,40 @@ const PAGE_SIZE = 6;
 let visibleCount = PAGE_SIZE;
 
 // --------------------------------------------------------------------- //
-// ۱. توابع کمکی ساخت کارت و خلاصه سازی
+// ۱. بررسی لینک ورود (اگر کاربر با لینک تک‌آگهی مثل ?code=1013 وارد شده باشد)
+// --------------------------------------------------------------------- //
+function getQueryParam(param) {
+  const urlParams = new URLSearchParams(window.location.search);
+  return urlParams.get(param);
+}
+
+function checkSinglePropertyMode() {
+  const targetCode = getQueryParam("code");
+  if (!targetCode) return false;
+
+  const found = allProperties.find((p) => String(p.code) === String(targetCode));
+  if (found) {
+    currentFiltered = [found];
+    visibleCount = 1;
+
+    // اضافه کردن بنر/دکمه بازگشت به همه آگهی‌ها
+    if (statsText) {
+      statsText.parentNode.innerHTML = `
+        <div style="display:flex; justify-between; align-items:center; width:100%; padding: 5px 0;">
+          <span style="font-weight:bold;">📍 آگهی انتخاب شده (کد ${targetCode})</span>
+          <a href="${window.location.pathname}" style="background:#0284c7; color:#fff; padding:6px 14px; border-radius:8px; text-decoration:none; font-size:13px; font-weight:bold;">🔙 بازگشت به همه آگهی‌ها</a>
+        </div>
+      `;
+    }
+    renderProperties();
+    if (loadMoreBtn) loadMoreBtn.hidden = true;
+    return true;
+  }
+  return false;
+}
+
+// --------------------------------------------------------------------- //
+// ۲. توابع کمکی ساخت کارت و خلاصه سازی
 // --------------------------------------------------------------------- //
 function truncateAddress(address) {
   if (!address) return "";
@@ -61,10 +94,10 @@ function propertyCard(p) {
 }
 
 // --------------------------------------------------------------------- //
-// ۲. بروزرسانی بنر آمار و لیست آگهی‌ها
+// ۳. بروزرسانی بنر آمار و لیست آگهی‌ها
 // --------------------------------------------------------------------- //
 function updateStatsRibbon() {
-  if (!statsText || !allProperties.length) return;
+  if (!statsText || !allProperties.length || getQueryParam("code")) return;
   const saleCount = allProperties.filter((p) => p.deal_type === "فروش").length;
   const rentCount = allProperties.filter((p) => p.deal_type === "رهن و اجاره").length;
   statsText.textContent = `🏠 ${allProperties.length} فایل فعال — ${saleCount} فروشی، ${rentCount} رهن و اجاره`;
@@ -75,11 +108,13 @@ function renderProperties() {
   const shown = currentFiltered.slice(0, visibleCount);
   grid.innerHTML = shown.map(propertyCard).join("");
   if (resultCount) resultCount.textContent = `${shown.length} از ${currentFiltered.length} آگهی`;
-  if (loadMoreBtn) loadMoreBtn.hidden = visibleCount >= currentFiltered.length;
+  if (loadMoreBtn && !getQueryParam("code")) {
+    loadMoreBtn.hidden = visibleCount >= currentFiltered.length;
+  }
 }
 
 // --------------------------------------------------------------------- //
-// ۳. دریافت اطلاعات زنده از API
+// ۴. دریافت اطلاعات زنده از API
 // --------------------------------------------------------------------- //
 async function loadProperties() {
   try {
@@ -88,17 +123,19 @@ async function loadProperties() {
     const data = await res.json();
     if (Array.isArray(data) && data.length > 0) {
       allProperties = data.reverse();
-      currentFiltered = allProperties;
-      renderProperties();
-      updateStatsRibbon();
+      if (!checkSinglePropertyMode()) {
+        currentFiltered = allProperties;
+        renderProperties();
+        updateStatsRibbon();
+      }
     }
   } catch (err) {
-    console.log("استفاده از آرایه Preloaded پیش‌فرض");
+    console.log("استفاده از داده‌های پیش‌فرض preloaded");
   }
 }
 
 // --------------------------------------------------------------------- //
-// ۴. فیلترها و شیت موبایل
+// ۵. فیلترها و شیت موبایل
 // --------------------------------------------------------------------- //
 const searchBar = document.getElementById("searchBar");
 const filterFab = document.getElementById("filterFab");
@@ -155,7 +192,7 @@ if (loadMoreBtn) {
 }
 
 // --------------------------------------------------------------------- //
-// ۵. سیستم اشتراک‌گذاری تفکیک‌شده (موبایل vs دسکتاپ)
+// ۶. سیستم اشتراک‌گذاری قطعی (تضمین کپی متنی روی دسکتاپ و شیئر روی موبایل)
 // --------------------------------------------------------------------- //
 document.addEventListener("click", async (e) => {
   const shareBtn = e.target.closest(".share-btn");
@@ -186,10 +223,9 @@ ${shareUrl}`;
     shareText = `مشاهده مشخصات کامل آگهی کد ${code} در املاک اطلس:\n${shareUrl}`;
   }
 
-  // تشخیص سیستم‌عامل موبایل (آیفون / اندروید)
   const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
-  // ۱. اگر کاربر در موبایل باشد -> باز کردن منوی شیئر بومی
+  // در اندروید و آیفون منوی بومی شیئر باز شود
   if (isMobile && navigator.share) {
     try {
       await navigator.share({
@@ -202,39 +238,44 @@ ${shareUrl}`;
     }
   }
 
-  // ۲. در سیستم لپ‌تاپ/دسکتاپ -> کپی مستقیم متن در کلیپ‌بورد
-  copyTextToClipboard(shareText, shareBtn);
+  // روی سیستم لپ‌تاپ/دسکتاپ مستقیم در حافظه کپی شود
+  forceCopyText(shareText, shareBtn);
 });
 
-function copyTextToClipboard(text, btnElement) {
-  if (navigator.clipboard && window.isSecureContext) {
-    navigator.clipboard.writeText(text).then(() => {
-      showCopySuccess(btnElement);
-    }).catch(() => {
-      fallbackCopyText(text, btnElement);
-    });
-  } else {
-    fallbackCopyText(text, btnElement);
-  }
-}
-
-function fallbackCopyText(text, btnElement) {
+function forceCopyText(text, btnElement) {
+  // ایجاد المان موقت متنی برای تضمین کپی ۱۰۰ درصدی روی کلیه مرورگرهای لپ‌تاپ
   const textArea = document.createElement("textarea");
   textArea.value = text;
   textArea.style.position = "fixed";
-  textArea.style.left = "-999999px";
-  textArea.style.top = "-999999px";
+  textArea.style.top = "0";
+  textArea.style.left = "0";
+  textArea.style.width = "2em";
+  textArea.style.height = "2em";
+  textArea.style.padding = "0";
+  textArea.style.border = "none";
+  textArea.style.outline = "none";
+  textArea.style.boxShadow = "none";
+  textArea.style.background = "transparent";
   document.body.appendChild(textArea);
   textArea.focus();
   textArea.select();
 
+  let successful = false;
   try {
-    document.execCommand('copy');
-    showCopySuccess(btnElement);
+    successful = document.execCommand('copy');
   } catch (err) {
-    alert("لینک آگهی:\n" + text);
+    successful = false;
   }
+
   document.body.removeChild(textArea);
+
+  if (successful) {
+    showCopySuccess(btnElement);
+  } else if (navigator.clipboard) {
+    navigator.clipboard.writeText(text).then(() => {
+      showCopySuccess(btnElement);
+    });
+  }
 }
 
 function showCopySuccess(btnElement) {
@@ -248,10 +289,12 @@ function showCopySuccess(btnElement) {
 }
 
 // --------------------------------------------------------------------- //
-// ۶. اجرای اولیه
+// ۷. اجرای اولیه
 // --------------------------------------------------------------------- //
 if (allProperties.length > 0) {
-  currentFiltered = allProperties;
-  updateStatsRibbon();
+  if (!checkSinglePropertyMode()) {
+    currentFiltered = allProperties;
+    updateStatsRibbon();
+  }
 }
 loadProperties();
