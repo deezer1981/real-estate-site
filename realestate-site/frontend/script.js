@@ -1,4 +1,4 @@
-// script.js — مدیریت کارت‌ها، API زنده، فیلترها، اشتراک‌گذاری تعاملی و تولید تصویر کارت آگهی
+// script.js — مدیریت کارت‌ها، API زنده، فیلترها، اشتراک‌گذاری تعاملی و تولید تصویر کارت آگهی (با UI وب‌سایت)
 
 const BASE_API = typeof API_BASE_URL !== "undefined" ? API_BASE_URL : "https://api.atlas-amlak.ir";
 
@@ -202,7 +202,7 @@ if (loadMoreBtn) {
 }
 
 // --------------------------------------------------------------------- //
-// ۶. ساخت تصویر کارت آگهی (با پس‌زمینه روشن‌تر و خوانایی بالا)
+// ۶. ساخت تصویر کارت آگهی (با دیزاین، پالت و تناسبات مدرن وب‌سایت)
 // --------------------------------------------------------------------- //
 function generateStoryImage(p) {
   try {
@@ -211,125 +211,140 @@ function generateStoryImage(p) {
     canvas.height = 1920;
     const ctx = canvas.getContext("2d");
 
-    // پس‌زمینه اصلی روشن‌تر (سرمه‌ای متعادل)
-    ctx.fillStyle = "#1E2D4A";
+    // پس‌زمینه کرم-بژ گرم و مینیمال سایت (#F5F3EF)
+    ctx.fillStyle = "#F5F3EF";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // حاشیه طلایی
-    ctx.strokeStyle = "#D4A359";
-    ctx.lineWidth = 12;
-    ctx.strokeRect(40, 40, canvas.width - 80, canvas.height - 80);
-
-    // سربرگ بالای آگهی
-    ctx.fillStyle = "#EAD1A3";
-    ctx.font = "bold 56px sans-serif";
+    // سربرگ بالایی برند
+    ctx.fillStyle = "#1E293B";
+    ctx.font = "bold 44px sans-serif";
     ctx.textAlign = "center";
-    ctx.fillText("گروه مشاورین املاک اطلس", 540, 180);
+    ctx.fillText("گروه مشاورین املاک اطلس", 540, 160);
 
-    // کارت اصلی سفید
+    // کارت اصلی سفید تمیز (شبیه کارت‌های سایت)
     ctx.fillStyle = "#FFFFFF";
     if (ctx.roundRect) {
       ctx.beginPath();
-      ctx.roundRect(90, 250, 900, 1380, 32);
+      ctx.roundRect(80, 220, 920, 1480, 36);
       ctx.fill();
     } else {
-      ctx.fillRect(90, 250, 900, 1380);
+      ctx.fillRect(80, 220, 920, 1480);
     }
 
-    // تگ معامله
-    const isSale = p.deal_type === "فروش";
-    ctx.fillStyle = isSale ? "#2E5A44" : "#C68B38";
+    // تگ نوع معامله (فروش / رهن) شبیه سایت
+    ctx.fillStyle = "#EAEFEA";
     if (ctx.roundRect) {
       ctx.beginPath();
-      ctx.roundRect(140, 310, 220, 64, 32);
+      ctx.roundRect(760, 280, 180, 64, 32);
       ctx.fill();
     } else {
-      ctx.fillRect(140, 310, 220, 64);
+      ctx.fillRect(760, 280, 180, 64);
     }
-
-    ctx.fillStyle = "#FFFFFF";
+    ctx.fillStyle = "#436353";
     ctx.font = "bold 32px sans-serif";
     ctx.textAlign = "center";
-    ctx.fillText(p.deal_type || "آگهی", 250, 354);
+    ctx.fillText(p.deal_type || "فروش", 850, 324);
 
-    // عنوان و کد ملک
-    ctx.fillStyle = "#1A233A";
-    ctx.font = "bold 52px sans-serif";
-    ctx.textAlign = "right";
-    ctx.fillText(`${p.property_type || "ملک"} · کد ${p.code || "-"}`, 930, 460);
+    // دکمه نمادین اشتراک (سمت چپ)
+    ctx.fillStyle = "#436353";
+    if (ctx.roundRect) {
+      ctx.beginPath();
+      ctx.roundRect(140, 280, 180, 64, 32);
+      ctx.fill();
+    } else {
+      ctx.fillRect(140, 280, 180, 64);
+    }
+    ctx.fillStyle = "#FFFFFF";
+    ctx.font = "bold 28px sans-serif";
+    ctx.fillText("🔗 اشتراک", 230, 322);
+
+    // عنوان ملک و کد
+    ctx.fillStyle = "#1E293B";
+    ctx.font = "bold 54px sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText(`${p.property_type || "آپارتمان"} · کد ${p.code || "-"}`, 540, 440);
 
     // آدرس
-    ctx.fillStyle = "#4A5568";
+    ctx.fillStyle = "#64748B";
     ctx.font = "36px sans-serif";
-    ctx.fillText(`📍 ${truncateAddress(p.address) || "-"}`, 930, 550);
+    ctx.fillText(`📍 ${truncateAddress(p.address) || "-"}`, 540, 530);
 
-    // متراژ
-    ctx.fillStyle = "#1A202C";
-    ctx.font = "bold 40px sans-serif";
+    // متراژ و تعداد خواب
+    ctx.fillStyle = "#334155";
+    ctx.font = "bold 38px sans-serif";
     const areaText = `${p.area_m2 ? p.area_m2 + " متر" : ""} ${p.rooms ? "· " + p.rooms + " خواب" : ""}`;
-    ctx.fillText(`📐 ${areaText}`, 930, 640);
+    ctx.fillText(areaText, 540, 610);
 
-    // امکانات
+    // امکانات (پارکینگ، آسانسور، انباری)
     const extras = buildExtras(p);
     if (extras.length > 0) {
       ctx.font = "34px sans-serif";
-      ctx.fillStyle = "#2E5A44";
-      ctx.fillText(extras.join("  |  "), 930, 720);
+      ctx.fillStyle = "#64748B";
+      ctx.fillText(extras.join("  |  "), 540, 690);
     }
 
-    // خط جداکننده
-    ctx.strokeStyle = "#E2E8F0";
-    ctx.lineWidth = 3;
-    ctx.beginPath();
-    ctx.moveTo(140, 800);
-    ctx.lineTo(940, 800);
-    ctx.stroke();
-
-    // قیمت
-    ctx.fillStyle = "#1A233A";
-    ctx.font = "bold 46px sans-serif";
+    // قیمت برجسته و باکیفیت
+    const isSale = p.deal_type === "فروش";
     const priceText = isSale
-      ? `💰 قیمت: ${p.price_total || "توافقی"}`
+      ? `💰 ${p.price_total || "توافقی"}`
       : `💰 رهن: ${p.rahn || "-"} | اجاره: ${p.ejare || "-"}`;
-    ctx.fillText(priceText, 930, 900);
+
+    ctx.fillStyle = "#1E293B";
+    ctx.font = "bold 52px sans-serif";
+    ctx.fillText(priceText, 540, 800);
+
+    // خط جداکننده نقطه‌چین/خفیف
+    ctx.strokeStyle = "#E2E8F0";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(140, 870);
+    ctx.lineTo(940, 870);
+    ctx.stroke();
 
     // اطلاعات مشاور
     if (p.agent_name) {
-      ctx.fillStyle = "#2E5A44";
-      ctx.font = "bold 36px sans-serif";
-      ctx.fillText(`👤 مشاور: ${p.agent_name}`, 930, 1010);
-    }
-    if (p.agent_phone) {
-      ctx.fillStyle = "#1A233A";
-      ctx.font = "bold 40px sans-serif";
-      ctx.fillText(`📞 ${p.agent_phone}`, 930, 1090);
+      ctx.fillStyle = "#475569";
+      ctx.font = "34px sans-serif";
+      ctx.fillText(`👤 ثبت‌شده توسط:  مشاور ${p.agent_name}`, 540, 940);
     }
 
-    // باکس پایین کارت (تغییر به رنگ کرم/روشن با حاشیه طلایی جهت خوانایی عالی)
-    ctx.fillStyle = "#F8F6F0";
-    ctx.strokeStyle = "#D4A359";
-    ctx.lineWidth = 3;
+    // دکمه تماس با مشاور (سبز زیتونی مشابه سایت)
+    ctx.fillStyle = "#436353";
     if (ctx.roundRect) {
       ctx.beginPath();
-      ctx.roundRect(140, 1180, 800, 390, 24);
+      ctx.roundRect(140, 1000, 800, 100, 20);
+      ctx.fill();
+    } else {
+      ctx.fillRect(140, 1000, 800, 100);
+    }
+    ctx.fillStyle = "#FFFFFF";
+    ctx.font = "bold 38px sans-serif";
+    ctx.fillText(`📞 تماس با مشاور ${p.agent_name || "کریمی"}`, 540, 1064);
+
+    // باکس پایین کارت (پیوند به وب‌سایت)
+    ctx.fillStyle = "#F8FAFC";
+    ctx.strokeStyle = "#E2E8F0";
+    ctx.lineWidth = 2;
+    if (ctx.roundRect) {
+      ctx.beginPath();
+      ctx.roundRect(140, 1160, 800, 480, 24);
       ctx.fill();
       ctx.stroke();
     } else {
-      ctx.fillRect(140, 1180, 800, 390);
-      ctx.strokeRect(140, 1180, 800, 390);
+      ctx.fillRect(140, 1160, 800, 480);
+      ctx.strokeRect(140, 1160, 800, 480);
     }
 
-    ctx.fillStyle = "#8C6327";
-    ctx.font = "bold 32px sans-serif";
-    ctx.textAlign = "center";
-    ctx.fillText("مشاهده جزئیات کامل آگهی در سایت:", 540, 1260);
+    ctx.fillStyle = "#64748B";
+    ctx.font = "30px sans-serif";
+    ctx.fillText("جهت مشاهده جزئیات بیشتر به سایت مراجعه کنید", 540, 1240);
 
-    ctx.fillStyle = "#1A233A";
+    ctx.fillStyle = "#1E293B";
     ctx.font = "bold 40px sans-serif";
-    ctx.fillText(`atlas-amlak.ir/?code=${p.code}`, 540, 1340);
+    ctx.fillText(`atlas-amlak.ir/?code=${p.code}`, 540, 1320);
 
-    // آدرس دامنه و لوگو در انتهای باکس
-    const logoUrl = ""; // آدرس تصویر لوگو بعداً قرار داده شود
+    // آدرس دامنه و لوگوی پایین کارت
+    const logoUrl = ""; // جایگاه آدرس لوگو برای آینده
 
     const downloadCanvas = () => {
       const dataUrl = canvas.toDataURL("image/png");
@@ -344,22 +359,22 @@ function generateStoryImage(p) {
     if (logoUrl) {
       const img = new Image();
       img.onload = () => {
-        ctx.drawImage(img, 540 - 35, 1400, 70, 70);
-        ctx.fillStyle = "#1A233A";
-        ctx.font = "bold 32px sans-serif";
+        ctx.drawImage(img, 540 - 40, 1390, 80, 80);
+        ctx.fillStyle = "#436353";
+        ctx.font = "bold 34px sans-serif";
         ctx.fillText("atlas-amlak.ir", 540, 1510);
         downloadCanvas();
       };
       img.onerror = () => {
-        ctx.fillStyle = "#1A233A";
-        ctx.font = "bold 32px sans-serif";
+        ctx.fillStyle = "#436353";
+        ctx.font = "bold 34px sans-serif";
         ctx.fillText("🌐 atlas-amlak.ir", 540, 1460);
         downloadCanvas();
       };
       img.src = logoUrl;
     } else {
-      ctx.fillStyle = "#1A233A";
-      ctx.font = "bold 32px sans-serif";
+      ctx.fillStyle = "#436353";
+      ctx.font = "bold 36px sans-serif";
       ctx.fillText("🌐 atlas-amlak.ir", 540, 1460);
       downloadCanvas();
     }
@@ -392,21 +407,21 @@ ${extras.length ? extras.join(" ") + "\n" : ""}${priceText}
 ${shareUrl}`;
 
   const modalHtml = `
-    <div id="shareModal" style="position: fixed; inset: 0; z-index: 9999; background: rgba(20, 33, 61, 0.6); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; padding: 16px;">
-      <div style="background: #FFFFFF; border: 1px solid var(--brass); border-radius: 20px; width: 100%; max-width: 380px; padding: 24px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.25); animation: popIn 0.2s ease-out;">
-        <h3 style="margin: 0 0 8px; color: var(--ink); font-size: 1.15rem; font-weight: 800;">نحوه اشتراک‌گذاری آگهی</h3>
-        <p style="margin: 0 0 20px; color: #666; font-size: 0.85rem;">کدام قالب را برای ارسال تمایل دارید؟</p>
+    <div id="shareModal" style="position: fixed; inset: 0; z-index: 9999; background: rgba(30, 41, 59, 0.5); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; padding: 16px;">
+      <div style="background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 20px; width: 100%; max-width: 380px; padding: 24px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.15); animation: popIn 0.2s ease-out;">
+        <h3 style="margin: 0 0 8px; color: #1E293B; font-size: 1.15rem; font-weight: 800;">نحوه اشتراک‌گذاری آگهی</h3>
+        <p style="margin: 0 0 20px; color: #64748B; font-size: 0.85rem;">کدام قالب را برای ارسال تمایل دارید؟</p>
         
         <div style="display: flex; flex-direction: column; gap: 12px;">
-          <button id="modalStoryBtn" type="button" style="background: var(--ink); color: var(--paper); border: none; padding: 12px; border-radius: 12px; font-weight: 700; font-size: 0.9rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
+          <button id="modalStoryBtn" type="button" style="background: #436353; color: #FFFFFF; border: none; padding: 12px; border-radius: 12px; font-weight: 700; font-size: 0.9rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
             🖼️ دانلود کارت آگهی
           </button>
-          <button id="modalTextBtn" type="button" style="background: #F5F1EA; color: var(--ink); border: 1px solid var(--brass); padding: 12px; border-radius: 12px; font-weight: 700; font-size: 0.9rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
+          <button id="modalTextBtn" type="button" style="background: #F8FAFC; color: #1E293B; border: 1px solid #CBD5E1; padding: 12px; border-radius: 12px; font-weight: 700; font-size: 0.9rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
             📋 کپی متن آگهی و لینک
           </button>
         </div>
 
-        <button id="modalCloseBtn" type="button" style="background: transparent; border: none; color: #888; font-size: 0.85rem; margin-top: 16px; cursor: pointer;">
+        <button id="modalCloseBtn" type="button" style="background: transparent; border: none; color: #94A3B8; font-size: 0.85rem; margin-top: 16px; cursor: pointer;">
           انصراف
         </button>
       </div>
