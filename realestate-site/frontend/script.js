@@ -1,11 +1,10 @@
-// script.js — منطق مخصوص صفحه‌ی اصلی (کاروسل، فیلتر، لیست آگهی‌ها، فرم
-// تماس). منوی همبرگری و لینک‌های تماس توی common.js هست که قبل از این
-// فایل لود میشه.
+// script.js — منطق مخصوص صفحه‌ی اصلی (کاروسل، فیلتر، لیست آگهی‌ها، فرم تماس)
+
+// ۱. متغیر پایه API (اگر در common.js تعریف نشده باشد، از لینک مستقیم استفاده می‌کند)
+const BASE_API = typeof API_BASE_URL !== "undefined" ? API_BASE_URL : "https://api.atlas-amlak.ir";
 
 // --------------------------------------------------------------------- //
-// Smart address truncation for property cards
-//    Keeps everything up to "لاله X [اصلی/غربی/شرقی]" and drops the rest
-//    of the sub-address (کوچه/پلاک/طبقه/زنگ ...) to keep cards clean.
+// خلاصه و خلاصه‌سازی هوشمند آدرس
 // --------------------------------------------------------------------- //
 function truncateAddress(address) {
   if (!address) return "";
@@ -14,12 +13,11 @@ function truncateAddress(address) {
   if (match && match[1]) {
     return match[1].trim();
   }
-  // Fallback: no "لاله" pattern found — cap at a reasonable length
   return text.length > 40 ? text.slice(0, 40).trim() + "…" : text;
 }
 
 // --------------------------------------------------------------------- //
-// 3) Mobile bottom-sheet filter
+// فیلتر کشویی موبایل (Bottom Sheet)
 // --------------------------------------------------------------------- //
 const searchBar = document.getElementById("searchBar");
 const filterFab = document.getElementById("filterFab");
@@ -44,7 +42,7 @@ if (searchBar) {
 }
 
 // --------------------------------------------------------------------- //
-// Property listing state + rendering
+// وضعیت آگهی‌ها و رندر
 // --------------------------------------------------------------------- //
 const grid = document.getElementById("propertyGrid");
 const resultCount = document.getElementById("resultCount");
@@ -100,9 +98,7 @@ async function copyToClipboard(text) {
     try {
       await navigator.clipboard.writeText(text);
       return true;
-    } catch (err) {
-      // ادامه جهت اجرای روش جایگزین
-    }
+    } catch (err) {}
   }
   try {
     const textarea = document.createElement("textarea");
@@ -125,7 +121,6 @@ async function handleShareTextClick(code, btnEl) {
   if (!p) return;
   const { url, text } = shareText(p);
 
-  // ۱. اولویت با Web Share API برای مرورگرهایی که آن را ساپورت می‌کنند (موبایل و دسکتاپ‌های مدرن)
   if (navigator.share) {
     try {
       await navigator.share({
@@ -135,11 +130,10 @@ async function handleShareTextClick(code, btnEl) {
       });
       return;
     } catch (err) {
-      if (err.name === "AbortError") return; // انصراف کاربر
+      if (err.name === "AbortError") return;
     }
   }
 
-  // ۲. در غیر این صورت (دسکتاپ یا عدم پشتیبانی مرورگر): کپی کامل در کلیپ‌بورد
   const copied = await copyToClipboard(text);
   if (btnEl) {
     const original = btnEl.textContent;
@@ -156,7 +150,7 @@ async function handleShareTextClick(code, btnEl) {
 }
 
 // --------------------------------------------------------------------- //
-// ساخت تصویر کارت آگهی (سایز استوری واتساپ، ۱۰۸۰×۱۹۲۰) با Canvas
+// ساخت تصویر کارت آگهی با Canvas (استوری)
 // --------------------------------------------------------------------- //
 function roundRect(ctx, x, y, w, h, r) {
   ctx.beginPath();
@@ -198,9 +192,7 @@ async function ensureFontLoaded() {
     await document.fonts.load('700 46px Vazirmatn');
     await document.fonts.load('800 52px Vazirmatn');
     await document.fonts.ready;
-  } catch (err) {
-    // استفاده از فونت پیش‌فرض در صورت عدم بارگذاری
-  }
+  } catch (err) {}
 }
 
 async function generatePropertyImageBlob(p) {
@@ -215,11 +207,9 @@ async function generatePropertyImageBlob(p) {
   const ctx = canvas.getContext("2d");
   ctx.direction = "rtl";
 
-  // پس‌زمینه
   ctx.fillStyle = PAPER;
   ctx.fillRect(0, 0, W, H);
 
-  // هدر
   const headerH = 230;
   ctx.fillStyle = INK;
   ctx.fillRect(0, 0, W, headerH);
@@ -231,7 +221,6 @@ async function generatePropertyImageBlob(p) {
   ctx.font = "600 30px Vazirmatn, sans-serif";
   ctx.fillText("شهریار، باغستان، خادم‌آباد", W / 2, 168);
 
-  // کارت
   const footerH = 220;
   const cardX = 60, cardY = headerH + 60;
   const cardW = W - 120, cardH = H - headerH - 60 - footerH - 40;
@@ -245,7 +234,6 @@ async function generatePropertyImageBlob(p) {
 
   ctx.textAlign = "right";
 
-  // برچسب نوع معامله
   const dealText = p.deal_type || "";
   ctx.font = "700 32px Vazirmatn, sans-serif";
   const tagW = ctx.measureText(dealText).width + 60;
@@ -257,13 +245,11 @@ async function generatePropertyImageBlob(p) {
   ctx.fillText(dealText, padX - 30, cy - 4);
   cy += 95;
 
-  // عنوان
   ctx.fillStyle = INK;
   ctx.font = "800 52px Vazirmatn, sans-serif";
   ctx.fillText(`${p.property_type || "ملک"} · کد ${p.code || "-"}`, padX, cy);
   cy += 78;
 
-  // آدرس
   ctx.fillStyle = TEXT;
   ctx.font = "500 38px Vazirmatn, sans-serif";
   wrapCanvasText(ctx, `📍 ${truncateAddress(p.address)}`, contentW).forEach((line) => {
@@ -272,7 +258,6 @@ async function generatePropertyImageBlob(p) {
   });
   cy += 12;
 
-  // متراژ و خواب
   const metaParts = [];
   if (p.area_m2) metaParts.push(`${p.area_m2} متر`);
   if (p.rooms) metaParts.push(`${p.rooms} خواب`);
@@ -282,7 +267,6 @@ async function generatePropertyImageBlob(p) {
     cy += 58;
   }
 
-  // امکانات
   const extras = buildExtras(p);
   if (extras.length) {
     ctx.font = "500 34px Vazirmatn, sans-serif";
@@ -290,7 +274,6 @@ async function generatePropertyImageBlob(p) {
     cy += 58;
   }
 
-  // خط جداکننده
   cy += 20;
   ctx.strokeStyle = "#E4DFD3";
   ctx.lineWidth = 2;
@@ -300,7 +283,6 @@ async function generatePropertyImageBlob(p) {
   ctx.stroke();
   cy += 70;
 
-  // قیمت
   const priceInfo =
     p.deal_type === "فروش"
       ? `${p.price_total || "توافقی"}`
@@ -312,7 +294,6 @@ async function generatePropertyImageBlob(p) {
     cy += 62;
   });
 
-  // مشاور
   if (p.agent_name || p.agent_phone) {
     cy += 20;
     ctx.font = "600 34px Vazirmatn, sans-serif";
@@ -324,7 +305,6 @@ async function generatePropertyImageBlob(p) {
     ctx.fillText(agentText, padX, cy);
   }
 
-  // فوتر
   ctx.fillStyle = BRASS;
   ctx.fillRect(0, H - footerH, W, footerH);
   ctx.textAlign = "center";
@@ -380,7 +360,7 @@ async function handleShareImageClick(code, btnEl) {
 }
 
 // --------------------------------------------------------------------- //
-// منوی منوی انتخاب «کپی متن» یا «اشتراک تصویر»
+// منوی انتخاب «کپی متن» یا «اشتراک تصویر»
 // --------------------------------------------------------------------- //
 function closeShareMenu() {
   document.querySelectorAll(".share-menu").forEach((m) => m.remove());
@@ -390,6 +370,8 @@ function openShareMenu(anchorBtn, code) {
   closeShareMenu();
   const menu = document.createElement("div");
   menu.className = "share-menu";
+  menu.style.position = "absolute";
+  menu.style.zIndex = "9999";
   menu.innerHTML = `
     <button type="button" data-action="text">📋 کپی متن آگهی</button>
     <button type="button" data-action="image">🖼 اشتراک تصویر (استوری)</button>
@@ -397,14 +379,16 @@ function openShareMenu(anchorBtn, code) {
   document.body.appendChild(menu);
 
   const rect = anchorBtn.getBoundingClientRect();
-  const menuWidth = 240;
+  const menuWidth = 220;
   let left = rect.right - menuWidth;
   if (left < 8) left = 8;
   if (left + menuWidth > window.innerWidth - 8) left = window.innerWidth - menuWidth - 8;
+  
   menu.style.top = `${rect.bottom + window.scrollY + 6}px`;
   menu.style.left = `${left}px`;
 
   menu.addEventListener("click", (e) => {
+    e.stopPropagation();
     const action = e.target.closest("button")?.dataset.action;
     if (!action) return;
     closeShareMenu();
@@ -413,14 +397,13 @@ function openShareMenu(anchorBtn, code) {
   });
 
   setTimeout(() => {
-    document.addEventListener(
-      "click",
-      function outsideCloser(e) {
-        if (!menu.contains(e.target)) closeShareMenu();
-      },
-      { once: true }
-    );
-  }, 0);
+    window.addEventListener("click", function outsideCloser(e) {
+      if (!menu.contains(e.target)) {
+        closeShareMenu();
+        window.removeEventListener("click", outsideCloser);
+      }
+    });
+  }, 50);
 }
 
 function propertyCard(p) {
@@ -430,7 +413,6 @@ function propertyCard(p) {
       : `<p class="card-price">💰 رهن: ${p.rahn || "-"} | اجاره: ${p.ejare || "-"}</p>`;
 
   const extras = buildExtras(p);
-
   const shortAddress = truncateAddress(p.address);
   const cardId = `card-${p.code || Math.random().toString(36).slice(2)}`;
 
@@ -477,7 +459,10 @@ function renderProperties() {
 if (grid) {
   grid.addEventListener("click", (e) => {
     const btn = e.target.closest(".share-btn");
-    if (btn) openShareMenu(btn, btn.dataset.code);
+    if (btn) {
+      e.stopPropagation();
+      openShareMenu(btn, btn.dataset.code);
+    }
   });
 }
 
@@ -523,9 +508,7 @@ function loadSnapshotData() {
       applyFilters();
       return true;
     }
-  } catch (err) {
-    // خطا در پارس
-  }
+  } catch (err) {}
   return false;
 }
 
@@ -536,15 +519,17 @@ async function loadProperties() {
   } else {
     applyDeepLinkIfPresent();
   }
+
   try {
-    const apiBase = typeof API_BASE_URL !== "undefined" ? API_BASE_URL : "";
-    const res = await fetch(`${apiBase}/api/properties`);
+    const res = await fetch(`${BASE_API}/api/properties`);
     if (!res.ok) throw new Error("request failed");
-    allProperties = (await res.json()).reverse();
+    const data = await res.json();
+    allProperties = Array.isArray(data) ? data.reverse() : [];
     updateStatsRibbon();
     applyFilters();
     applyDeepLinkIfPresent();
   } catch (err) {
+    console.error("Fetch error:", err);
     if (!hadSnapshot && grid) {
       grid.innerHTML = `<p class="loading">اتصال به سرور برقرار نشد. لطفاً چند لحظه صبر کنید و صفحه را رفرش کنید.</p>`;
     }
@@ -649,15 +634,12 @@ if (leadForm) {
     const payload = { name, phone, message, source: "website" };
 
     try {
-      const apiBase = typeof API_BASE_URL !== "undefined" ? API_BASE_URL : "";
-      await fetch(`${apiBase}/api/leads`, {
+      await fetch(`${BASE_API}/api/leads`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
-    } catch (err) {
-      // ادامه روند ارسال به واتساپ
-    }
+    } catch (err) {}
 
     const waText = encodeURIComponent(
       `سلام، من ${name} هستم.\nشماره تماس: ${phone}\n${message ? "پیام: " + message : ""}`
