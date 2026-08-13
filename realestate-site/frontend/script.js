@@ -323,7 +323,7 @@ async function generateStoryImage(p) {
     drawOrnamentDivider(ctx, cx, 218, 220);
 
     // ۳. بدنه کارت سفید با حاشیه برنجی ظریف و سایه‌ی نرم
-    const cardX = 68, cardY = 262, cardW = W - cardX * 2, cardH = 1500;
+    const cardX = 68, cardY = 262, cardW = W - cardX * 2, cardH = 1560;
 
     ctx.save();
     ctx.shadowColor = "rgba(32,28,21,0.18)";
@@ -350,43 +350,43 @@ async function generateStoryImage(p) {
     ctx.fillStyle = T.paperShade;
     ctx.strokeStyle = T.hairline;
     ctx.lineWidth = 1;
-    rr(ctx, padX, cardY + 56, 168, 56, 16);
+    rr(ctx, padX, cardY + 56, 190, 64, 18);
     ctx.fill();
     ctx.stroke();
     ctx.fillStyle = T.inkSoft;
-    setFont(ctx, 600, 28);
-    rtlText(ctx, `کد ${p.code || "-"}`, padX + 84, cardY + 91);
+    setFont(ctx, 600, 32);
+    rtlText(ctx, `کد ${p.code || "-"}`, padX + 95, cardY + 98);
 
     const dealLabel = p.deal_type || "آگهی";
-    setFont(ctx, 700, 28);
-    const dealW = Math.max(150, ctx.measureText(dealLabel).width + 64);
+    setFont(ctx, 700, 32);
+    const dealW = Math.max(170, ctx.measureText(dealLabel).width + 70);
     const dealX = cardX + cardW - 64 - dealW;
     ctx.fillStyle = dealColor;
-    rr(ctx, dealX, cardY + 56, dealW, 56, 16);
+    rr(ctx, dealX, cardY + 56, dealW, 64, 18);
     ctx.fill();
     ctx.fillStyle = T.white;
-    rtlText(ctx, dealLabel, dealX + dealW / 2, cardY + 91);
+    rtlText(ctx, dealLabel, dealX + dealW / 2, cardY + 98);
 
     // ۵. عنوان ملک
     ctx.fillStyle = T.ink;
-    setFont(ctx, 800, 60);
-    rtlText(ctx, p.property_type || "ملک", cx, cardY + 210);
+    setFont(ctx, 800, 66);
+    rtlText(ctx, p.property_type || "ملک", cx, cardY + 240);
 
     ctx.strokeStyle = T.hairline;
     ctx.setLineDash([6, 8]);
     ctx.lineWidth = 2;
     ctx.beginPath();
-    ctx.moveTo(padX, cardY + 250);
-    ctx.lineTo(cardX + cardW - 64, cardY + 250);
+    ctx.moveTo(padX, cardY + 280);
+    ctx.lineTo(cardX + cardW - 64, cardY + 280);
     ctx.stroke();
     ctx.setLineDash([]);
 
     // ۶. باکس مشخصات (متراژ / خواب)
-    const specsY = cardY + 288;
+    const specsY = cardY + 320;
     ctx.fillStyle = T.paper;
     ctx.strokeStyle = T.brassLight;
     ctx.lineWidth = 1.5;
-    rr(ctx, padX, specsY, contentW, 108, 20);
+    rr(ctx, padX, specsY, contentW, 120, 20);
     ctx.fill();
     ctx.stroke();
 
@@ -394,23 +394,23 @@ async function generateStoryImage(p) {
     if (p.area_m2) specParts.push(`${p.area_m2} متر`);
     if (p.rooms) specParts.push(`${p.rooms} خواب`);
     ctx.fillStyle = T.ink;
-    setFont(ctx, 700, 40);
-    rtlText(ctx, specParts.join("   •   "), cx, specsY + 68);
+    setFont(ctx, 700, 44);
+    rtlText(ctx, specParts.join("   •   "), cx, specsY + 76);
 
     // ۷. آدرس
-    const addrY = specsY + 168;
+    const addrY = specsY + 190;
     ctx.fillStyle = T.inkSoft;
-    setFont(ctx, 500, 32);
+    setFont(ctx, 600, 38);
     rtlText(ctx, `📍 ${truncateAddress(p.address) || "خادم‌آباد"}`, cx, addrY);
 
     // ۸. امکانات
     const extras = buildExtras(p);
     let extrasBottom = addrY;
     if (extras.length) {
-      const extrasY = addrY + 64;
-      setFont(ctx, 600, 28);
+      const extrasY = addrY + 72;
+      setFont(ctx, 600, 32);
       const gap = 20;
-      const widths = extras.map((e) => ctx.measureText(e).width + 40);
+      const widths = extras.map((e) => ctx.measureText(e).width + 48);
       const totalW = widths.reduce((a, b) => a + b, 0) + gap * (extras.length - 1);
       let ex = cx + totalW / 2;
       extras.forEach((label, i) => {
@@ -419,14 +419,14 @@ async function generateStoryImage(p) {
         ctx.fillStyle = T.paperShade;
         ctx.strokeStyle = T.hairline;
         ctx.lineWidth = 1;
-        rr(ctx, ex, extrasY - 34, w, 48, 24);
+        rr(ctx, ex, extrasY - 38, w, 56, 26);
         ctx.fill();
         ctx.stroke();
         ctx.fillStyle = T.inkSoft;
         rtlText(ctx, label, ex + w / 2, extrasY - 2);
         ex -= gap;
       });
-      extrasBottom = extrasY + 20;
+      extrasBottom = extrasY + 26;
     }
 
     // ۹. باکس قیمت — عنصر برجسته و طلایی
@@ -455,21 +455,21 @@ async function generateStoryImage(p) {
     rtlText(ctx, priceText, cx, priceY + 118);
 
     // ۱۰. مشاور
-    const agentY = priceY + priceH + 76;
+    const agentY = priceY + priceH + 80;
     if (p.agent_name || p.agent_phone) {
       ctx.fillStyle = T.inkSoft;
-      setFont(ctx, 500, 30);
+      setFont(ctx, 600, 36);
       rtlText(ctx, `👤 مشاور: ${p.agent_name || "اطلس املاک"}`, cx, agentY);
 
       if (p.agent_phone) {
         ctx.fillStyle = T.sale;
-        setFont(ctx, 700, 34);
-        rtlText(ctx, `📞 ${p.agent_phone}`, cx, agentY + 54);
+        setFont(ctx, 700, 40);
+        rtlText(ctx, `📞 ${p.agent_phone}`, cx, agentY + 62);
       }
     }
 
     // ۱۱. بنر پایانی — دعوت به بازدید از سایت (بزرگ‌تر و پرکنتراست‌تر)
-    const ctaH = 320;
+    const ctaH = 340;
     const ctaY = cardY + cardH - 64 - ctaH;
     ctx.fillStyle = T.ink;
     rr(ctx, padX, ctaY, contentW, ctaH, 28);
@@ -481,18 +481,18 @@ async function generateStoryImage(p) {
 
     // برچسب کوچک برنجی بالای بنر
     ctx.fillStyle = T.brass;
-    setFont(ctx, 700, 22);
-    rtlText(ctx, "همین حالا ببینید", cx, ctaY + 44, { spacing: 2 });
+    setFont(ctx, 700, 26);
+    rtlText(ctx, "همین حالا ببینید", cx, ctaY + 48, { spacing: 2 });
 
     // متن دعوت‌کننده با کنتراست بالا (کرم روشن روی جوهری تیره)
     ctx.fillStyle = "#FBF6EC";
-    setFont(ctx, 700, 34);
-    rtlText(ctx, "برای جزئیات کامل و آگهی‌های مشابه", cx, ctaY + 96);
-    rtlText(ctx, "در خادم‌آباد و باغستان", cx, ctaY + 140);
+    setFont(ctx, 700, 40);
+    rtlText(ctx, "برای جزئیات کامل و آگهی‌های مشابه", cx, ctaY + 104);
+    rtlText(ctx, "در خادم‌آباد و باغستان", cx, ctaY + 152);
 
     // دکمه‌ی دامنه
-    const btnY = ctaY + 176;
-    const btnH = 100;
+    const btnY = ctaY + 188;
+    const btnH = 108;
     ctx.fillStyle = T.brass;
     rr(ctx, padX + 50, btnY, contentW - 100, btnH, 18);
     ctx.fill();
@@ -500,8 +500,8 @@ async function generateStoryImage(p) {
     ctx.fillStyle = T.ink;
     ctx.direction = "ltr";
     ctx.textAlign = "center";
-    setFont(ctx, 800, 44);
-    ctx.fillText("atlas-amlak.ir", cx, btnY + btnH / 2 + 15);
+    setFont(ctx, 800, 48);
+    ctx.fillText("atlas-amlak.ir", cx, btnY + btnH / 2 + 16);
     ctx.direction = "rtl";
 
     // دانلود تصویر نهایی
