@@ -1,4 +1,4 @@
-// script.js — مدیریت کامل کارت‌ها، API زنده، فیلترها و اشتراک‌گذاری آگهی‌ها
+// script.js — مدیریت کامل کارت‌ها، API زنده، فیلترها و اشتراک‌گذاری هوشمند آگهی‌ها
 
 const BASE_API = typeof API_BASE_URL !== "undefined" ? API_BASE_URL : "https://api.atlas-amlak.ir";
 
@@ -155,7 +155,7 @@ if (loadMoreBtn) {
 }
 
 // --------------------------------------------------------------------- //
-// ۵. سیستم اشتراک‌گذاری آگهی‌ها (Share Buttons)
+// ۵. سیستم اشتراک‌گذاری هوشمند آگهی‌ها (متن کامل + لینک برای استوری)
 // --------------------------------------------------------------------- //
 document.addEventListener("click", async (e) => {
   const shareBtn = e.target.closest(".share-btn");
@@ -164,24 +164,44 @@ document.addEventListener("click", async (e) => {
   const code = shareBtn.getAttribute("data-code");
   if (!code) return;
 
+  // یافتن داده‌های کامل آگهی انتخاب شده
+  const p = allProperties.find((item) => String(item.code) === String(code));
   const shareUrl = `${window.location.origin}${window.location.pathname}?code=${code}`;
-  const shareTitle = `آگهی ملک کد ${code} - املاک اطلس`;
-  const shareText = `مشاهده مشخصات و جزئیات آگهی ملک کد ${code} در وب‌سایت املاک اطلس:`;
 
+  let shareText = "";
+  if (p) {
+    const extras = buildExtras(p);
+    const priceText = p.deal_type === "فروش" 
+      ? `💰 قیمت: ${p.price_total || "توافقی"}`
+      : `💰 رهن: ${p.rahn || "-"} | اجاره: ${p.ejare || "-"}`;
+
+    shareText = `${p.property_type || "ملک"} · کد ${p.code}
+📍 ${p.address || "خادم‌آباد"}
+📐 ${p.area_m2 ? p.area_m2 + " متر" : ""} ${p.rooms ? "- " + p.rooms + " خواب" : ""}
+${extras.length ? extras.join(" ") + "\n" : ""}${priceText}
+👤 ${p.agent_name || "مشاور املاک اطلس"} ${p.agent_phone ? "· 📞 " + p.agent_phone : ""}
+
+🌐 atlas-amlak.ir
+${shareUrl}`;
+  } else {
+    shareText = `مشاهده مشخصات کامل آگهی کد ${code} در املاک اطلس:\n${shareUrl}`;
+  }
+
+  // استفاده از Native Share برای موبایل
   if (navigator.share) {
     try {
       await navigator.share({
-        title: shareTitle,
-        text: shareText,
-        url: shareUrl,
+        title: `آگهی ملک کد ${code}`,
+        text: shareText
       });
     } catch (err) {
       if (err.name !== "AbortError") {
-        copyToClipboard(shareUrl, shareBtn);
+        copyToClipboard(shareText, shareBtn);
       }
     }
   } else {
-    copyToClipboard(shareUrl, shareBtn);
+    // کپی متن کامل در Clipboard برای دسکتاپ
+    copyToClipboard(shareText, shareBtn);
   }
 });
 
@@ -195,7 +215,7 @@ function copyToClipboard(text, btnElement) {
       btnElement.style.color = "";
     }, 2000);
   }).catch(() => {
-    alert("لینک آگهی: " + text);
+    alert("متن آگهی:\n" + text);
   });
 }
 
