@@ -10,9 +10,23 @@ from pathlib import Path
 # آدرس API بک‌اند شما
 API_URL = os.getenv("PROPERTIES_API_URL", "https://api.atlas-amlak.ir/api/properties")
 
-# یافتن مسیر دقیق پوشه اسکریپت و فایل index.html هم‌سطح با پوشه scripts
-SCRIPT_DIR = Path(__file__).resolve().parent
-INDEX_HTML = SCRIPT_DIR.parent / "index.html"
+def find_index_html() -> Path:
+    """جستجوی هوشمند فایل index.html در پوشه‌های مجاور و والد"""
+    script_dir = Path(__file__).resolve().parent
+    
+    # مسیرهایی که احتمال دارد index.html در آن‌ها باشد
+    candidate_paths = [
+        script_dir.parent / "index.html",                 # یک پوشه بالاتر (حالت استاندارد)
+        script_dir.parent.parent / "index.html",          # دو پوشه بالاتر
+        Path.cwd() / "index.html",                        # پوشه جاری اجرای گیت‌هاب
+        Path.cwd() / "realestate-site" / "index.html",    # ساختار پوشه فرعی
+    ]
+    
+    for path in candidate_paths:
+        if path.exists():
+            return path
+            
+    return None
 
 def update_snapshot():
     try:
@@ -21,13 +35,16 @@ def update_snapshot():
         response.raise_for_status()
         properties_json = response.text.strip()
 
-        if not INDEX_HTML.exists():
-            print(f"Error: Could not find index.html at {INDEX_HTML}")
+        index_html_path = find_index_html()
+
+        if not index_html_path:
+            print("Error: Could not find index.html in any expected locations.")
+            print(f"Current Working Directory: {Path.cwd()}")
             exit(1)
 
-        print(f"Found index.html at: {INDEX_HTML}")
+        print(f"Found index.html at: {index_html_path}")
 
-        with open(INDEX_HTML, "r", encoding="utf-8") as f:
+        with open(index_html_path, "r", encoding="utf-8") as f:
             content = f.read()
 
         start_marker = "<!-- SNAPSHOT_DATA_START -->"
@@ -39,7 +56,7 @@ def update_snapshot():
             
             new_content = f"{before}{start_marker}\n<script>window.__PRELOADED_PROPERTIES__ = {properties_json};</script>\n{end_marker}{after}"
 
-            with open(INDEX_HTML, "w", encoding="utf-8") as f:
+            with open(index_html_path, "w", encoding="utf-8") as f:
                 f.write(new_content)
             print("Snapshot updated successfully!")
         else:
