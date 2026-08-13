@@ -350,6 +350,12 @@ async function generateStoryImage(p) {
     rr(ctx, cardX, cardY, cardW, cardH, 36);
     ctx.stroke();
 
+    // خط ظریف سرمه‌ای داخل کارت — قاب ظریف به سبک اسناد رسمی
+    ctx.strokeStyle = "rgba(32,28,21,0.14)";
+    ctx.lineWidth = 1.2;
+    rr(ctx, cardX + 14, cardY + 14, cardW - 28, cardH - 28, 26);
+    ctx.stroke();
+
     const padX = cardX + 64;
     const contentW = cardW - 128;
 
@@ -480,7 +486,7 @@ async function generateStoryImage(p) {
     }
 
     // ۱۱. بنر پایانی — دعوت به بازدید از سایت (بزرگ‌تر و پرکنتراست‌تر)
-    const ctaH = 340;
+    const ctaH = 360;
     const ctaY = cardY + cardH - 64 - ctaH;
     ctx.fillStyle = T.ink;
     rr(ctx, padX, ctaY, contentW, ctaH, 28);
@@ -493,16 +499,16 @@ async function generateStoryImage(p) {
     // برچسب کوچک برنجی بالای بنر
     ctx.fillStyle = T.brass;
     setFont(ctx, 700, 26);
-    rtlText(ctx, "همین حالا ببینید", cx, ctaY + 48, { spacing: 2 });
+    rtlText(ctx, "همین حالا ببینید", cx, ctaY + 46, { spacing: 2 });
 
-    // متن دعوت‌کننده با کنتراست بالا (کرم روشن روی جوهری تیره)
+    // متن دعوت‌کننده با کنتراست بالا (کرم روشن روی جوهری تیره) — فاصله‌ی بیشتر بین دو خط
     ctx.fillStyle = "#FBF6EC";
     setFont(ctx, 700, 40);
-    rtlText(ctx, "برای جزئیات کامل و آگهی‌های مشابه", cx, ctaY + 104);
-    rtlText(ctx, "در خادم‌آباد و باغستان", cx, ctaY + 152);
+    rtlText(ctx, "برای جزئیات کامل و آگهی‌های مشابه", cx, ctaY + 112);
+    rtlText(ctx, "در خادم‌آباد و باغستان", cx, ctaY + 172);
 
     // دکمه‌ی دامنه
-    const btnY = ctaY + 188;
+    const btnY = ctaY + 210;
     const btnH = 108;
     ctx.fillStyle = T.brass;
     rr(ctx, padX + 50, btnY, contentW - 100, btnH, 18);
