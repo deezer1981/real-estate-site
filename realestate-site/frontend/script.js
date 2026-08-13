@@ -1,4 +1,4 @@
-// script.js — مدیریت کامل نمایش داده‌های اسنپ‌شات و API زنده
+// script.js — مدیریت کامل کارت‌ها، API زنده، فیلترها و اشتراک‌گذاری آگهی‌ها
 
 const BASE_API = typeof API_BASE_URL !== "undefined" ? API_BASE_URL : "https://api.atlas-amlak.ir";
 
@@ -46,7 +46,7 @@ function propertyCard(p) {
       <div class="card-body">
         <div class="card-top-row">
           <span class="deal-tag ${p.deal_type === "فروش" ? "sale" : "rent"}">${p.deal_type || "آگهی"}</span>
-          <button class="share-btn" data-code="${p.code || ''}" type="button">🔗 اشتراک</button>
+          <button class="share-btn" data-code="${p.code || ''}" type="button" aria-label="اشتراک‌گذاری آگهی">🔗 اشتراک</button>
         </div>
         <h3>${p.property_type || "ملک"} · کد ${p.code || "-"}</h3>
         <p class="card-meta">📍 ${shortAddress || "-"}</p>
@@ -79,7 +79,7 @@ function renderProperties() {
 }
 
 // --------------------------------------------------------------------- //
-// ۳. دریافت اطلاعات زنده از API (بدون حذف کارت‌های قبلی تا دریافت کامل)
+// ۳. دریافت اطلاعات زنده از API
 // --------------------------------------------------------------------- //
 async function loadProperties() {
   try {
@@ -155,7 +155,52 @@ if (loadMoreBtn) {
 }
 
 // --------------------------------------------------------------------- //
-// ۵. اجرای اولیه (بلافاصله از داده‌های پیش‌فرض خوانده و بنر را آپدیت می‌کند)
+// ۵. سیستم اشتراک‌گذاری آگهی‌ها (Share Buttons)
+// --------------------------------------------------------------------- //
+document.addEventListener("click", async (e) => {
+  const shareBtn = e.target.closest(".share-btn");
+  if (!shareBtn) return;
+
+  const code = shareBtn.getAttribute("data-code");
+  if (!code) return;
+
+  const shareUrl = `${window.location.origin}${window.location.pathname}?code=${code}`;
+  const shareTitle = `آگهی ملک کد ${code} - املاک اطلس`;
+  const shareText = `مشاهده مشخصات و جزئیات آگهی ملک کد ${code} در وب‌سایت املاک اطلس:`;
+
+  if (navigator.share) {
+    try {
+      await navigator.share({
+        title: shareTitle,
+        text: shareText,
+        url: shareUrl,
+      });
+    } catch (err) {
+      if (err.name !== "AbortError") {
+        copyToClipboard(shareUrl, shareBtn);
+      }
+    }
+  } else {
+    copyToClipboard(shareUrl, shareBtn);
+  }
+});
+
+function copyToClipboard(text, btnElement) {
+  navigator.clipboard.writeText(text).then(() => {
+    const originalText = btnElement.innerHTML;
+    btnElement.innerHTML = "✅ کپی شد";
+    btnElement.style.color = "#10b981";
+    setTimeout(() => {
+      btnElement.innerHTML = originalText;
+      btnElement.style.color = "";
+    }, 2000);
+  }).catch(() => {
+    alert("لینک آگهی: " + text);
+  });
+}
+
+// --------------------------------------------------------------------- //
+// ۶. اجرای اولیه
 // --------------------------------------------------------------------- //
 if (allProperties.length > 0) {
   currentFiltered = allProperties;
