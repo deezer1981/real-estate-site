@@ -202,7 +202,7 @@ if (loadMoreBtn) {
 }
 
 // --------------------------------------------------------------------- //
-// ۶. ساخت تصویر کارت آگهی (متن اصلاح‌شده با کلمات خادم آباد، باغستان و برند سایت اطلس املاک)
+// ۶. ساخت تصویر کارت آگهی (طراحی فوق‌العاده مدرن، شیک و منظم)
 // --------------------------------------------------------------------- //
 function generateStoryImage(p) {
   try {
@@ -215,135 +215,157 @@ function generateStoryImage(p) {
       ctx.direction = 'rtl';
     }
 
-    // پس‌زمینه کرم-بژ گرم
-    ctx.fillStyle = "#F5F3EF";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    // سربرگ بالایی برند
-    ctx.fillStyle = "#1E293B";
-    ctx.font = "bold 44px Tahoma, sans-serif";
-    ctx.textAlign = "center";
-    ctx.fillText("اطلس املاک خادم آباد", 540, 160);
-
-    // کارت اصلی سفید
-    ctx.fillStyle = "#FFFFFF";
-    if (ctx.roundRect) {
-      ctx.beginPath();
-      ctx.roundRect(80, 220, 920, 1480, 36);
-      ctx.fill();
-    } else {
-      ctx.fillRect(80, 220, 920, 1480);
-    }
-
-    // تگ نوع معامله
-    ctx.fillStyle = "#EAEFEA";
-    if (ctx.roundRect) {
-      ctx.beginPath();
-      ctx.roundRect(760, 280, 180, 64, 32);
-      ctx.fill();
-    } else {
-      ctx.fillRect(760, 280, 180, 64);
-    }
-    ctx.fillStyle = "#436353";
-    ctx.font = "bold 32px Tahoma, sans-serif";
-    ctx.textAlign = "center";
-    ctx.fillText(p.deal_type || "فروش", 850, 324);
-
-    // دکمه اشتراک
-    ctx.fillStyle = "#436353";
-    if (ctx.roundRect) {
-      ctx.beginPath();
-      ctx.roundRect(140, 280, 180, 64, 32);
-      ctx.fill();
-    } else {
-      ctx.fillRect(140, 280, 180, 64);
-    }
-    ctx.fillStyle = "#FFFFFF";
-    ctx.font = "bold 28px Tahoma, sans-serif";
-    ctx.fillText("🔗 اشتراک", 230, 322);
-
     const rtl = "\u202B";
 
-    // عنوان ملک و کد
-    ctx.fillStyle = "#1E293B";
-    ctx.font = "bold 54px Tahoma, sans-serif";
+    // ۱. پس‌زمینه اصلی (گرادیان مدرن)
+    const bgGradient = ctx.createLinearGradient(0, 0, 0, 1920);
+    bgGradient.addColorStop(0, "#0F172A");
+    bgGradient.addColorStop(1, "#1E293B");
+    ctx.fillStyle = bgGradient;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // ۲. هدر بالای کارت
+    ctx.fillStyle = "#94A3B8";
+    ctx.font = "500 32px Vazirmatn, Tahoma, sans-serif";
     ctx.textAlign = "center";
-    ctx.fillText(`${rtl}${p.property_type || "آپارتمان"} · کد ${p.code || "-"}`, 540, 440);
+    ctx.fillText(`${rtl}سامانه تخصصی املاک`, 540, 130);
 
-    // آدرس
+    ctx.fillStyle = "#FFFFFF";
+    ctx.font = "bold 52px Vazirmatn, Tahoma, sans-serif";
+    ctx.fillText(`${rtl}اطلس املاک خادم آباد`, 540, 200);
+
+    // ۳. بدنه اصلی کارت سفید
+    const cardX = 70;
+    const cardY = 260;
+    const cardW = 940;
+    const cardH = 1560;
+
+    ctx.fillStyle = "#FFFFFF";
+    if (ctx.roundRect) {
+      ctx.beginPath();
+      ctx.roundRect(cardX, cardY, cardW, cardH, 40);
+      ctx.fill();
+    } else {
+      ctx.fillRect(cardX, cardY, cardW, cardH);
+    }
+
+    // ۴. نشانگر معامله (فروش/اجاره)
+    const dealColor = p.deal_type === "فروش" ? "#059669" : "#D97706";
+    ctx.fillStyle = dealColor;
+    if (ctx.roundRect) {
+      ctx.beginPath();
+      ctx.roundRect(120, 310, 160, 60, 30);
+      ctx.fill();
+    } else {
+      ctx.fillRect(120, 310, 160, 60);
+    }
+    ctx.fillStyle = "#FFFFFF";
+    ctx.font = "bold 28px Vazirmatn, Tahoma, sans-serif";
+    ctx.fillText(p.deal_type || "آگهی", 200, 352);
+
+    // ۵. عنوان ملک و کد
+    ctx.fillStyle = "#0F172A";
+    ctx.font = "bold 58px Vazirmatn, Tahoma, sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText(`${rtl}${p.property_type || "آپارتمان"}`, 540, 420);
+
     ctx.fillStyle = "#64748B";
-    ctx.font = "36px Tahoma, sans-serif";
-    ctx.fillText(`${rtl}📍 ${truncateAddress(p.address) || "-"}`, 540, 530);
+    ctx.font = "500 34px Vazirmatn, Tahoma, sans-serif";
+    ctx.fillText(`${rtl}کد آگهی: ${p.code || "-"}`, 540, 480);
 
-    // متراژ و تعداد خواب
-    ctx.fillStyle = "#334155";
-    ctx.font = "bold 38px Tahoma, sans-serif";
-    const areaText = `${p.area_m2 ? p.area_m2 + " متر" : ""} ${p.rooms ? "· " + p.rooms + " خواب" : ""}`;
-    ctx.fillText(`${rtl}${areaText}`, 540, 610);
-
-    // امکانات
-    const extras = buildExtras(p);
-    if (extras.length > 0) {
-      ctx.font = "34px Tahoma, sans-serif";
-      ctx.fillStyle = "#64748B";
-      ctx.fillText(`${rtl}${extras.join("  |  ")}`, 540, 690);
-    }
-
-    // قیمت
-    const isSale = p.deal_type === "فروش";
-    const priceText = isSale
-      ? `💰 ${p.price_total || "توافقی"}`
-      : `💰 رهن: ${p.rahn || "-"} | اجاره: ${p.ejare || "-"}`;
-
-    ctx.fillStyle = "#1E293B";
-    ctx.font = "bold 52px Tahoma, sans-serif";
-    ctx.fillText(`${rtl}${priceText}`, 540, 800);
-
-    // خط جداکننده
-    ctx.strokeStyle = "#E2E8F0";
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(140, 870);
-    ctx.lineTo(940, 870);
-    ctx.stroke();
-
-    // نام و شماره مشاور
-    if (p.agent_name) {
-      ctx.fillStyle = "#475569";
-      ctx.font = "36px Tahoma, sans-serif";
-      ctx.fillText(`${rtl}👤 مشاور: ${p.agent_name}`, 540, 940);
-    }
-    if (p.agent_phone) {
-      ctx.fillStyle = "#436353";
-      ctx.font = "bold 42px Tahoma, sans-serif";
-      ctx.fillText(`${rtl}📞 ${p.agent_phone}`, 540, 1010);
-    }
-
-    // باکس پایین کارت (شامل کلمات خادم آباد، باغستان و نام سایت اطلس املاک)
+    // ۶. باکس مشخصات اصلی (متراژ و تعداد خواب)
     ctx.fillStyle = "#F8FAFC";
     ctx.strokeStyle = "#E2E8F0";
     ctx.lineWidth = 2;
     if (ctx.roundRect) {
       ctx.beginPath();
-      ctx.roundRect(120, 1120, 840, 480, 24);
+      ctx.roundRect(120, 520, 840, 120, 20);
       ctx.fill();
       ctx.stroke();
-    } else {
-      ctx.fillRect(120, 1120, 840, 480);
-      ctx.strokeRect(120, 1120, 840, 480);
     }
 
-    ctx.fillStyle = "#475569";
-    ctx.font = "32px Tahoma, sans-serif";
-    ctx.fillText("جهت مشاهده جزئیات بیشتر این ملک و بررسی", 540, 1200);
-    ctx.fillText("آگهی‌های مشابه در خادم آباد و باغستان،", 540, 1260);
-    ctx.fillText("لطفا به سایت اطلس املاک مراجعه کنید:", 540, 1320);
-
     ctx.fillStyle = "#1E293B";
-    ctx.font = "bold 46px sans-serif";
-    ctx.direction = "ltr";
-    ctx.fillText("www.atlas-amlak.com", 540, 1420);
+    ctx.font = "bold 38px Vazirmatn, Tahoma, sans-serif";
+    const specsText = `${p.area_m2 ? p.area_m2 + " متر مربع" : ""}   ${p.rooms ? "•   " + p.rooms + " خواب" : ""}`;
+    ctx.fillText(`${rtl}${specsText}`, 540, 595);
 
+    // ۷. آدرس ملک
+    ctx.fillStyle = "#475569";
+    ctx.font = "500 34px Vazirmatn, Tahoma, sans-serif";
+    ctx.fillText(`${rtl}📍 ${truncateAddress(p.address) || "محدوده خادم آباد"}`, 540, 700);
+
+    // ۸. امکانات (در صورت وجود)
+    const extras = buildExtras(p);
+    if (extras.length > 0) {
+      ctx.fillStyle = "#64748B";
+      ctx.font = "400 32px Vazirmatn, Tahoma, sans-serif";
+      ctx.fillText(`${rtl}${extras.join("   |   ")}`, 540, 770);
+    }
+
+    // ۹. باکس قیمت (بزرگ و شیک)
+    const priceY = extras.length > 0 ? 830 : 770;
+    ctx.fillStyle = "#F1F5F9";
+    if (ctx.roundRect) {
+      ctx.beginPath();
+      ctx.roundRect(120, priceY, 840, 130, 24);
+      ctx.fill();
+    }
+
+    const isSale = p.deal_type === "فروش";
+    const priceText = isSale
+      ? `قیمت: ${p.price_total || "توافقی"}`
+      : `رهن: ${p.rahn || "-"}  |  اجاره: ${p.ejare || "-"}`;
+
+    ctx.fillStyle = "#0F172A";
+    ctx.font = "bold 44px Vazirmatn, Tahoma, sans-serif";
+    ctx.fillText(`${rtl}💰 ${priceText}`, 540, priceY + 80);
+
+    // ۱۰. اطلاعات مشاور
+    const agentY = priceY + 180;
+    if (p.agent_name || p.agent_phone) {
+      ctx.fillStyle = "#334155";
+      ctx.font = "500 34px Vazirmatn, Tahoma, sans-serif";
+      ctx.fillText(`${rtl}👤 مشاور: ${p.agent_name || "املاک اطلس"}`, 540, agentY);
+
+      if (p.agent_phone) {
+        ctx.fillStyle = "#059669";
+        ctx.font = "bold 38px Vazirmatn, Tahoma, sans-serif";
+        ctx.fillText(`${rtl}📞 ${p.agent_phone}`, 540, agentY + 60);
+      }
+    }
+
+    // ۱۱. بنر انتهایی و مدرن دعوت به سایت (CTA)
+    const ctaY = 1320;
+    ctx.fillStyle = "#0F172A";
+    if (ctx.roundRect) {
+      ctx.beginPath();
+      ctx.roundRect(120, ctaY, 840, 420, 28);
+      ctx.fill();
+    }
+
+    ctx.fillStyle = "#94A3B8";
+    ctx.font = "400 28px Vazirmatn, Tahoma, sans-serif";
+    ctx.fillText(`${rtl}جهت مشاهده جزئیات بیشتر این ملک و بررسی`, 540, ctaY + 80);
+    ctx.fillText(`${rtl}آگهی‌های مشابه در خادم آباد و باغستان،`, 540, ctaY + 130);
+
+    ctx.fillStyle = "#38BDF8";
+    ctx.font = "bold 32px Vazirmatn, Tahoma, sans-serif";
+    ctx.fillText(`${rtl}لطفاً به سایت اطلس املاک مراجعه کنید:`, 540, ctaY + 200);
+
+    // آدرس دامنه‌ی انگلیسی در کادر برجسته
+    ctx.fillStyle = "#1E293B";
+    if (ctx.roundRect) {
+      ctx.beginPath();
+      ctx.roundRect(180, ctaY + 250, 720, 100, 20);
+      ctx.fill();
+    }
+
+    ctx.fillStyle = "#38BDF8";
+    ctx.font = "bold 44px sans-serif";
+    ctx.direction = "ltr";
+    ctx.fillText("www.atlas-amlak.com", 540, ctaY + 315);
+
+    // دانلود عکس
     const downloadCanvas = () => {
       const dataUrl = canvas.toDataURL("image/png");
       const a = document.createElement("a");
@@ -390,7 +412,7 @@ ${shareUrl}`;
         <p style="margin: 0 0 20px; color: #64748B; font-size: 0.85rem;">کدام قالب را برای ارسال تمایل دارید؟</p>
         
         <div style="display: flex; flex-direction: column; gap: 12px;">
-          <button id="modalStoryBtn" type="button" style="background: #436353; color: #FFFFFF; border: none; padding: 12px; border-radius: 12px; font-weight: 700; font-size: 0.9rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
+          <button id="modalStoryBtn" type="button" style="background: #0F172A; color: #FFFFFF; border: none; padding: 12px; border-radius: 12px; font-weight: 700; font-size: 0.9rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
             🖼️ دانلود کارت آگهی
           </button>
           <button id="modalTextBtn" type="button" style="background: #F8FAFC; color: #1E293B; border: 1px solid #CBD5E1; padding: 12px; border-radius: 12px; font-weight: 700; font-size: 0.9rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
