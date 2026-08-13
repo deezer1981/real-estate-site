@@ -63,7 +63,8 @@ function propertyCard(p) {
   const extras = buildExtras(p);
   const shortAddress = truncateAddress(p.address);
   const agentLine = p.agent_name ? `<p class="card-agent">👤 ثبت‌شده توسط: <strong>${p.agent_name}</strong></p>` : "";
-  const agentCallBtn = p.agent_phone ? `<a class="agent-call-btn" href="tel:${p.agent_phone}">📞 تماس با ${p.agent_name || "مشاور"}</a>` : "";
+  // همیشه تماس اصلی به دفتر اطلس می‌رود (طبق تصمیم کسب‌وکار)
+  const agentCallBtn = `<a class="agent-call-btn" href="tel:09106943220">📞 تماس با دفتر اطلس</a>`;
 
   const wrapperStyle = isSingleMode
     ? 'grid-column: 1 / -1; max-width: 540px; margin: 0 auto; width: 100%;'
@@ -676,3 +677,68 @@ if (allProperties.length > 0) {
   }
 }
 loadProperties();
+
+// --------------------------------------------------------------------- //
+// ۹. فرم ثبت فایل ملک
+// --------------------------------------------------------------------- //
+const submitForm = document.getElementById("submitPropertyForm");
+const isAgentSelect = document.getElementById("submitIsAgent");
+const agentNameGroup = document.getElementById("agentNameGroup");
+
+if (isAgentSelect && agentNameGroup) {
+  isAgentSelect.addEventListener("change", () => {
+    agentNameGroup.style.display = isAgentSelect.value === "yes" ? "block" : "none";
+  });
+}
+
+if (submitForm) {
+  submitForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const statusEl = document.getElementById("submitFormStatus");
+    const btn = submitForm.querySelector("button[type=submit]");
+    
+    const payload = {
+      deal_type: document.getElementById("submitDealType").value,
+      property_type: document.getElementById("submitPropertyType").value,
+      address: document.getElementById("submitAddress").value.trim(),
+      area_m2: document.getElementById("submitArea").value.trim(),
+      rooms: document.getElementById("submitRooms").value.trim(),
+      price_info: document.getElementById("submitPrice").value.trim(),
+      parking: document.getElementById("submitParking").checked,
+      elevator: document.getElementById("submitElevator").checked,
+      storage: document.getElementById("submitStorage").checked,
+      description: document.getElementById("submitDescription").value.trim(),
+      submitter_name: document.getElementById("submitName").value.trim(),
+      submitter_phone: document.getElementById("submitPhone").value.trim(),
+      is_agent: document.getElementById("submitIsAgent").value === "yes",
+      agent_name: document.getElementById("submitAgentName")?.value.trim() || "",
+      source: "website"
+    };
+
+    btn.disabled = true;
+    btn.textContent = "در حال ارسال...";
+    statusEl.textContent = "";
+    statusEl.className = "form-status";
+
+    try {
+      const res = await fetch(`${BASE_API}/api/pending-properties`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+
+      if (!res.ok) throw new Error("خطا در ارسال");
+
+      statusEl.textContent = "✅ فایل با موفقیت ارسال شد. به زودی با شما تماس می‌گیریم.";
+      statusEl.classList.add("success");
+      submitForm.reset();
+      if (agentNameGroup) agentNameGroup.style.display = "none";
+    } catch (err) {
+      statusEl.textContent = "❌ مشکلی پیش آمد. لطفاً دوباره تلاش کنید یا مستقیم تماس بگیرید.";
+      statusEl.classList.add("error");
+    } finally {
+      btn.disabled = false;
+      btn.textContent = "ارسال فایل برای بررسی";
+    }
+  });
+}
