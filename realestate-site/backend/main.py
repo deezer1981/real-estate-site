@@ -5,17 +5,22 @@ Atlas Amlak — Website API
 
 1) گوگل‌شیت املاک (همون شیتی که ربات تلگرام "اطلس" هم ازش می‌خونه) — فقط خواندن.
    هیچ تغییری روی کد یا رفتار ربات ایجاد نمی‌کند.
-2) دیتابیس Postgres (Supabase) — برای ذخیره‌ی درخواست‌های تماس (لید) و فایل‌های در انتظار تایید از سایت.
+2) دیتابیس Postgres (Supabase) — برای ذخیره‌ی درخواست‌های تماس (لید).
+3) Google Apps Script Web App — برای ثبت فایل‌های «در انتظار تایید» از فرم سایت
+   (مستقیم می‌ره توی تب انتظار تایید شیت، همون جایی که ربات هم استفاده می‌کنه).
 
 متغیرهای محیطی لازم:
 - SPREADSHEET_ID   -> همون مقداری که در Environment سرویس ربات روی Render ست شده
 - DATABASE_URL     -> آدرس Postgres (Supabase)
-- API_KEY          -> رمز دلخواه برای مشاهده‌ی لیدها و فایل‌های pending
+- API_KEY          -> رمز دلخواه برای مشاهده‌ی لیدها
+- APPS_SCRIPT_URL  -> لینک Web App اسکریپت (اختیاری، مقدار پیش‌فرض داره)
 """
 
 import csv
 import os
 import time
+import uuid
+import json
 from datetime import datetime
 from io import StringIO
 from typing import Optional, List
@@ -33,6 +38,12 @@ from sqlalchemy.orm import declarative_base, sessionmaker
 
 SPREADSHEET_ID = os.getenv("SPREADSHEET_ID", "")
 API_KEY = os.getenv("API_KEY", "change-me")
+
+# لینک Web App گوگل‌اسکریپت (همون که ربات هم ازش استفاده می‌کنه)
+APPS_SCRIPT_URL = os.getenv(
+    "APPS_SCRIPT_URL",
+    "https://script.google.com/macros/s/AKfycbxLJvAiBpq43s0fL37h2w5ReenrJlj6rxXmpCiXG61A2mfKOA0Yyef3e8t0JPh8V-b_3Q/exec"
+)
 
 # همون GID هایی که توی کد ربات هم استفاده شده (تب‌های گوگل‌شیت)
 SHEET_GIDS = {
@@ -52,7 +63,7 @@ Base = declarative_base()
 
 
 # --------------------------------------------------------------------------- #
-# مدل دیتابیس — لیدها + فایل‌های در انتظار تایید
+# مدل دیتابیس — فقط برای لیدهای سایت
 # --------------------------------------------------------------------------- #
 
 class Lead(Base):
@@ -62,31 +73,8 @@ class Lead(Base):
     name = Column(String, nullable=False)
     phone = Column(String, nullable=False)
     message = Column(Text, default="")
-    property_code = Column(String, nullable=True)  # کد آگهی مرتبط
+    property_code = Column(String, nullable=True)
     source = Column(String, default="website")
-    created_at = Column(DateTime, default=datetime.utcnow)
-
-
-class PendingProperty(Base):
-    __tablename__ = "pending_properties"
-
-    id = Column(Integer, primary_key=True, index=True)
-    deal_type = Column(String, nullable=False)
-    property_type = Column(String, nullable=False)
-    address = Column(String, nullable=False)
-    area_m2 = Column(String, default="")
-    rooms = Column(String, default="")
-    price_info = Column(String, nullable=False)
-    parking = Column(Integer, default=0)  # 0 یا 1
-    elevator = Column(Integer, default=0)
-    storage = Column(Integer, default=0)
-    description = Column(Text, default="")
-    submitter_name = Column(String, nullable=False)
-    submitter_phone = Column(String, nullable=False)
-    is_agent = Column(Integer, default=0)
-    agent_name = Column(String, default="")
-    source = Column(String, default="website")
-    status = Column(String, default="pending")  # pending / approved / rejected
     created_at = Column(DateTime, default=datetime.utcnow)
 
 
@@ -205,13 +193,11 @@ app.add_middleware(
 )
 
 
-# اضافه کردن متد HEAD برای پاسخگویی به UptimeRobot در صفحه اصلی
 @app.api_route("/", methods=["GET", "HEAD"])
 def root():
     return {"status": "ok", "service": "atlas-amlak-website-api"}
 
 
-# اضافه کردن متد HEAD برای لیست آگهی‌ها
 @app.api_route("/api/properties", methods=["GET", "HEAD"])
 async def list_properties(deal_type: Optional[str] = None):
     deal_types = [deal_type] if deal_type in SHEET_GIDS else list(SHEET_GIDS.keys())
@@ -244,61 +230,71 @@ def list_leads(x_api_key: Optional[str] = Header(None)):
 
 
 @app.post("/api/pending-properties")
-def create_pending_property(item: PendingPropertyIn):
-    db = SessionLocal()
-    obj = PendingProperty(
-        deal_type=item.deal_type,
-        property_type=item.property_type,
-        address=item.address,
-        area_m2=item.area_m2,
-        rooms=item.rooms,
-        price_info=item.price_info,
-        parking=1 if item.parking else 0,
-        elevator=1 if item.elevator else 0,
-        storage=1 if item.storage else 0,
-        description=item.description,
-        submitter_name=item.submitter_name,
-        submitter_phone=item.submitter_phone,
-        is_agent=1 if item.is_agent else 0,
-        agent_name=item.agent_name,
-        source=item.source,
-        status="pending"
-    )
-    db.add(obj)
-    db.commit()
-    db.refresh(obj)
-    db.close()
-    return {"ok": True, "id": obj.id, "message": "فایل با موفقیت ثبت شد و در انتظار بررسی است"}
+async def create_pending_property(item: PendingPropertyIn):
+    """
+    فایل ثبت‌شده از فرم سایت را مستقیم به تب «در انتظار تایید»
+    گوگل‌شیت می‌فرستد (از طریق Apps Script Web App).
+    """
+    # ساخت شناسه یکتا
+    pending_id = f"web-{int(time.time())}-{uuid.uuid4().hex[:6]}"
 
+    # ساخت آبجکت فیلدها برای ذخیره در ستون «فیلدها» (JSON)
+    fields = {
+        "address": item.address,
+        "area_m2": item.area_m2,
+        "rooms": item.rooms,
+        "price_info": item.price_info,
+        "parking": item.parking,
+        "elevator": item.elevator,
+        "storage": item.storage,
+        "description": item.description,
+        "submitter_phone": item.submitter_phone,
+        "source": item.source or "website",
+    }
+    fields_json = json.dumps(fields, ensure_ascii=False)
 
-@app.get("/api/pending-properties")
-def list_pending_properties(x_api_key: Optional[str] = Header(None)):
-    if x_api_key != API_KEY:
-        raise HTTPException(status_code=401, detail="Invalid API key")
-    db = SessionLocal()
-    result = db.query(PendingProperty).filter(PendingProperty.status == "pending").order_by(PendingProperty.created_at.desc()).all()
-    db.close()
-    # تبدیل به دیکشنری ساده برای خروجی
-    return [
-        {
-            "id": r.id,
-            "deal_type": r.deal_type,
-            "property_type": r.property_type,
-            "address": r.address,
-            "area_m2": r.area_m2,
-            "rooms": r.rooms,
-            "price_info": r.price_info,
-            "parking": bool(r.parking),
-            "elevator": bool(r.elevator),
-            "storage": bool(r.storage),
-            "description": r.description,
-            "submitter_name": r.submitter_name,
-            "submitter_phone": r.submitter_phone,
-            "is_agent": bool(r.is_agent),
-            "agent_name": r.agent_name,
-            "source": r.source,
-            "status": r.status,
-            "created_at": r.created_at.isoformat() if r.created_at else None,
+    # تاریخ ساده
+    now_str = datetime.now().strftime("%Y-%m-%d %H:%M")
+
+    payload = {
+        "action": "save_pending",
+        "pending_id": pending_id,
+        "deal_type": item.deal_type,
+        "property_type": item.property_type,
+        "fields_json": fields_json,
+        "owner_chat_id": "",
+        "owner_username": "",
+        "owner_full_name": item.submitter_name,
+        "advisor_name": item.agent_name if item.is_agent else "",
+        "advisor_phone": item.submitter_phone if item.is_agent else "",
+        "date": now_str,
+    }
+
+    try:
+        async with httpx.AsyncClient(timeout=20, follow_redirects=True) as client:
+            resp = await client.post(APPS_SCRIPT_URL, json=payload)
+
+        if resp.status_code >= 400:
+            raise HTTPException(
+                status_code=502,
+                detail=f"Apps Script error: {resp.status_code} - {resp.text[:200]}"
+            )
+
+        try:
+            result = resp.json()
+        except Exception:
+            result = {"status": "ok", "raw": resp.text[:200]}
+
+        if isinstance(result, dict) and result.get("status") == "error":
+            raise HTTPException(status_code=502, detail=result.get("message", "Apps Script returned error"))
+
+        return {
+            "ok": True,
+            "pending_id": pending_id,
+            "message": "فایل با موفقیت در تب «در انتظار تایید» ثبت شد"
         }
-        for r in result
-    ]
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=502, detail=f"خطا در ارتباط با گوگل‌شیت: {str(e)}")
