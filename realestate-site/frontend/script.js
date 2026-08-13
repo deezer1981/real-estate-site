@@ -1,4 +1,4 @@
-// script.js — مدیریت کامل کارت‌ها، API زنده، فیلترها و اشتراک‌گذاری هوشمند آگهی‌ها
+// script.js — مدیریت کامل کارت‌ها، API زنده، فیلترها و اشتراک‌گذاری هوشمند املاک
 
 const BASE_API = typeof API_BASE_URL !== "undefined" ? API_BASE_URL : "https://api.atlas-amlak.ir";
 
@@ -155,7 +155,7 @@ if (loadMoreBtn) {
 }
 
 // --------------------------------------------------------------------- //
-// ۵. سیستم اشتراک‌گذاری هوشمند آگهی‌ها (متن کامل + لینک برای استوری)
+// ۵. سیستم اشتراک‌گذاری دسکتاپ و موبایل
 // --------------------------------------------------------------------- //
 document.addEventListener("click", async (e) => {
   const shareBtn = e.target.closest(".share-btn");
@@ -164,7 +164,6 @@ document.addEventListener("click", async (e) => {
   const code = shareBtn.getAttribute("data-code");
   if (!code) return;
 
-  // یافتن داده‌های کامل آگهی انتخاب شده
   const p = allProperties.find((item) => String(item.code) === String(code));
   const shareUrl = `${window.location.origin}${window.location.pathname}?code=${code}`;
 
@@ -187,36 +186,62 @@ ${shareUrl}`;
     shareText = `مشاهده مشخصات کامل آگهی کد ${code} در املاک اطلس:\n${shareUrl}`;
   }
 
-  // استفاده از Native Share برای موبایل
+  // ۱. اگر مرورگر از Web Share API پشتیبانی کند (موبایل‌ها)
   if (navigator.share) {
     try {
       await navigator.share({
         title: `آگهی ملک کد ${code}`,
         text: shareText
       });
+      return;
     } catch (err) {
-      if (err.name !== "AbortError") {
-        copyToClipboard(shareText, shareBtn);
-      }
+      if (err.name === "AbortError") return; // انصراف کاربر
     }
-  } else {
-    // کپی متن کامل در Clipboard برای دسکتاپ
-    copyToClipboard(shareText, shareBtn);
   }
+
+  // ۲. کپی در حافظه با متد قدرتمند برای لپ‌تاپ/دسکتاپ
+  copyTextToClipboard(shareText, shareBtn);
 });
 
-function copyToClipboard(text, btnElement) {
-  navigator.clipboard.writeText(text).then(() => {
-    const originalText = btnElement.innerHTML;
-    btnElement.innerHTML = "✅ کپی شد";
-    btnElement.style.color = "#10b981";
-    setTimeout(() => {
-      btnElement.innerHTML = originalText;
-      btnElement.style.color = "";
-    }, 2000);
-  }).catch(() => {
-    alert("متن آگهی:\n" + text);
-  });
+function copyTextToClipboard(text, btnElement) {
+  if (navigator.clipboard && window.isSecureContext) {
+    navigator.clipboard.writeText(text).then(() => {
+      showCopySuccess(btnElement);
+    }).catch(() => {
+      fallbackCopyText(text, btnElement);
+    });
+  } else {
+    fallbackCopyText(text, btnElement);
+  }
+}
+
+function fallbackCopyText(text, btnElement) {
+  const textArea = document.createElement("textarea");
+  textArea.value = text;
+  textArea.style.position = "fixed";
+  textArea.style.left = "-999999px";
+  textArea.style.top = "-999999px";
+  document.body.appendChild(textArea);
+  textArea.focus();
+  textArea.select();
+
+  try {
+    document.execCommand('copy');
+    showCopySuccess(btnElement);
+  } catch (err) {
+    alert("امکان کپی خودکار وجود ندارد. لینک آگهی:\n" + text);
+  }
+  document.body.removeChild(textArea);
+}
+
+function showCopySuccess(btnElement) {
+  const originalText = btnElement.innerHTML;
+  btnElement.innerHTML = "✅ کپی شد";
+  btnElement.style.color = "#10b981";
+  setTimeout(() => {
+    btnElement.innerHTML = originalText;
+    btnElement.style.color = "";
+  }, 2000);
 }
 
 // --------------------------------------------------------------------- //
