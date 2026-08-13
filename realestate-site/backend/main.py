@@ -31,7 +31,7 @@ from sqlalchemy.orm import declarative_base, sessionmaker
 # پیکربندی
 # --------------------------------------------------------------------------- #
 
-SPREADSHEET_ID = os.getenv("SPREADSHEET_ID", "")  # placeholder to keep diff minimal
+SPREADSHEET_ID = os.getenv("SPREADSHEET_ID", "")
 API_KEY = os.getenv("API_KEY", "change-me")
 
 # همون GID هایی که توی کد ربات هم استفاده شده (تب‌های گوگل‌شیت)
@@ -62,7 +62,7 @@ class Lead(Base):
     name = Column(String, nullable=False)
     phone = Column(String, nullable=False)
     message = Column(Text, default="")
-    property_code = Column(String, nullable=True)  # کد آگهی مرتبط، اگر از صفحه‌ی یک ملک خاص ارسال شده
+    property_code = Column(String, nullable=True)  # کد آگهی مرتبط
     source = Column(String, default="website")
     created_at = Column(DateTime, default=datetime.utcnow)
 
@@ -151,7 +151,7 @@ def row_to_property(row: dict, deal_type: str) -> dict:
 
 
 # --------------------------------------------------------------------------- #
-# اپ
+# اپ FastAPI
 # --------------------------------------------------------------------------- #
 
 app = FastAPI(title="Atlas Amlak Website API")
@@ -164,12 +164,14 @@ app.add_middleware(
 )
 
 
-@app.get("/")
+# اضافه کردن متد HEAD برای پاسخگویی به UptimeRobot در صفحه اصلی
+@app.api_route("/", methods=["GET", "HEAD"])
 def root():
     return {"status": "ok", "service": "atlas-amlak-website-api"}
 
 
-@app.get("/api/properties")
+# اضافه کردن متد HEAD برای لیست آگهی‌ها
+@app.api_route("/api/properties", methods=["GET", "HEAD"])
 async def list_properties(deal_type: Optional[str] = None):
     deal_types = [deal_type] if deal_type in SHEET_GIDS else list(SHEET_GIDS.keys())
     result: list[dict] = []
