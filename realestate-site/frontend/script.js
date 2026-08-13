@@ -1,4 +1,4 @@
-// script.js — مدیریت کامل کارت‌ها، API زنده، فیلترها، اشتراک‌گذاری و مشاهده تک‌آگهی
+// script.js — مدیریت کارت‌ها، API زنده، فیلترها، اشتراک‌گذاری و حالت تک‌آگهی شکیل
 
 const BASE_API = typeof API_BASE_URL !== "undefined" ? API_BASE_URL : "https://api.atlas-amlak.ir";
 
@@ -13,7 +13,7 @@ const PAGE_SIZE = 6;
 let visibleCount = PAGE_SIZE;
 
 // --------------------------------------------------------------------- //
-// ۱. بررسی لینک ورود (اگر کاربر با لینک تک‌آگهی مثل ?code=1013 وارد شده باشد)
+// ۱. بررسی ورود با لینک اختصاصی (?code=1013)
 // --------------------------------------------------------------------- //
 function getQueryParam(param) {
   const urlParams = new URLSearchParams(window.location.search);
@@ -29,14 +29,8 @@ function checkSinglePropertyMode() {
     currentFiltered = [found];
     visibleCount = 1;
 
-    // اضافه کردن بنر/دکمه بازگشت به همه آگهی‌ها
-    if (statsText) {
-      statsText.parentNode.innerHTML = `
-        <div style="display:flex; justify-between; align-items:center; width:100%; padding: 5px 0;">
-          <span style="font-weight:bold;">📍 آگهی انتخاب شده (کد ${targetCode})</span>
-          <a href="${window.location.pathname}" style="background:#0284c7; color:#fff; padding:6px 14px; border-radius:8px; text-decoration:none; font-size:13px; font-weight:bold;">🔙 بازگشت به همه آگهی‌ها</a>
-        </div>
-      `;
+    if (resultCount) {
+      resultCount.textContent = `نمایش آگهی کد ${targetCode}`;
     }
     renderProperties();
     if (loadMoreBtn) loadMoreBtn.hidden = true;
@@ -46,7 +40,7 @@ function checkSinglePropertyMode() {
 }
 
 // --------------------------------------------------------------------- //
-// ۲. توابع کمکی ساخت کارت و خلاصه سازی
+// ۲. توابع ساخت کارت و لاین بازگشت شکیل
 // --------------------------------------------------------------------- //
 function truncateAddress(address) {
   if (!address) return "";
@@ -65,6 +59,19 @@ function buildExtras(p) {
 }
 
 function propertyCard(p) {
+  const isSingleMode = Boolean(getQueryParam("code"));
+  
+  // لاین خوش‌رنگ بالای کارت فقط در حالت تک‌آگهی
+  const backBanner = isSingleMode ? `
+    <div style="background: linear-gradient(135deg, #0284c7, #2563eb); color: #ffffff; border-radius: 12px; padding: 10px 16px; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; font-size: 13px; font-weight: 600; box-shadow: 0 4px 12px rgba(37,99,235,0.15);">
+      <span>📍 آگهی انتخاب‌شده</span>
+      <a href="${window.location.pathname}" style="color: #ffffff; text-decoration: none; display: inline-flex; align-items: center; gap: 4px; background: rgba(255,255,255,0.2); padding: 4px 12px; border-radius: 8px; transition: background 0.2s;">
+        <span>مشاهده همه آگهی‌ها</span>
+        <span style="font-size: 15px;">➔</span>
+      </a>
+    </div>
+  ` : "";
+
   const priceLine = p.deal_type === "فروش"
     ? `<p class="card-price">💰 ${p.price_total || "توافقی"}</p>`
     : `<p class="card-price">💰 رهن: ${p.rahn || "-"} | اجاره: ${p.ejare || "-"}</p>`;
@@ -75,26 +82,29 @@ function propertyCard(p) {
   const agentCallBtn = p.agent_phone ? `<a class="agent-call-btn" href="tel:${p.agent_phone}">📞 تماس با ${p.agent_name || "مشاور"}</a>` : "";
 
   return `
-    <article class="card" id="card-${p.code || ''}" data-code="${p.code || ''}">
-      <div class="card-body">
-        <div class="card-top-row">
-          <span class="deal-tag ${p.deal_type === "فروش" ? "sale" : "rent"}">${p.deal_type || "آگهی"}</span>
-          <button class="share-btn" data-code="${p.code || ''}" type="button" aria-label="اشتراک‌گذاری آگهی">🔗 اشتراک</button>
+    <div style="grid-column: 1 / -1; max-width: ${isSingleMode ? '540px' : '100%'}; margin: 0 auto; width: 100%;">
+      ${backBanner}
+      <article class="card" id="card-${p.code || ''}" data-code="${p.code || ''}">
+        <div class="card-body">
+          <div class="card-top-row">
+            <span class="deal-tag ${p.deal_type === "فروش" ? "sale" : "rent"}">${p.deal_type || "آگهی"}</span>
+            <button class="share-btn" data-code="${p.code || ''}" type="button" aria-label="اشتراک‌گذاری آگهی">🔗 اشتراک</button>
+          </div>
+          <h3>${p.property_type || "ملک"} · کد ${p.code || "-"}</h3>
+          <p class="card-meta">📍 ${shortAddress || "-"}</p>
+          <p class="card-meta">${p.area_m2 ? p.area_m2 + " متر" : ""} ${p.rooms ? "· " + p.rooms + " خواب" : ""}</p>
+          ${extras.length ? `<p class="card-meta">${extras.join(" | ")}</p>` : ""}
+          ${priceLine}
+          ${agentLine}
+          ${agentCallBtn}
         </div>
-        <h3>${p.property_type || "ملک"} · کد ${p.code || "-"}</h3>
-        <p class="card-meta">📍 ${shortAddress || "-"}</p>
-        <p class="card-meta">${p.area_m2 ? p.area_m2 + " متر" : ""} ${p.rooms ? "· " + p.rooms + " خواب" : ""}</p>
-        ${extras.length ? `<p class="card-meta">${extras.join(" | ")}</p>` : ""}
-        ${priceLine}
-        ${agentLine}
-        ${agentCallBtn}
-      </div>
-    </article>
+      </article>
+    </div>
   `;
 }
 
 // --------------------------------------------------------------------- //
-// ۳. بروزرسانی بنر آمار و لیست آگهی‌ها
+// ۳. رندر آگهی‌ها و آمار
 // --------------------------------------------------------------------- //
 function updateStatsRibbon() {
   if (!statsText || !allProperties.length || getQueryParam("code")) return;
@@ -107,14 +117,15 @@ function renderProperties() {
   if (!grid || !currentFiltered.length) return;
   const shown = currentFiltered.slice(0, visibleCount);
   grid.innerHTML = shown.map(propertyCard).join("");
-  if (resultCount) resultCount.textContent = `${shown.length} از ${currentFiltered.length} آگهی`;
-  if (loadMoreBtn && !getQueryParam("code")) {
-    loadMoreBtn.hidden = visibleCount >= currentFiltered.length;
+  
+  if (!getQueryParam("code")) {
+    if (resultCount) resultCount.textContent = `${shown.length} از ${currentFiltered.length} آگهی`;
+    if (loadMoreBtn) loadMoreBtn.hidden = visibleCount >= currentFiltered.length;
   }
 }
 
 // --------------------------------------------------------------------- //
-// ۴. دریافت اطلاعات زنده از API
+// ۴. دریافت اطلاعات از API
 // --------------------------------------------------------------------- //
 async function loadProperties() {
   try {
@@ -130,7 +141,7 @@ async function loadProperties() {
       }
     }
   } catch (err) {
-    console.log("استفاده از داده‌های پیش‌فرض preloaded");
+    console.log("استفاده از داده‌های preloaded");
   }
 }
 
@@ -192,7 +203,7 @@ if (loadMoreBtn) {
 }
 
 // --------------------------------------------------------------------- //
-// ۶. سیستم اشتراک‌گذاری قطعی (تضمین کپی متنی روی دسکتاپ و شیئر روی موبایل)
+// ۶. اشتراک‌گذاری هوشمند
 // --------------------------------------------------------------------- //
 document.addEventListener("click", async (e) => {
   const shareBtn = e.target.closest(".share-btn");
@@ -225,7 +236,6 @@ ${shareUrl}`;
 
   const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
-  // در اندروید و آیفون منوی بومی شیئر باز شود
   if (isMobile && navigator.share) {
     try {
       await navigator.share({
@@ -238,24 +248,15 @@ ${shareUrl}`;
     }
   }
 
-  // روی سیستم لپ‌تاپ/دسکتاپ مستقیم در حافظه کپی شود
   forceCopyText(shareText, shareBtn);
 });
 
 function forceCopyText(text, btnElement) {
-  // ایجاد المان موقت متنی برای تضمین کپی ۱۰۰ درصدی روی کلیه مرورگرهای لپ‌تاپ
   const textArea = document.createElement("textarea");
   textArea.value = text;
   textArea.style.position = "fixed";
   textArea.style.top = "0";
-  textArea.style.left = "0";
-  textArea.style.width = "2em";
-  textArea.style.height = "2em";
-  textArea.style.padding = "0";
-  textArea.style.border = "none";
-  textArea.style.outline = "none";
-  textArea.style.boxShadow = "none";
-  textArea.style.background = "transparent";
+  textArea.style.left = "-9999px";
   document.body.appendChild(textArea);
   textArea.focus();
   textArea.select();
@@ -266,7 +267,6 @@ function forceCopyText(text, btnElement) {
   } catch (err) {
     successful = false;
   }
-
   document.body.removeChild(textArea);
 
   if (successful) {
