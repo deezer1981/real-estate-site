@@ -1,10 +1,11 @@
-// script.js — منطق مخصوص صفحه‌ی اصلی (کاروسل، فیلتر، لیست آگهی‌ها، فرم تماس)
-
-// ۱. متغیر پایه API (اگر در common.js تعریف نشده باشد، از لینک مستقیم استفاده می‌کند)
-const BASE_API = typeof API_BASE_URL !== "undefined" ? API_BASE_URL : "https://api.atlas-amlak.ir";
+// script.js — منطق مخصوص صفحه‌ی اصلی (کاروسل، فیلتر، لیست آگهی‌ها، فرم
+// تماس). منوی همبرگری و لینک‌های تماس توی common.js هست که قبل از این
+// فایل لود میشه.
 
 // --------------------------------------------------------------------- //
-// خلاصه و خلاصه‌سازی هوشمند آدرس
+// Smart address truncation for property cards
+//    Keeps everything up to "لاله X [اصلی/غربی/شرقی]" and drops the rest
+//    of the sub-address (کوچه/پلاک/طبقه/زنگ ...) to keep cards clean.
 // --------------------------------------------------------------------- //
 function truncateAddress(address) {
   if (!address) return "";
@@ -13,11 +14,12 @@ function truncateAddress(address) {
   if (match && match[1]) {
     return match[1].trim();
   }
+  // Fallback: no "لاله" pattern found — cap at a reasonable length
   return text.length > 40 ? text.slice(0, 40).trim() + "…" : text;
 }
 
 // --------------------------------------------------------------------- //
-// فیلتر کشویی موبایل (Bottom Sheet)
+// 3) Mobile bottom-sheet filter
 // --------------------------------------------------------------------- //
 const searchBar = document.getElementById("searchBar");
 const filterFab = document.getElementById("filterFab");
@@ -25,24 +27,25 @@ const filterBackdrop = document.getElementById("filterBackdrop");
 const sheetClose = document.getElementById("sheetClose");
 
 function openSheet() {
-  if (searchBar) searchBar.classList.add("open");
-  if (filterBackdrop) filterBackdrop.classList.add("open");
+  searchBar.classList.add("open");
+  filterBackdrop.classList.add("open");
 }
 function closeSheet() {
-  if (searchBar) searchBar.classList.remove("open");
-  if (filterBackdrop) filterBackdrop.classList.remove("open");
+  searchBar.classList.remove("open");
+  filterBackdrop.classList.remove("open");
 }
-if (filterFab) filterFab.addEventListener("click", openSheet);
-if (filterBackdrop) filterBackdrop.addEventListener("click", closeSheet);
-if (sheetClose) sheetClose.addEventListener("click", closeSheet);
+filterFab.addEventListener("click", openSheet);
+filterBackdrop.addEventListener("click", closeSheet);
+sheetClose.addEventListener("click", closeSheet);
 
-if (searchBar) {
-  searchBar.addEventListener("click", (e) => e.stopPropagation());
-  searchBar.addEventListener("touchstart", (e) => e.stopPropagation());
-}
+// Defensive: prevent any tap/click inside the sheet itself from ever
+// bubbling out to the backdrop's close handler (this is what caused
+// "touching an input inside the sheet closes it").
+searchBar.addEventListener("click", (e) => e.stopPropagation());
+searchBar.addEventListener("touchstart", (e) => e.stopPropagation());
 
 // --------------------------------------------------------------------- //
-// وضعیت آگهی‌ها و رندر
+// Property listing state + rendering
 // --------------------------------------------------------------------- //
 const grid = document.getElementById("propertyGrid");
 const resultCount = document.getElementById("resultCount");
@@ -94,43 +97,46 @@ function shareText(p) {
 }
 
 async function copyToClipboard(text) {
-  if (navigator.clipboard && navigator.clipboard.writeText) {
-    try {
-      await navigator.clipboard.writeText(text);
-      return true;
-    } catch (err) {}
-  }
   try {
-    const textarea = document.createElement("textarea");
-    textarea.value = text;
-    textarea.style.position = "fixed";
-    textarea.style.opacity = "0";
-    document.body.appendChild(textarea);
-    textarea.focus();
-    textarea.select();
-    const ok = document.execCommand("copy");
-    document.body.removeChild(textarea);
-    return ok;
-  } catch (err2) {
-    return false;
+    await navigator.clipboard.writeText(text);
+    return true;
+  } catch (err) {
+    // Fallback برای مرورگرهایی که Clipboard API رو محدود کردن
+    try {
+      const textarea = document.createElement("textarea");
+      textarea.value = text;
+      textarea.style.position = "fixed";
+      textarea.style.opacity = "0";
+      document.body.appendChild(textarea);
+      textarea.focus();
+      textarea.select();
+      const ok = document.execCommand("copy");
+      document.body.removeChild(textarea);
+      return ok;
+    } catch (err2) {
+      return false;
+    }
   }
+}
+
+function isMobileLike() {
+  return (
+    window.matchMedia("(max-width: 720px)").matches ||
+    /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent)
+  );
 }
 
 async function handleShareTextClick(code, btnEl) {
   const p = allProperties.find((item) => String(item.code) === String(code));
   if (!p) return;
-  const { url, text } = shareText(p);
+  const { text } = shareText(p);
 
-  if (navigator.share) {
+  if (isMobileLike() && navigator.share) {
     try {
-      await navigator.share({
-        title: `${p.property_type || "ملک"} · کد ${p.code || "-"}`,
-        text: text,
-        url: url,
-      });
+      await navigator.share({ text });
       return;
     } catch (err) {
-      if (err.name === "AbortError") return;
+      return; // کاربر منوی اشتراک‌گذاری رو بست
     }
   }
 
@@ -145,12 +151,13 @@ async function handleShareTextClick(code, btnEl) {
     }, 1800);
   }
   if (!copied) {
-    prompt("این متن را کپی کنید:", text);
+    prompt("این متن رو کپی کن:", text);
   }
 }
 
 // --------------------------------------------------------------------- //
-// ساخت تصویر کارت آگهی با Canvas (استوری)
+// ساخت تصویر کارت آگهی (سایز استوری واتساپ، ۱۰۸۰×۱۹۲۰) با Canvas —
+// دقیقاً با همون رنگ‌ها و استایل کارت‌های سایت
 // --------------------------------------------------------------------- //
 function roundRect(ctx, x, y, w, h, r) {
   ctx.beginPath();
@@ -192,7 +199,9 @@ async function ensureFontLoaded() {
     await document.fonts.load('700 46px Vazirmatn');
     await document.fonts.load('800 52px Vazirmatn');
     await document.fonts.ready;
-  } catch (err) {}
+  } catch (err) {
+    // اگه فونت لود نشد، همچنان با فونت پیش‌فرض مرورگر رسم می‌کنیم
+  }
 }
 
 async function generatePropertyImageBlob(p) {
@@ -207,9 +216,11 @@ async function generatePropertyImageBlob(p) {
   const ctx = canvas.getContext("2d");
   ctx.direction = "rtl";
 
+  // پس‌زمینه
   ctx.fillStyle = PAPER;
   ctx.fillRect(0, 0, W, H);
 
+  // هدر سرمه‌ای بالا
   const headerH = 230;
   ctx.fillStyle = INK;
   ctx.fillRect(0, 0, W, headerH);
@@ -221,6 +232,7 @@ async function generatePropertyImageBlob(p) {
   ctx.font = "600 30px Vazirmatn, sans-serif";
   ctx.fillText("شهریار، باغستان، خادم‌آباد", W / 2, 168);
 
+  // کارت سفید وسط
   const footerH = 220;
   const cardX = 60, cardY = headerH + 60;
   const cardW = W - 120, cardH = H - headerH - 60 - footerH - 40;
@@ -228,12 +240,13 @@ async function generatePropertyImageBlob(p) {
   roundRect(ctx, cardX, cardY, cardW, cardH, 28);
   ctx.fill();
 
-  const padX = cardX + cardW - 60;
+  const padX = cardX + cardW - 60; // لبه‌ی راست محتوا (RTL)
   const contentW = cardW - 120;
   let cy = cardY + 100;
 
   ctx.textAlign = "right";
 
+  // برچسب نوع معامله
   const dealText = p.deal_type || "";
   ctx.font = "700 32px Vazirmatn, sans-serif";
   const tagW = ctx.measureText(dealText).width + 60;
@@ -245,11 +258,13 @@ async function generatePropertyImageBlob(p) {
   ctx.fillText(dealText, padX - 30, cy - 4);
   cy += 95;
 
+  // عنوان
   ctx.fillStyle = INK;
   ctx.font = "800 52px Vazirmatn, sans-serif";
   ctx.fillText(`${p.property_type || "ملک"} · کد ${p.code || "-"}`, padX, cy);
   cy += 78;
 
+  // آدرس
   ctx.fillStyle = TEXT;
   ctx.font = "500 38px Vazirmatn, sans-serif";
   wrapCanvasText(ctx, `📍 ${truncateAddress(p.address)}`, contentW).forEach((line) => {
@@ -258,6 +273,7 @@ async function generatePropertyImageBlob(p) {
   });
   cy += 12;
 
+  // متراژ و خواب
   const metaParts = [];
   if (p.area_m2) metaParts.push(`${p.area_m2} متر`);
   if (p.rooms) metaParts.push(`${p.rooms} خواب`);
@@ -267,13 +283,15 @@ async function generatePropertyImageBlob(p) {
     cy += 58;
   }
 
+  // امکانات
   const extras = buildExtras(p);
   if (extras.length) {
     ctx.font = "500 34px Vazirmatn, sans-serif";
-    ctx.fillText(extras.join("    "), padX, cy);
+    ctx.fillText(extras.join("   "), padX, cy);
     cy += 58;
   }
 
+  // خط جداکننده
   cy += 20;
   ctx.strokeStyle = "#E4DFD3";
   ctx.lineWidth = 2;
@@ -283,6 +301,7 @@ async function generatePropertyImageBlob(p) {
   ctx.stroke();
   cy += 70;
 
+  // قیمت
   const priceInfo =
     p.deal_type === "فروش"
       ? `${p.price_total || "توافقی"}`
@@ -294,6 +313,7 @@ async function generatePropertyImageBlob(p) {
     cy += 62;
   });
 
+  // مشاور
   if (p.agent_name || p.agent_phone) {
     cy += 20;
     ctx.font = "600 34px Vazirmatn, sans-serif";
@@ -305,6 +325,7 @@ async function generatePropertyImageBlob(p) {
     ctx.fillText(agentText, padX, cy);
   }
 
+  // فوتر برنزی
   ctx.fillStyle = BRASS;
   ctx.fillRect(0, H - footerH, W, footerH);
   ctx.textAlign = "center";
@@ -334,7 +355,7 @@ async function handleShareImageClick(code, btnEl) {
     const fileName = `atlas-amlak-${p.code || "ملک"}.png`;
     const file = new File([blob], fileName, { type: "image/png" });
 
-    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+    if (isMobileLike() && navigator.canShare && navigator.canShare({ files: [file] })) {
       await navigator.share({
         files: [file],
         text: `${p.property_type || "ملک"} · کد ${p.code || "-"} — atlas-amlak.ir`,
@@ -360,7 +381,7 @@ async function handleShareImageClick(code, btnEl) {
 }
 
 // --------------------------------------------------------------------- //
-// منوی انتخاب «کپی متن» یا «اشتراک تصویر»
+// منوی کوچیک انتخاب «کپی متن» یا «اشتراک تصویر»، کنار دکمه‌ی اشتراک هر کارت
 // --------------------------------------------------------------------- //
 function closeShareMenu() {
   document.querySelectorAll(".share-menu").forEach((m) => m.remove());
@@ -370,8 +391,6 @@ function openShareMenu(anchorBtn, code) {
   closeShareMenu();
   const menu = document.createElement("div");
   menu.className = "share-menu";
-  menu.style.position = "absolute";
-  menu.style.zIndex = "9999";
   menu.innerHTML = `
     <button type="button" data-action="text">📋 کپی متن آگهی</button>
     <button type="button" data-action="image">🖼 اشتراک تصویر (استوری)</button>
@@ -379,16 +398,14 @@ function openShareMenu(anchorBtn, code) {
   document.body.appendChild(menu);
 
   const rect = anchorBtn.getBoundingClientRect();
-  const menuWidth = 220;
+  const menuWidth = 240;
   let left = rect.right - menuWidth;
   if (left < 8) left = 8;
   if (left + menuWidth > window.innerWidth - 8) left = window.innerWidth - menuWidth - 8;
-  
   menu.style.top = `${rect.bottom + window.scrollY + 6}px`;
   menu.style.left = `${left}px`;
 
   menu.addEventListener("click", (e) => {
-    e.stopPropagation();
     const action = e.target.closest("button")?.dataset.action;
     if (!action) return;
     closeShareMenu();
@@ -397,13 +414,14 @@ function openShareMenu(anchorBtn, code) {
   });
 
   setTimeout(() => {
-    window.addEventListener("click", function outsideCloser(e) {
-      if (!menu.contains(e.target)) {
-        closeShareMenu();
-        window.removeEventListener("click", outsideCloser);
-      }
-    });
-  }, 50);
+    document.addEventListener(
+      "click",
+      function outsideCloser(e) {
+        if (!menu.contains(e.target)) closeShareMenu();
+      },
+      { once: true }
+    );
+  }, 0);
 }
 
 function propertyCard(p) {
@@ -413,6 +431,7 @@ function propertyCard(p) {
       : `<p class="card-price">💰 رهن: ${p.rahn || "-"} | اجاره: ${p.ejare || "-"}</p>`;
 
   const extras = buildExtras(p);
+
   const shortAddress = truncateAddress(p.address);
   const cardId = `card-${p.code || Math.random().toString(36).slice(2)}`;
 
@@ -427,7 +446,7 @@ function propertyCard(p) {
     <article class="card" id="${cardId}" data-code="${p.code || ""}">
       <div class="card-body">
         <div class="card-top-row">
-          <span class="deal-tag ${p.deal_type === "فروش" ? "sale" : "rent"}">${p.deal_type || "آگهی"}</span>
+          <span class="deal-tag ${p.deal_type === "فروش" ? "sale" : "rent"}">${p.deal_type}</span>
           <button class="share-btn" data-code="${p.code || ""}" aria-label="اشتراک‌گذاری آگهی" type="button">🔗 اشتراک</button>
         </div>
         <h3>${p.property_type || "ملک"} · کد ${p.code || "-"}</h3>
@@ -443,29 +462,25 @@ function propertyCard(p) {
 }
 
 function renderProperties() {
-  if (!grid) return;
   if (!currentFiltered.length) {
     grid.innerHTML = `<p class="loading">فایلی با این مشخصات پیدا نشد.</p>`;
-    if (resultCount) resultCount.textContent = "";
-    if (loadMoreBtn) loadMoreBtn.hidden = true;
+    resultCount.textContent = "";
+    loadMoreBtn.hidden = true;
     return;
   }
   const shown = currentFiltered.slice(0, visibleCount);
   grid.innerHTML = shown.map(propertyCard).join("");
-  if (resultCount) resultCount.textContent = `${shown.length} از ${currentFiltered.length} آگهی`;
-  if (loadMoreBtn) loadMoreBtn.hidden = visibleCount >= currentFiltered.length;
+  resultCount.textContent = `${shown.length} از ${currentFiltered.length} آگهی`;
+  loadMoreBtn.hidden = visibleCount >= currentFiltered.length;
 }
 
-if (grid) {
-  grid.addEventListener("click", (e) => {
-    const btn = e.target.closest(".share-btn");
-    if (btn) {
-      e.stopPropagation();
-      openShareMenu(btn, btn.dataset.code);
-    }
-  });
-}
+// اشتراک‌گذاری هر کارت (delegation، چون کارت‌ها مرتب دوباره ساخته میشن)
+grid.addEventListener("click", (e) => {
+  const btn = e.target.closest(".share-btn");
+  if (btn) openShareMenu(btn, btn.dataset.code);
+});
 
+// اگه لینک با ?code=XXX باز شده باشه، فقط همون آگهی رو نشون بده و اسکرول کن
 function applyDeepLinkIfPresent() {
   const params = new URLSearchParams(location.search);
   const code = params.get("code");
@@ -477,26 +492,23 @@ function applyDeepLinkIfPresent() {
   visibleCount = PAGE_SIZE;
   renderProperties();
   if (clearBtn) clearBtn.hidden = false;
-  const listingsEl = document.getElementById("listings");
-  if (listingsEl) listingsEl.scrollIntoView({ behavior: "smooth" });
+  document.getElementById("listings").scrollIntoView({ behavior: "smooth" });
 }
 
-const clearDeepLinkBtn = document.getElementById("clearDeepLinkBtn");
-if (clearDeepLinkBtn) {
-  clearDeepLinkBtn.addEventListener("click", () => {
-    history.replaceState(null, "", location.pathname);
-    clearDeepLinkBtn.hidden = true;
-    applyFilters();
-  });
-}
+document.getElementById("clearDeepLinkBtn").addEventListener("click", () => {
+  history.replaceState(null, "", location.pathname);
+  document.getElementById("clearDeepLinkBtn").hidden = true;
+  applyFilters();
+});
 
-if (loadMoreBtn) {
-  loadMoreBtn.addEventListener("click", () => {
-    visibleCount += PAGE_SIZE;
-    renderProperties();
-  });
-}
+loadMoreBtn.addEventListener("click", () => {
+  visibleCount += PAGE_SIZE;
+  renderProperties();
+});
 
+// اگه build_snapshot.py قبلاً دیتای آگهی‌ها رو توی صفحه جاسازی کرده باشه،
+// همون‌ها رو فوراً (بدون صبر برای fetch) نشون می‌دیم؛ بعدش هنوز هم زنده
+// از سرور آخرین نسخه رو می‌گیریم و جایگزین می‌کنیم.
 function loadSnapshotData() {
   const el = document.getElementById("snapshotData");
   if (!el) return false;
@@ -508,31 +520,31 @@ function loadSnapshotData() {
       applyFilters();
       return true;
     }
-  } catch (err) {}
+  } catch (err) {
+    // نادیده گرفتن خطای پارس، می‌ریم سراغ fetch زنده
+  }
   return false;
 }
 
 async function loadProperties() {
   const hadSnapshot = loadSnapshotData();
-  if (!hadSnapshot && grid) {
+  if (!hadSnapshot) {
     grid.innerHTML = `<p class="loading">در حال بارگذاری آگهی‌ها...</p>`;
   } else {
     applyDeepLinkIfPresent();
   }
-
   try {
-    const res = await fetch(`${BASE_API}/api/properties`);
+    const res = await fetch(`${API_BASE_URL}/api/properties`);
     if (!res.ok) throw new Error("request failed");
-    const data = await res.json();
-    allProperties = Array.isArray(data) ? data.reverse() : [];
+    allProperties = (await res.json()).reverse(); // جدیدترین‌ها اول
     updateStatsRibbon();
     applyFilters();
     applyDeepLinkIfPresent();
   } catch (err) {
-    console.error("Fetch error:", err);
-    if (!hadSnapshot && grid) {
-      grid.innerHTML = `<p class="loading">اتصال به سرور برقرار نشد. لطفاً چند لحظه صبر کنید و صفحه را رفرش کنید.</p>`;
+    if (!hadSnapshot) {
+      grid.innerHTML = `<p class="loading">اتصال به سرور برقرار نشد. لطفاً چند لحظه صبر کنید و صفحه را رفرش کنید (سرور رایگان گاهی چند ثانیه طول می‌کشد بیدار شود).</p>`;
     }
+    // اگه snapshot داشتیم، همون همچنان نمایش داده‌شده می‌مونه؛ کاربر بی‌نصیب نمی‌مونه.
   }
 }
 
@@ -545,6 +557,7 @@ function updateStatsRibbon() {
   }
 }
 
+// اسلایدر تصاویر بالای صفحه
 function initCarousel() {
   const slides = document.querySelectorAll(".carousel-slide");
   const dots = document.querySelectorAll(".dot");
@@ -563,11 +576,10 @@ function initCarousel() {
 }
 initCarousel();
 
+// جستجو: همیشه روی کل داده‌ی گوگل‌شیت اجرا می‌شود، نه فقط آگهی‌های نمایش‌داده‌شده
 function applyFilters() {
-  const citySearchEl = document.getElementById("citySearch");
-  const dealTypeEl = document.getElementById("dealType");
-  const keyword = citySearchEl ? citySearchEl.value.trim() : "";
-  const dealType = dealTypeEl ? dealTypeEl.value : "";
+  const keyword = document.getElementById("citySearch").value.trim();
+  const dealType = document.getElementById("dealType").value;
 
   let filtered = allProperties;
   if (dealType) {
@@ -586,70 +598,56 @@ function applyFilters() {
   renderProperties();
 }
 
-const searchBtn = document.getElementById("searchBtn");
-if (searchBtn) {
-  searchBtn.addEventListener("click", () => {
-    applyFilters();
-    closeSheet();
-    const listingsEl = document.getElementById("listings");
-    if (listingsEl) listingsEl.scrollIntoView({ behavior: "smooth" });
-  });
-}
+document.getElementById("searchBtn").addEventListener("click", () => {
+  applyFilters();
+  closeSheet();
+  document.getElementById("listings").scrollIntoView({ behavior: "smooth" });
+});
 
-const quickSale = document.getElementById("quickSale");
-if (quickSale) {
-  quickSale.addEventListener("click", (e) => {
-    e.preventDefault();
-    const dt = document.getElementById("dealType");
-    if (dt) dt.value = "فروش";
-    applyFilters();
-    const listingsEl = document.getElementById("listings");
-    if (listingsEl) listingsEl.scrollIntoView({ behavior: "smooth" });
-  });
-}
+document.getElementById("quickSale").addEventListener("click", (e) => {
+  e.preventDefault();
+  document.getElementById("dealType").value = "فروش";
+  applyFilters();
+  document.getElementById("listings").scrollIntoView({ behavior: "smooth" });
+});
+document.getElementById("quickRent").addEventListener("click", (e) => {
+  e.preventDefault();
+  document.getElementById("dealType").value = "رهن و اجاره";
+  applyFilters();
+  document.getElementById("listings").scrollIntoView({ behavior: "smooth" });
+});
 
-const quickRent = document.getElementById("quickRent");
-if (quickRent) {
-  quickRent.addEventListener("click", (e) => {
-    e.preventDefault();
-    const dt = document.getElementById("dealType");
-    if (dt) dt.value = "رهن و اجاره";
-    applyFilters();
-    const listingsEl = document.getElementById("listings");
-    if (listingsEl) listingsEl.scrollIntoView({ behavior: "smooth" });
-  });
-}
+// --------------------------------------------------------------------- //
+// 4) Lead form -> save to backend AND open a pre-filled WhatsApp chat
+// --------------------------------------------------------------------- //
+document.getElementById("leadForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const statusEl = document.getElementById("formStatus");
+  const name = document.getElementById("leadName").value.trim();
+  const phone = document.getElementById("leadPhone").value.trim();
+  const message = document.getElementById("leadMessage").value.trim();
 
-const leadForm = document.getElementById("leadForm");
-if (leadForm) {
-  leadForm.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const statusEl = document.getElementById("formStatus");
-    const name = document.getElementById("leadName").value.trim();
-    const phone = document.getElementById("leadPhone").value.trim();
-    const message = document.getElementById("leadMessage").value.trim();
+  statusEl.textContent = "در حال ارسال...";
 
-    if (statusEl) statusEl.textContent = "در حال ارسال...";
+  const payload = { name, phone, message, source: "website" };
 
-    const payload = { name, phone, message, source: "website" };
+  try {
+    await fetch(`${API_BASE_URL}/api/leads`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+  } catch (err) {
+    // حتی اگر ذخیره در سرور ناموفق بود، همچنان کاربر را به واتساپ می‌فرستیم
+  }
 
-    try {
-      await fetch(`${BASE_API}/api/leads`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-    } catch (err) {}
+  const waText = encodeURIComponent(
+    `سلام، من ${name} هستم.\nشماره تماس: ${phone}\n${message ? "پیام: " + message : ""}`
+  );
+  window.open(`${whatsappUrl}?text=${waText}`, "_blank");
 
-    const waText = encodeURIComponent(
-      `سلام، من ${name} هستم.\nشماره تماس: ${phone}\n${message ? "پیام: " + message : ""}`
-    );
-    const waUrl = typeof whatsappUrl !== "undefined" ? whatsappUrl : "https://wa.me/";
-    window.open(`${waUrl}?text=${waText}`, "_blank");
-
-    if (statusEl) statusEl.textContent = "درخواست شما ثبت شد و چت واتساپ باز شد.";
-    e.target.reset();
-  });
-}
+  statusEl.textContent = "درخواست شما ثبت شد و چت واتساپ باز شد.";
+  e.target.reset();
+});
 
 loadProperties();
