@@ -684,11 +684,36 @@ loadProperties();
 const submitForm = document.getElementById("submitPropertyForm");
 const isAgentSelect = document.getElementById("submitIsAgent");
 const agentNameGroup = document.getElementById("agentNameGroup");
+const dealTypeSelect = document.getElementById("submitDealType");
+const salePriceFields = document.getElementById("salePriceFields");
+const rentPriceFields = document.getElementById("rentPriceFields");
 
+// نمایش/مخفی کردن فیلد نام مشاور
 if (isAgentSelect && agentNameGroup) {
   isAgentSelect.addEventListener("change", () => {
     agentNameGroup.style.display = isAgentSelect.value === "yes" ? "block" : "none";
   });
+}
+
+// نمایش فیلدهای قیمت بر اساس نوع معامله
+function updatePriceFields() {
+  if (!dealTypeSelect || !salePriceFields || !rentPriceFields) return;
+  const val = dealTypeSelect.value;
+  if (val === "فروش") {
+    salePriceFields.style.display = "grid";
+    rentPriceFields.style.display = "none";
+  } else if (val === "رهن و اجاره") {
+    salePriceFields.style.display = "none";
+    rentPriceFields.style.display = "grid";
+  } else {
+    salePriceFields.style.display = "none";
+    rentPriceFields.style.display = "none";
+  }
+}
+
+if (dealTypeSelect) {
+  dealTypeSelect.addEventListener("change", updatePriceFields);
+  updatePriceFields(); // حالت اولیه
 }
 
 if (submitForm) {
@@ -696,14 +721,28 @@ if (submitForm) {
     e.preventDefault();
     const statusEl = document.getElementById("submitFormStatus");
     const btn = submitForm.querySelector("button[type=submit]");
-    
+    const dealType = document.getElementById("submitDealType").value;
+
+    // ساخت متن قیمت بر اساس نوع معامله
+    let priceInfo = "";
+    if (dealType === "فروش") {
+      const total = document.getElementById("submitPriceTotal")?.value.trim() || "";
+      const perMeter = document.getElementById("submitPricePerMeter")?.value.trim() || "";
+      priceInfo = total;
+      if (perMeter) priceInfo += (priceInfo ? " | " : "") + "متری: " + perMeter;
+    } else if (dealType === "رهن و اجاره") {
+      const rahn = document.getElementById("submitRahn")?.value.trim() || "";
+      const ejare = document.getElementById("submitEjare")?.value.trim() || "";
+      priceInfo = "رهن: " + (rahn || "-") + " | اجاره: " + (ejare || "-");
+    }
+
     const payload = {
-      deal_type: document.getElementById("submitDealType").value,
+      deal_type: dealType,
       property_type: document.getElementById("submitPropertyType").value,
       address: document.getElementById("submitAddress").value.trim(),
       area_m2: document.getElementById("submitArea").value.trim(),
       rooms: document.getElementById("submitRooms").value.trim(),
-      price_info: document.getElementById("submitPrice").value.trim(),
+      price_info: priceInfo,
       parking: document.getElementById("submitParking").checked,
       elevator: document.getElementById("submitElevator").checked,
       storage: document.getElementById("submitStorage").checked,
@@ -733,6 +772,7 @@ if (submitForm) {
       statusEl.classList.add("success");
       submitForm.reset();
       if (agentNameGroup) agentNameGroup.style.display = "none";
+      updatePriceFields(); // مخفی کردن فیلدهای قیمت بعد از ریست
     } catch (err) {
       statusEl.textContent = "❌ مشکلی پیش آمد. لطفاً دوباره تلاش کنید یا مستقیم تماس بگیرید.";
       statusEl.classList.add("error");
