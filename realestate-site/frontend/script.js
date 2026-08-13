@@ -36,12 +36,12 @@ function propertyCard(p) {
   const isSingleMode = Boolean(urlParams.get("code"));
   
   // لاین خوش‌رنگ و شکیل بالای کارت فقط در حالت تک‌آگهی
-  const backBanner = isSingleMode ? `
-    <div style="background: linear-gradient(135deg, #0284c7, #2563eb); color: #ffffff; border-radius: 12px; padding: 10px 16px; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; font-size: 13px; font-weight: 600; box-shadow: 0 4px 12px rgba(37,99,235,0.15);">
-      <span>📍 آگهی انتخاب‌شده</span>
-      <a href="${window.location.pathname}" style="color: #ffffff; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; background: rgba(255,255,255,0.22); padding: 5px 12px; border-radius: 8px; transition: background 0.2s;">
-        <span>مشاهده همه آگهی‌ها</span>
-        <span style="font-size: 14px;">➔</span>
+ const backBanner = isSingleMode ? `
+    <div style="background: var(--ink); color: var(--paper); border-radius: 14px; padding: 14px 18px; margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between; gap: 12px; box-shadow: 0 4px 14px rgba(20,33,61,0.18);">
+      <span style="font-weight: 700; font-size: 0.9rem;">🏠 آگهی انتخاب‌شده</span>
+      <a href="${window.location.pathname}" style="color: var(--ink); text-decoration: none; display: inline-flex; align-items: center; gap: 6px; background: var(--brass); font-weight: 700; font-size: 0.85rem; padding: 8px 16px; border-radius: 999px; transition: filter 0.15s;">
+        <span>همه آگهی‌ها</span>
+        <span>→</span>
       </a>
     </div>
   ` : "";
