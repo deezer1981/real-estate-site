@@ -155,7 +155,7 @@ if (loadMoreBtn) {
 }
 
 // --------------------------------------------------------------------- //
-// ۵. سیستم اشتراک‌گذاری دسکتاپ و موبایل
+// ۵. سیستم اشتراک‌گذاری تفکیک‌شده (موبایل vs دسکتاپ)
 // --------------------------------------------------------------------- //
 document.addEventListener("click", async (e) => {
   const shareBtn = e.target.closest(".share-btn");
@@ -186,8 +186,11 @@ ${shareUrl}`;
     shareText = `مشاهده مشخصات کامل آگهی کد ${code} در املاک اطلس:\n${shareUrl}`;
   }
 
-  // ۱. اگر مرورگر از Web Share API پشتیبانی کند (موبایل‌ها)
-  if (navigator.share) {
+  // تشخیص سیستم‌عامل موبایل (آیفون / اندروید)
+  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
+  // ۱. اگر کاربر در موبایل باشد -> باز کردن منوی شیئر بومی
+  if (isMobile && navigator.share) {
     try {
       await navigator.share({
         title: `آگهی ملک کد ${code}`,
@@ -195,11 +198,11 @@ ${shareUrl}`;
       });
       return;
     } catch (err) {
-      if (err.name === "AbortError") return; // انصراف کاربر
+      if (err.name === "AbortError") return;
     }
   }
 
-  // ۲. کپی در حافظه با متد قدرتمند برای لپ‌تاپ/دسکتاپ
+  // ۲. در سیستم لپ‌تاپ/دسکتاپ -> کپی مستقیم متن در کلیپ‌بورد
   copyTextToClipboard(shareText, shareBtn);
 });
 
@@ -229,7 +232,7 @@ function fallbackCopyText(text, btnElement) {
     document.execCommand('copy');
     showCopySuccess(btnElement);
   } catch (err) {
-    alert("امکان کپی خودکار وجود ندارد. لینک آگهی:\n" + text);
+    alert("لینک آگهی:\n" + text);
   }
   document.body.removeChild(textArea);
 }
