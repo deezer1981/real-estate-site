@@ -354,11 +354,11 @@ async function generateStoryImage(p) {
     ctx.fill();
     ctx.stroke();
     ctx.fillStyle = T.inkSoft;
-    setFont(ctx, 600, 26);
+    setFont(ctx, 600, 28);
     rtlText(ctx, `کد ${p.code || "-"}`, padX + 84, cardY + 91);
 
     const dealLabel = p.deal_type || "آگهی";
-    setFont(ctx, 700, 26);
+    setFont(ctx, 700, 28);
     const dealW = Math.max(150, ctx.measureText(dealLabel).width + 64);
     const dealX = cardX + cardW - 64 - dealW;
     ctx.fillStyle = dealColor;
@@ -408,7 +408,7 @@ async function generateStoryImage(p) {
     let extrasBottom = addrY;
     if (extras.length) {
       const extrasY = addrY + 64;
-      setFont(ctx, 600, 26);
+      setFont(ctx, 600, 28);
       const gap = 20;
       const widths = extras.map((e) => ctx.measureText(e).width + 40);
       const totalW = widths.reduce((a, b) => a + b, 0) + gap * (extras.length - 1);
@@ -444,7 +444,7 @@ async function generateStoryImage(p) {
     ctx.stroke();
 
     ctx.fillStyle = T.brassDark;
-    setFont(ctx, 600, 26);
+    setFont(ctx, 600, 28);
     rtlText(ctx, isSale ? "قیمت فروش" : "شرایط رهن و اجاره", cx, priceY + 48);
 
     const priceText = isSale
@@ -468,26 +468,40 @@ async function generateStoryImage(p) {
       }
     }
 
-    // ۱۱. بنر پایانی — دعوت به بازدید از سایت
-    const ctaY = cardY + cardH - 316;
+    // ۱۱. بنر پایانی — دعوت به بازدید از سایت (بزرگ‌تر و پرکنتراست‌تر)
+    const ctaH = 320;
+    const ctaY = cardY + cardH - 64 - ctaH;
     ctx.fillStyle = T.ink;
-    rr(ctx, padX, ctaY, contentW, 252, 26);
+    rr(ctx, padX, ctaY, contentW, ctaH, 28);
     ctx.fill();
+    ctx.strokeStyle = "rgba(180,137,79,0.55)";
+    ctx.lineWidth = 1.5;
+    rr(ctx, padX, ctaY, contentW, ctaH, 28);
+    ctx.stroke();
 
-    ctx.fillStyle = "rgba(251,246,236,0.72)";
-    setFont(ctx, 500, 26);
-    rtlText(ctx, "برای مشاهده جزئیات کامل این ملک و آگهی‌های مشابه", cx, ctaY + 62);
-    rtlText(ctx, "در خادم‌آباد و باغستان، به سایت مراجعه کنید", cx, ctaY + 104);
-
+    // برچسب کوچک برنجی بالای بنر
     ctx.fillStyle = T.brass;
-    rr(ctx, padX + 60, ctaY + 138, contentW - 120, 84, 16);
+    setFont(ctx, 700, 22);
+    rtlText(ctx, "همین حالا ببینید", cx, ctaY + 44, { spacing: 2 });
+
+    // متن دعوت‌کننده با کنتراست بالا (کرم روشن روی جوهری تیره)
+    ctx.fillStyle = "#FBF6EC";
+    setFont(ctx, 700, 34);
+    rtlText(ctx, "برای جزئیات کامل و آگهی‌های مشابه", cx, ctaY + 96);
+    rtlText(ctx, "در خادم‌آباد و باغستان", cx, ctaY + 140);
+
+    // دکمه‌ی دامنه
+    const btnY = ctaY + 176;
+    const btnH = 100;
+    ctx.fillStyle = T.brass;
+    rr(ctx, padX + 50, btnY, contentW - 100, btnH, 18);
     ctx.fill();
 
     ctx.fillStyle = T.ink;
     ctx.direction = "ltr";
     ctx.textAlign = "center";
-    setFont(ctx, 700, 38);
-    ctx.fillText("atlas-amlak.ir", cx, ctaY + 190);
+    setFont(ctx, 800, 44);
+    ctx.fillText("atlas-amlak.ir", cx, btnY + btnH / 2 + 15);
     ctx.direction = "rtl";
 
     // دانلود تصویر نهایی
