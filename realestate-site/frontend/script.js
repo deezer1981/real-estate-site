@@ -353,8 +353,8 @@ async function generateStoryImage(p) {
     rr(ctx, padX, cardY + 56, 190, 64, 18);
     ctx.fill();
     ctx.stroke();
-    ctx.fillStyle = T.inkSoft;
-    setFont(ctx, 600, 32);
+    ctx.fillStyle = T.ink;
+    setFont(ctx, 700, 34);
     rtlText(ctx, `کد ${p.code || "-"}`, padX + 95, cardY + 98);
 
     const dealLabel = p.deal_type || "آگهی";
@@ -399,16 +399,16 @@ async function generateStoryImage(p) {
 
     // ۷. آدرس
     const addrY = specsY + 190;
-    ctx.fillStyle = T.inkSoft;
-    setFont(ctx, 600, 38);
+    ctx.fillStyle = T.ink;
+    setFont(ctx, 700, 42);
     rtlText(ctx, `📍 ${truncateAddress(p.address) || "خادم‌آباد"}`, cx, addrY);
 
     // ۸. امکانات
     const extras = buildExtras(p);
     let extrasBottom = addrY;
     if (extras.length) {
-      const extrasY = addrY + 72;
-      setFont(ctx, 600, 32);
+      const extrasY = addrY + 78;
+      setFont(ctx, 700, 34);
       const gap = 20;
       const widths = extras.map((e) => ctx.measureText(e).width + 48);
       const totalW = widths.reduce((a, b) => a + b, 0) + gap * (extras.length - 1);
@@ -419,14 +419,14 @@ async function generateStoryImage(p) {
         ctx.fillStyle = T.paperShade;
         ctx.strokeStyle = T.hairline;
         ctx.lineWidth = 1;
-        rr(ctx, ex, extrasY - 38, w, 56, 26);
+        rr(ctx, ex, extrasY - 40, w, 60, 28);
         ctx.fill();
         ctx.stroke();
-        ctx.fillStyle = T.inkSoft;
+        ctx.fillStyle = T.ink;
         rtlText(ctx, label, ex + w / 2, extrasY - 2);
         ex -= gap;
       });
-      extrasBottom = extrasY + 26;
+      extrasBottom = extrasY + 28;
     }
 
     // ۹. باکس قیمت — عنصر برجسته و طلایی
@@ -457,8 +457,8 @@ async function generateStoryImage(p) {
     // ۱۰. مشاور
     const agentY = priceY + priceH + 80;
     if (p.agent_name || p.agent_phone) {
-      ctx.fillStyle = T.inkSoft;
-      setFont(ctx, 600, 36);
+      ctx.fillStyle = T.ink;
+      setFont(ctx, 700, 40);
       rtlText(ctx, `👤 مشاور: ${p.agent_name || "اطلس املاک"}`, cx, agentY);
 
       if (p.agent_phone) {
@@ -504,11 +504,11 @@ async function generateStoryImage(p) {
     ctx.fillText("atlas-amlak.ir", cx, btnY + btnH / 2 + 16);
     ctx.direction = "rtl";
 
-    // دانلود تصویر نهایی
-    const dataUrl = canvas.toDataURL("image/png");
+    // دانلود تصویر نهایی — JPEG با کیفیت بالا برای حجم کم و اشتراک‌گذاری راحت
+    const dataUrl = canvas.toDataURL("image/jpeg", 0.88);
     const a = document.createElement("a");
     a.href = dataUrl;
-    a.download = `card-${p.code || "property"}.png`;
+    a.download = `card-${p.code || "property"}.jpg`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
