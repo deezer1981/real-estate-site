@@ -7,21 +7,25 @@ import os
 import requests
 from pathlib import Path
 
-# آدرس API بک‌اند شما
+# آدرس API بک‌اند
 API_URL = os.getenv("PROPERTIES_API_URL", "https://api.atlas-amlak.ir/api/properties")
 
 def find_index_html() -> Path:
-    """جستجوی هوشمند فایل index.html در پوشه‌های مجاور و والد"""
+    """جستجوی جامع برای یافتن فایل index.html در تمام پوشه‌های ریپوزیتوری"""
+    cwd = Path.cwd()
+    
+    # 1. جستجوی مستقیم در تمام زیرپوشه‌ها
+    for path in cwd.rglob("index.html"):
+        # ندیده گرفتن فایل‌های داخل node_modules یا .git اگر وجود داشته باشند
+        if ".git" not in path.parts and "node_modules" not in path.parts:
+            return path
+
+    # 2. بررسی مسیرهای احتمالی بر اساس پوشه اسکریپت
     script_dir = Path(__file__).resolve().parent
-    
-    # مسیرهایی که احتمال دارد index.html در آن‌ها باشد
     candidate_paths = [
-        script_dir.parent / "index.html",                 # یک پوشه بالاتر (حالت استاندارد)
-        script_dir.parent.parent / "index.html",          # دو پوشه بالاتر
-        Path.cwd() / "index.html",                        # پوشه جاری اجرای گیت‌هاب
-        Path.cwd() / "realestate-site" / "index.html",    # ساختار پوشه فرعی
+        script_dir.parent / "index.html",
+        script_dir.parent.parent / "index.html",
     ]
-    
     for path in candidate_paths:
         if path.exists():
             return path
@@ -38,8 +42,11 @@ def update_snapshot():
         index_html_path = find_index_html()
 
         if not index_html_path:
-            print("Error: Could not find index.html in any expected locations.")
-            print(f"Current Working Directory: {Path.cwd()}")
+            print(f"Error: Could not find index.html anywhere under {Path.cwd()}")
+            print("Listing all directory contents for debugging:")
+            for p in Path.cwd().rglob("*"):
+                if ".git" not in p.parts:
+                    print(f" - {p}")
             exit(1)
 
         print(f"Found index.html at: {index_html_path}")
