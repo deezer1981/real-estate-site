@@ -202,7 +202,7 @@ if (loadMoreBtn) {
 }
 
 // --------------------------------------------------------------------- //
-// ۶. ساخت تصویر کارت آگهی (با تنظیم دقیق جهت راست به چپ - RTL)
+// ۶. ساخت تصویر کارت آگهی (متن اصلاح‌شده با کلمات خادم آباد، باغستان و برند سایت اطلس املاک)
 // --------------------------------------------------------------------- //
 function generateStoryImage(p) {
   try {
@@ -211,12 +211,11 @@ function generateStoryImage(p) {
     canvas.height = 1920;
     const ctx = canvas.getContext("2d");
 
-    // تنظیم جهت کلی بوم به راست‌چین کامل (RTL)
     if ('direction' in ctx) {
       ctx.direction = 'rtl';
     }
 
-    // پس‌زمینه کرم-بژ گرم و مینیمال سایت (#F5F3EF)
+    // پس‌زمینه کرم-بژ گرم
     ctx.fillStyle = "#F5F3EF";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -224,7 +223,7 @@ function generateStoryImage(p) {
     ctx.fillStyle = "#1E293B";
     ctx.font = "bold 44px Tahoma, sans-serif";
     ctx.textAlign = "center";
-    ctx.fillText("گروه مشاورین املاک اطلس", 540, 160);
+    ctx.fillText("اطلس املاک خادم آباد", 540, 160);
 
     // کارت اصلی سفید
     ctx.fillStyle = "#FFFFFF";
@@ -236,7 +235,7 @@ function generateStoryImage(p) {
       ctx.fillRect(80, 220, 920, 1480);
     }
 
-    // تگ نوع معامله (فروش / رهن)
+    // تگ نوع معامله
     ctx.fillStyle = "#EAEFEA";
     if (ctx.roundRect) {
       ctx.beginPath();
@@ -250,7 +249,7 @@ function generateStoryImage(p) {
     ctx.textAlign = "center";
     ctx.fillText(p.deal_type || "فروش", 850, 324);
 
-    // دکمه نمادین اشتراک (سمت چپ)
+    // دکمه اشتراک
     ctx.fillStyle = "#436353";
     if (ctx.roundRect) {
       ctx.beginPath();
@@ -263,7 +262,6 @@ function generateStoryImage(p) {
     ctx.font = "bold 28px Tahoma, sans-serif";
     ctx.fillText("🔗 اشتراک", 230, 322);
 
-    // کاراکتر \u202B برای تحمیل راست به چپ روی ترکیب اعداد و حروف
     const rtl = "\u202B";
 
     // عنوان ملک و کد
@@ -321,31 +319,30 @@ function generateStoryImage(p) {
       ctx.fillText(`${rtl}📞 ${p.agent_phone}`, 540, 1010);
     }
 
-    // باکس پایین کارت (پیوند به وب‌سایت)
+    // باکس پایین کارت (شامل کلمات خادم آباد، باغستان و نام سایت اطلس املاک)
     ctx.fillStyle = "#F8FAFC";
     ctx.strokeStyle = "#E2E8F0";
     ctx.lineWidth = 2;
     if (ctx.roundRect) {
       ctx.beginPath();
-      ctx.roundRect(140, 1120, 800, 500, 24);
+      ctx.roundRect(120, 1120, 840, 480, 24);
       ctx.fill();
       ctx.stroke();
     } else {
-      ctx.fillRect(140, 1120, 800, 500);
-      ctx.strokeRect(140, 1120, 800, 500);
+      ctx.fillRect(120, 1120, 840, 480);
+      ctx.strokeRect(120, 1120, 840, 480);
     }
 
-    ctx.fillStyle = "#64748B";
-    ctx.font = "30px Tahoma, sans-serif";
-    ctx.fillText("جهت مشاهده جزئیات بیشتر به سایت مراجعه کنید", 540, 1200);
+    ctx.fillStyle = "#475569";
+    ctx.font = "32px Tahoma, sans-serif";
+    ctx.fillText("جهت مشاهده جزئیات بیشتر این ملک و بررسی", 540, 1200);
+    ctx.fillText("آگهی‌های مشابه در خادم آباد و باغستان،", 540, 1260);
+    ctx.fillText("لطفا به سایت اطلس املاک مراجعه کنید:", 540, 1320);
 
     ctx.fillStyle = "#1E293B";
-    ctx.font = "bold 40px sans-serif";
-    ctx.direction = "ltr"; // آدرس سایت LTR باقی می‌ماند
-    ctx.fillText(`atlas-amlak.ir/?code=${p.code}`, 540, 1280);
-
-    // آدرس دامنه و لوگوی پایین کارت
-    const logoUrl = "";
+    ctx.font = "bold 46px sans-serif";
+    ctx.direction = "ltr";
+    ctx.fillText("www.atlas-amlak.com", 540, 1420);
 
     const downloadCanvas = () => {
       const dataUrl = canvas.toDataURL("image/png");
@@ -357,28 +354,7 @@ function generateStoryImage(p) {
       document.body.removeChild(a);
     };
 
-    if (logoUrl) {
-      const img = new Image();
-      img.onload = () => {
-        ctx.drawImage(img, 540 - 40, 1370, 80, 80);
-        ctx.fillStyle = "#436353";
-        ctx.font = "bold 34px sans-serif";
-        ctx.fillText("atlas-amlak.ir", 540, 1490);
-        downloadCanvas();
-      };
-      img.onerror = () => {
-        ctx.fillStyle = "#436353";
-        ctx.font = "bold 34px sans-serif";
-        ctx.fillText("🌐 atlas-amlak.ir", 540, 1440);
-        downloadCanvas();
-      };
-      img.src = logoUrl;
-    } else {
-      ctx.fillStyle = "#436353";
-      ctx.font = "bold 36px sans-serif";
-      ctx.fillText("🌐 atlas-amlak.ir", 540, 1440);
-      downloadCanvas();
-    }
+    downloadCanvas();
 
   } catch (err) {
     console.error("خطا در ساخت تصویر آگهی:", err);
@@ -402,9 +378,9 @@ function showShareModal(p, shareBtn) {
 📍 ${p.address || "خادم‌آباد"}
 📐 ${p.area_m2 ? p.area_m2 + " متر" : ""} ${p.rooms ? "- " + p.rooms + " خواب" : ""}
 ${extras.length ? extras.join(" ") + "\n" : ""}${priceText}
-👤 ${p.agent_name || "مشاور املاک اطلس"} ${p.agent_phone ? "· 📞 " + p.agent_phone : ""}
+👤 ${p.agent_name || "اطلس املاک"} ${p.agent_phone ? "· 📞 " + p.agent_phone : ""}
 
-🌐 atlas-amlak.ir
+🌐 www.atlas-amlak.com
 ${shareUrl}`;
 
   const modalHtml = `
