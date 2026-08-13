@@ -31,16 +31,27 @@ function buildExtras(p) {
   return extras;
 }
 
+// اگر نام مشاور از قبل شامل کلمه‌ی «مشاور» باشد (مثل «مشاور آقای علیزاده»)،
+// از تکرار آن در برچسب‌هایی که خودمان پیشوند «مشاور:» می‌گذاریم جلوگیری می‌کند
+function cleanAgentName(name) {
+  if (!name) return name;
+  const stripped = name.replace(/^\s*مشاور[\s:،-]*/, "").trim();
+  return stripped || name;
+}
+
 function propertyCard(p) {
   const urlParams = new URLSearchParams(window.location.search);
   const isSingleMode = Boolean(urlParams.get("code"));
 
   const backBanner = isSingleMode ? `
-    <div style="background: var(--ink); color: var(--paper); border-radius: 12px; padding: 12px 18px; margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between; gap: 12px; border: 1px solid var(--brass);">
-      <span style="font-weight: 700; font-size: 0.9rem;">📍 آگهی انتخاب‌شده (کد ${p.code})</span>
-      <a href="${window.location.pathname}" style="color: var(--ink); text-decoration: none; display: inline-flex; align-items: center; gap: 6px; background: var(--brass); font-weight: 700; font-size: 0.85rem; padding: 6px 14px; border-radius: 6px;">
-        <span>همه آگهی‌ها</span>
+    <div style="background: #FFFFFF; border: 1px solid var(--brass); border-radius: 16px; padding: 14px 18px; margin-bottom: 18px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; box-shadow: 0 4px 16px rgba(0,0,0,0.06);">
+      <span style="display: inline-flex; align-items: center; gap: 8px; font-weight: 700; font-size: 0.92rem; color: var(--ink);">
+        <span style="font-size: 1.1rem; line-height: 1;">📍</span>
+        <span>مشاهده‌ی آگهی کد ${p.code}</span>
+      </span>
+      <a href="${window.location.pathname}" style="text-decoration: none; display: inline-flex; align-items: center; gap: 8px; background: var(--ink); color: var(--paper); font-weight: 700; font-size: 0.85rem; padding: 10px 18px; border-radius: 999px; white-space: nowrap;">
         <span style="font-size: 1rem; line-height: 1;">←</span>
+        <span>مشاهده همه آگهی‌ها</span>
       </a>
     </div>
   ` : "";
@@ -459,7 +470,7 @@ async function generateStoryImage(p) {
     if (p.agent_name || p.agent_phone) {
       ctx.fillStyle = T.ink;
       setFont(ctx, 700, 40);
-      rtlText(ctx, `👤 مشاور: ${p.agent_name || "اطلس املاک"}`, cx, agentY);
+      rtlText(ctx, `👤 مشاور: ${cleanAgentName(p.agent_name) || "اطلس املاک"}`, cx, agentY);
 
       if (p.agent_phone) {
         ctx.fillStyle = T.sale;
