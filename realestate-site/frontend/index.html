@@ -282,6 +282,107 @@
   </div>
 </section>
 
+
+<!-- ===================== ثبت فایل ملک ===================== -->
+<section class="submit-property" id="submit-property">
+  <div class="wrap">
+    <div class="submit-header">
+      <p class="eyebrow">رایگان و سریع</p>
+      <h2>ملکت رو ثبت کن</h2>
+      <p class="submit-sub">
+        مشاور باشی یا مالک، فایل‌ت رو بفرست.<br>
+        بعد از بررسی و تماس ما، توی سایت منتشر می‌شه.
+      </p>
+    </div>
+
+    <form class="submit-form" id="submitPropertyForm">
+      <div class="form-row">
+        <div class="form-group">
+          <label>نوع معامله</label>
+          <select id="submitDealType" required>
+            <option value="">انتخاب کنید</option>
+            <option value="فروش">فروش</option>
+            <option value="رهن و اجاره">رهن و اجاره</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>نوع ملک</label>
+          <select id="submitPropertyType" required>
+            <option value="">انتخاب کنید</option>
+            <option value="آپارتمان">آپارتمان</option>
+            <option value="ویلا">ویلا / خانه ویلایی</option>
+            <option value="زمین">زمین</option>
+            <option value="مغازه">مغازه / تجاری</option>
+            <option value="سایر">سایر</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>آدرس تقریبی</label>
+        <input type="text" id="submitAddress" placeholder="مثلاً: بلوار ولیعصر لاله ۵ غربی" required>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>متراژ (متر)</label>
+          <input type="text" id="submitArea" placeholder="مثلاً: ۹۰">
+        </div>
+        <div class="form-group">
+          <label>تعداد خواب</label>
+          <input type="text" id="submitRooms" placeholder="مثلاً: ۲">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>قیمت / رهن و اجاره</label>
+        <input type="text" id="submitPrice" placeholder="مثلاً: ۶.۵ میلیارد یا رهن ۵۰۰ میلیون + اجاره ۳ میلیون" required>
+      </div>
+
+      <div class="form-group">
+        <label>امکانات (اختیاری)</label>
+        <div class="checkbox-group">
+          <label><input type="checkbox" id="submitParking"> پارکینگ</label>
+          <label><input type="checkbox" id="submitElevator"> آسانسور</label>
+          <label><input type="checkbox" id="submitStorage"> انباری</label>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>توضیحات بیشتر (اختیاری)</label>
+        <textarea id="submitDescription" rows="3" placeholder="هر نکته‌ای که لازم می‌دونی..."></textarea>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>نام شما</label>
+          <input type="text" id="submitName" required>
+        </div>
+        <div class="form-group">
+          <label>شماره تماس</label>
+          <input type="tel" id="submitPhone" placeholder="09xxxxxxxxx" required>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>آیا مشاور هستید؟</label>
+        <select id="submitIsAgent">
+          <option value="no">خیر، مالک هستم</option>
+          <option value="yes">بله، مشاور هستم</option>
+        </select>
+      </div>
+
+      <div class="form-group" id="agentNameGroup" style="display: none;">
+        <label>نام مشاور (برای نمایش در سایت)</label>
+        <input type="text" id="submitAgentName" placeholder="مثلاً: مشاور آقای احمدی">
+      </div>
+
+      <button type="submit" class="submit-btn">ارسال فایل برای بررسی</button>
+      <p class="form-status" id="submitFormStatus"></p>
+    </form>
+  </div>
+</section>
+
 <section class="contact" id="contact">
   <div class="wrap contact-inner">
     <div class="contact-text">
