@@ -679,71 +679,6 @@ if (allProperties.length > 0) {
 loadProperties();
 
 // --------------------------------------------------------------------- //
-// ۹. فرم ثبت فایل ملک
-// --------------------------------------------------------------------- //
-const submitForm = document.getElementById("submitPropertyForm");
-const isAgentSelect = document.getElementById("submitIsAgent");
-const agentNameGroup = document.getElementById("agentNameGroup");
-const dealTypeSelect = document.getElementById("submitDealType");
-const salePriceFields = document.getElementById("salePriceFields");
-const rentPriceFields = document.getElementById("rentPriceFields");
-
-// نمایش/مخفی کردن فیلد نام مشاور
-if (isAgentSelect && agentNameGroup) {
-  isAgentSelect.addEventListener("change", () => {
-    agentNameGroup.style.display = isAgentSelect.value === "yes" ? "block" : "none";
-  });
-}
-
-// نمایش فیلدهای قیمت بر اساس نوع معامله
-function updatePriceFields() {
-  if (!dealTypeSelect || !salePriceFields || !rentPriceFields) return;
-  const val = dealTypeSelect.value;
-  if (val === "فروش") {
-    salePriceFields.style.display = "grid";
-    rentPriceFields.style.display = "none";
-  } else if (val === "رهن و اجاره") {
-    salePriceFields.style.display = "none";
-    rentPriceFields.style.display = "grid";
-  } else {
-    salePriceFields.style.display = "none";
-    rentPriceFields.style.display = "none";
-  }
-}
-
-if (dealTypeSelect) {
-  dealTypeSelect.addEventListener("change", updatePriceFields);
-  updatePriceFields(); // حالت اولیه
-}
-
-if (submitForm) {
-  submitForm.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const statusEl = document.getElementById("submitFormStatus");
-    const btn = submitForm.querySelector("button[type=submit]");
-    const dealType = document.getElementById("submitDealType").value;
-
-    // ساخت متن قیمت بر اساس نوع معامله
-    let priceInfo = "";
-    if (dealType === "فروش") {
-      const total = document.getElementById("submitPriceTotal")?.value.trim() || "";
-      const perMeter = document.getElementById("submitPricePerMeter")?.value.trim() || "";
-      priceInfo = total;
-      if (perMeter) priceInfo += (priceInfo ? " | " : "") + "متری: " + perMeter;
-    } else if (dealType === "رهن و اجاره") {
-      const rahn = document.getElementById("submitRahn")?.value.trim() || "";
-      const ejare = document.getElementById("submitEjare")?.value.trim() || "";
-      priceInfo = "رهن: " + (rahn || "-") + " | اجاره: " + (ejare || "-");
-    }
-
-    const payload = {
-      deal_type: dealType,
-      property_type: document.getElementById("submitPropertyType").value,
-      address: document.getElementById("submitAddress").value.trim(),
-      area_m2: document.getElementById("submitArea").value.trim(),
-      rooms: document.getElementById("submitRooms").value.trim(),
-      price_info: priceInfo,
-// --------------------------------------------------------------------- //
 // ۹. فرم ثبت فایل ملک (ارسال مستقیم به تلگرام)
 // --------------------------------------------------------------------- //
 const submitForm = document.getElementById("submitPropertyForm");
@@ -760,7 +695,7 @@ if (isAgentSelect && agentNameGroup) {
 }
 
 function updatePriceFields() {
-  if (!dealTypeSelect || !salePriceFields || !rentPriceFields) return;
+  if (!dealTypeSelect  !salePriceFields  !rentPriceFields) return;
   const val = dealTypeSelect.value;
   salePriceFields.style.display = val === "فروش" ? "grid" : "none";
   rentPriceFields.style.display = val === "رهن و اجاره" ? "grid" : "none";
@@ -782,7 +717,7 @@ if (submitForm) {
     const name = document.getElementById("submitName").value.trim();
     const phone = document.getElementById("submitPhone").value.trim();
 
-    if (!dealType || !propertyType || !address || !name || !phone) {
+    if (!dealType  !propertyType  !address  !name  !phone) {
       statusEl.textContent = "لطفاً فیلدهای ضروری را پر کنید.";
       statusEl.className = "form-status error";
       return;
@@ -794,19 +729,19 @@ if (submitForm) {
     } else if (dealType === "رهن و اجاره") {
       const rahn = document.getElementById("submitRahn")?.value.trim() || "-";
       const ejare = document.getElementById("submitEjare")?.value.trim() || "-";
-      priceInfo = `رهن: ${rahn} | اجاره: ${ejare}`;
+      priceInfo = رهن: ${rahn} | اجاره: ${ejare};
     }
 
-    let text = `🏠 ثبت ملک جدید از سایت\n\n`;
-    text += `📌 نوع معامله: ${dealType}\n`;
-    text += `🏢 نوع ملک: ${propertyType}\n`;
-    text += `📍 آدرس: ${address}\n`;
-    if (priceInfo) text += `💰 قیمت: ${priceInfo}\n`;
-    text += `👤 نام: ${name}\n`;
-    text += `📱 شماره: ${phone}\n`;
-    text += `\n🌐 منبع: سایت اطلس املاک`;
+    let text = 🏠 ثبت ملک جدید از سایت\n\n;
+    text += 📌 نوع معامله: ${dealType}\n;
+    text += 🏢 نوع ملک: ${propertyType}\n;
+    text += 📍 آدرس: ${address}\n;
+    if (priceInfo) text += 💰 قیمت: ${priceInfo}\n;
+    text += 👤 نام: ${name}\n;
+    text += 📱 شماره: ${phone}\n;
+    text += \n🌐 منبع: سایت اطلس املاک;
 
-    window.open(`https://t.me/KhademAbad_RealEstate_bot?text=${encodeURIComponent(text)}`, "_blank");
+    window.open(https://t.me/KhademAbad_RealEstate_bot?text=${encodeURIComponent(text)}, "_blank");
 
     statusEl.textContent = "✅ پیام آماده شد. در تلگرام دکمه ارسال را بزنید.";
     statusEl.className = "form-status success";
