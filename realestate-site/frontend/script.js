@@ -750,7 +750,3 @@ if (submitForm) {
     updatePriceFields();
   });
 }
-    if (agentNameGroup) agentNameGroup.style.display = "none";
-    updatePriceFields();
-  });
-}
