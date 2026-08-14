@@ -788,7 +788,6 @@ if (submitForm) {
       return;
     }
 
-    // ساخت متن قیمت
     let priceInfo = "";
     if (dealType === "فروش") {
       priceInfo = document.getElementById("submitPriceTotal")?.value.trim() || "";
@@ -798,7 +797,6 @@ if (submitForm) {
       priceInfo = `رهن: ${rahn} | اجاره: ${ejare}`;
     }
 
-    // ساخت پیام
     let text = `🏠 ثبت ملک جدید از سایت\n\n`;
     text += `📌 نوع معامله: ${dealType}\n`;
     text += `🏢 نوع ملک: ${propertyType}\n`;
@@ -808,4 +806,12 @@ if (submitForm) {
     text += `📱 شماره: ${phone}\n`;
     text += `\n🌐 منبع: سایت اطلس املاک`;
 
-    // باز کردن تلگرام
+    window.open(`https://t.me/KhademAbad_RealEstate_bot?text=${encodeURIComponent(text)}`, "_blank");
+
+    statusEl.textContent = "✅ پیام آماده شد. در تلگرام دکمه ارسال را بزنید.";
+    statusEl.className = "form-status success";
+    submitForm.reset();
+    if (agentNameGroup) agentNameGroup.style.display = "none";
+    updatePriceFields();
+  });
+}
