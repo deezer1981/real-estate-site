@@ -679,7 +679,7 @@ if (allProperties.length > 0) {
 loadProperties();
 
 // --------------------------------------------------------------------- //
-// ۹. فرم ثبت فایل ملک (ارسال مستقیم به تلگرام)
+// ۹. فرم ثبت فایل ملک — ارسال مستقیم به API (تأیید داخل سایت)
 // --------------------------------------------------------------------- //
 const submitForm = document.getElementById("submitPropertyForm");
 const isAgentSelect = document.getElementById("submitIsAgent");
@@ -707,15 +707,24 @@ if (dealTypeSelect) {
 }
 
 if (submitForm) {
-  submitForm.addEventListener("submit", (e) => {
+  submitForm.addEventListener("submit", async (e) => {
     e.preventDefault();
     const statusEl = document.getElementById("submitFormStatus");
+    const submitBtn = submitForm.querySelector('button[type="submit"]');
 
     const dealType = document.getElementById("submitDealType").value;
     const propertyType = document.getElementById("submitPropertyType").value;
     const address = document.getElementById("submitAddress").value.trim();
     const name = document.getElementById("submitName").value.trim();
     const phone = document.getElementById("submitPhone").value.trim();
+    const area = document.getElementById("submitArea")?.value.trim() || "";
+    const rooms = document.getElementById("submitRooms")?.value.trim() || "";
+    const description = document.getElementById("submitDescription")?.value.trim() || "";
+    const isAgent = document.getElementById("submitIsAgent")?.value === "yes";
+    const agentName = document.getElementById("submitAgentName")?.value.trim() || "";
+    const parking = !!document.getElementById("submitParking")?.checked;
+    const elevator = !!document.getElementById("submitElevator")?.checked;
+    const storage = !!document.getElementById("submitStorage")?.checked;
 
     if (!dealType || !propertyType || !address || !name || !phone) {
       statusEl.textContent = "لطفاً فیلدهای ضروری را پر کنید.";
@@ -725,28 +734,78 @@ if (submitForm) {
 
     let priceInfo = "";
     if (dealType === "فروش") {
-      priceInfo = document.getElementById("submitPriceTotal")?.value.trim() || "";
+      const total = document.getElementById("submitPriceTotal")?.value.trim() || "";
+      const perMeter = document.getElementById("submitPricePerMeter")?.value.trim() || "";
+      priceInfo = total || "توافقی";
+      if (perMeter) priceInfo += ` (متری ${perMeter})`;
     } else if (dealType === "رهن و اجاره") {
       const rahn = document.getElementById("submitRahn")?.value.trim() || "-";
       const ejare = document.getElementById("submitEjare")?.value.trim() || "-";
       priceInfo = `رهن: ${rahn} | اجاره: ${ejare}`;
+    } else {
+      priceInfo = "توافقی";
     }
 
-    let text = `🏠 ثبت ملک جدید از سایت\n\n`;
-    text += `📌 نوع معامله: ${dealType}\n`;
-    text += `🏢 نوع ملک: ${propertyType}\n`;
-    text += `📍 آدرس: ${address}\n`;
-    if (priceInfo) text += `💰 قیمت: ${priceInfo}\n`;
-    text += `👤 نام: ${name}\n`;
-    text += `📱 شماره: ${phone}\n`;
-    text += `\n🌐 منبع: سایت اطلس املاک`;
+    const payload = {
+      deal_type: dealType,
+      property_type: propertyType,
+      address: address,
+      area_m2: area,
+      rooms: rooms,
+      price_info: priceInfo,
+      parking: parking,
+      elevator: elevator,
+      storage: storage,
+      description: description,
+      submitter_name: name,
+      submitter_phone: phone,
+      is_agent: isAgent,
+      agent_name: isAgent ? agentName : "",
+      source: "website",
+    };
 
-    window.open(`https://t.me/KhademAbad_RealEstate_bot?text=${encodeURIComponent(text)}`, "_blank");
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.textContent = "در حال ارسال...";
+    }
+    statusEl.textContent = "";
+    statusEl.className = "form-status";
 
-    statusEl.textContent = "✅ پیام آماده شد. در تلگرام دکمه ارسال را بزنید.";
-    statusEl.className = "form-status success";
-    submitForm.reset();
-    if (agentNameGroup) agentNameGroup.style.display = "none";
-    updatePriceFields();
+    try {
+      const res = await fetch(`${BASE_API}/api/pending-properties`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      let data = null;
+      try {
+        data = await res.json();
+      } catch (_) {}
+
+      if (!res.ok) {
+        const msg =
+          (data && (data.detail || data.message)) ||
+          "ارسال ناموفق بود. لطفاً دوباره تلاش کنید.";
+        throw new Error(typeof msg === "string" ? msg : JSON.stringify(msg));
+      }
+
+      statusEl.textContent =
+        "✅ فایل شما ثبت شد و برای بررسی ارسال شد. به‌زودی با شما تماس می‌گیریم.";
+      statusEl.className = "form-status success";
+      submitForm.reset();
+      if (agentNameGroup) agentNameGroup.style.display = "none";
+      updatePriceFields();
+    } catch (err) {
+      console.error(err);
+      statusEl.textContent =
+        "❌ " + (err.message || "خطا در ارسال. لطفاً دوباره تلاش کنید.");
+      statusEl.className = "form-status error";
+    } finally {
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = "ارسال فایل برای بررسی";
+      }
+    }
   });
 }
