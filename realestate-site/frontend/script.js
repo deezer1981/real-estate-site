@@ -782,3 +782,70 @@ if (submitForm) {
     }
   });
 }
+// --------------------------------------------------------------------- //
+// ۹. فرم ثبت درخواست (Lead Form)
+// --------------------------------------------------------------------- //
+const leadForm = document.getElementById("leadForm");
+const formStatus = document.getElementById("formStatus");
+
+if (leadForm) {
+  leadForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const name = document.getElementById("leadName").value.trim();
+    const phone = document.getElementById("leadPhone").value.trim();
+    const message = document.getElementById("leadMessage").value.trim();
+
+    if (!name || !phone) {
+      formStatus.textContent = "لطفاً نام و شماره تماس را وارد کنید.";
+      formStatus.style.color = "#c0392b";
+      return;
+    }
+
+    // اعتبارسنجی ساده شماره
+    const phoneClean = phone.replace(/\D/g, "");
+    if (phoneClean.length < 10) {
+      formStatus.textContent = "شماره تماس معتبر نیست.";
+      formStatus.style.color = "#c0392b";
+      return;
+    }
+
+    const submitBtn = leadForm.querySelector('button[type="submit"]');
+    const originalBtnText = submitBtn.textContent;
+    submitBtn.disabled = true;
+    submitBtn.textContent = "در حال ارسال...";
+    formStatus.textContent = "";
+
+    try {
+      const res = await fetch(`${BASE_API}/api/leads`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: name,
+          phone: phone,
+          message: message,
+          source: "website",
+        }),
+      });
+
+      if (!res.ok) {
+        throw new Error("خطا در ارسال");
+      }
+
+      // موفقیت
+      formStatus.textContent = "✅ پیام شما با موفقیت ثبت شد. به زودی با شما تماس می‌گیریم.";
+      formStatus.style.color = "#1e6b4c";
+      leadForm.reset();
+
+    } catch (err) {
+      console.error(err);
+      formStatus.textContent = "❌ خطا در ارسال پیام. لطفاً دوباره تلاش کنید یا مستقیم تماس بگیرید.";
+      formStatus.style.color = "#c0392b";
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = originalBtnText;
+    }
+  });
+}
