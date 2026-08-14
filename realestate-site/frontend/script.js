@@ -695,7 +695,7 @@ if (isAgentSelect && agentNameGroup) {
 }
 
 function updatePriceFields() {
-  if (!dealTypeSelect  !salePriceFields  !rentPriceFields) return;
+  if (!dealTypeSelect || !salePriceFields || !rentPriceFields) return;
   const val = dealTypeSelect.value;
   salePriceFields.style.display = val === "فروش" ? "grid" : "none";
   rentPriceFields.style.display = val === "رهن و اجاره" ? "grid" : "none";
@@ -717,7 +717,7 @@ if (submitForm) {
     const name = document.getElementById("submitName").value.trim();
     const phone = document.getElementById("submitPhone").value.trim();
 
-    if (!dealType  !propertyType  !address  !name  !phone) {
+    if (!dealType || !propertyType || !address || !name || !phone) {
       statusEl.textContent = "لطفاً فیلدهای ضروری را پر کنید.";
       statusEl.className = "form-status error";
       return;
@@ -729,23 +729,27 @@ if (submitForm) {
     } else if (dealType === "رهن و اجاره") {
       const rahn = document.getElementById("submitRahn")?.value.trim() || "-";
       const ejare = document.getElementById("submitEjare")?.value.trim() || "-";
-      priceInfo = رهن: ${rahn} | اجاره: ${ejare};
+      priceInfo = `رهن: ${rahn} | اجاره: ${ejare}`;
     }
 
-    let text = 🏠 ثبت ملک جدید از سایت\n\n;
-    text += 📌 نوع معامله: ${dealType}\n;
-    text += 🏢 نوع ملک: ${propertyType}\n;
-    text += 📍 آدرس: ${address}\n;
-    if (priceInfo) text += 💰 قیمت: ${priceInfo}\n;
-    text += 👤 نام: ${name}\n;
-    text += 📱 شماره: ${phone}\n;
-    text += \n🌐 منبع: سایت اطلس املاک;
+    let text = `🏠 ثبت ملک جدید از سایت\n\n`;
+    text += `📌 نوع معامله: ${dealType}\n`;
+    text += `🏢 نوع ملک: ${propertyType}\n`;
+    text += `📍 آدرس: ${address}\n`;
+    if (priceInfo) text += `💰 قیمت: ${priceInfo}\n`;
+    text += `👤 نام: ${name}\n`;
+    text += `📱 شماره: ${phone}\n`;
+    text += `\n🌐 منبع: سایت اطلس املاک`;
 
-    window.open(https://t.me/KhademAbad_RealEstate_bot?text=${encodeURIComponent(text)}, "_blank");
+    window.open(`https://t.me/KhademAbad_RealEstate_bot?text=${encodeURIComponent(text)}`, "_blank");
 
     statusEl.textContent = "✅ پیام آماده شد. در تلگرام دکمه ارسال را بزنید.";
     statusEl.className = "form-status success";
     submitForm.reset();
+    if (agentNameGroup) agentNameGroup.style.display = "none";
+    updatePriceFields();
+  });
+}
     if (agentNameGroup) agentNameGroup.style.display = "none";
     updatePriceFields();
   });
