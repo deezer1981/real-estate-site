@@ -743,80 +743,69 @@ if (submitForm) {
       area_m2: document.getElementById("submitArea").value.trim(),
       rooms: document.getElementById("submitRooms").value.trim(),
       price_info: priceInfo,
-      parking: document.getElementById("submitParking").checked,
-      elevator: document.getElementById("submitElevator").checked,
-      storage: document.getElementById("submitStorage").checked,
-      description: document.getElementById("submitDescription").value.trim(),
-      submitter_name: document.getElementById("submitName").value.trim(),
-      submitter_phone: document.getElementById("submitPhone").value.trim(),
-      is_agent: document.getElementById("submitIsAgent").value === "yes",
-      agent_name: document.getElementById("submitAgentName")?.value.trim() || "",
-      source: "website"
-    };
+// --------------------------------------------------------------------- //
+// ۹. فرم ثبت فایل ملک (ارسال مستقیم به تلگرام)
+// --------------------------------------------------------------------- //
+const submitForm = document.getElementById("submitPropertyForm");
+const isAgentSelect = document.getElementById("submitIsAgent");
+const agentNameGroup = document.getElementById("agentNameGroup");
+const dealTypeSelect = document.getElementById("submitDealType");
+const salePriceFields = document.getElementById("salePriceFields");
+const rentPriceFields = document.getElementById("rentPriceFields");
 
-    btn.disabled = true;
-    btn.textContent = "در حال ارسال...";
-    statusEl.textContent = "";
-    statusEl.className = "form-status";
-
-    try {
-      const res = await fetch(`${BASE_API}/api/pending-properties`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
-      });
-
-      if (!res.ok) throw new Error("خطا در ارسال");
-
-      statusEl.textContent = "✅ فایل با موفقیت ارسال شد. به زودی با شما تماس می‌گیریم.";
-      statusEl.classList.add("success");
-      submitForm.reset();
-      if (agentNameGroup) agentNameGroup.style.display = "none";
-      updatePriceFields(); // مخفی کردن فیلدهای قیمت بعد از ریست
-    } catch (err) {
-      statusEl.textContent = "❌ مشکلی پیش آمد. لطفاً دوباره تلاش کنید یا مستقیم تماس بگیرید.";
-      statusEl.classList.add("error");
-    } finally {
-      btn.disabled = false;
-      btn.textContent = "ارسال فایل برای بررسی";
-    }
+if (isAgentSelect && agentNameGroup) {
+  isAgentSelect.addEventListener("change", () => {
+    agentNameGroup.style.display = isAgentSelect.value === "yes" ? "block" : "none";
   });
 }
-// --------------------------------------------------------------------- //
-// ۹. فرم ثبت درخواست (ارسال مستقیم به تلگرام)
-// --------------------------------------------------------------------- //
-const leadForm = document.getElementById("leadForm");
-const formStatus = document.getElementById("formStatus");
 
-if (leadForm) {
-  leadForm.addEventListener("submit", (e) => {
+function updatePriceFields() {
+  if (!dealTypeSelect || !salePriceFields || !rentPriceFields) return;
+  const val = dealTypeSelect.value;
+  salePriceFields.style.display = val === "فروش" ? "grid" : "none";
+  rentPriceFields.style.display = val === "رهن و اجاره" ? "grid" : "none";
+}
+
+if (dealTypeSelect) {
+  dealTypeSelect.addEventListener("change", updatePriceFields);
+  updatePriceFields();
+}
+
+if (submitForm) {
+  submitForm.addEventListener("submit", (e) => {
     e.preventDefault();
+    const statusEl = document.getElementById("submitFormStatus");
 
-    const name = document.getElementById("leadName").value.trim();
-    const phone = document.getElementById("leadPhone").value.trim();
-    const message = document.getElementById("leadMessage").value.trim();
+    const dealType = document.getElementById("submitDealType").value;
+    const propertyType = document.getElementById("submitPropertyType").value;
+    const address = document.getElementById("submitAddress").value.trim();
+    const name = document.getElementById("submitName").value.trim();
+    const phone = document.getElementById("submitPhone").value.trim();
 
-    if (!name || !phone) {
-      formStatus.textContent = "لطفاً نام و شماره تماس را وارد کنید.";
-      formStatus.style.color = "#c0392b";
+    if (!dealType || !propertyType || !address || !name || !phone) {
+      statusEl.textContent = "لطفاً فیلدهای ضروری را پر کنید.";
+      statusEl.className = "form-status error";
       return;
     }
 
-    // ساخت پیام مرتب
-    let text = `📩 درخواست جدید از سایت\n\n`;
+    // ساخت متن قیمت
+    let priceInfo = "";
+    if (dealType === "فروش") {
+      priceInfo = document.getElementById("submitPriceTotal")?.value.trim() || "";
+    } else if (dealType === "رهن و اجاره") {
+      const rahn = document.getElementById("submitRahn")?.value.trim() || "-";
+      const ejare = document.getElementById("submitEjare")?.value.trim() || "-";
+      priceInfo = `رهن: ${rahn} | اجاره: ${ejare}`;
+    }
+
+    // ساخت پیام
+    let text = `🏠 ثبت ملک جدید از سایت\n\n`;
+    text += `📌 نوع معامله: ${dealType}\n`;
+    text += `🏢 نوع ملک: ${propertyType}\n`;
+    text += `📍 آدرس: ${address}\n`;
+    if (priceInfo) text += `💰 قیمت: ${priceInfo}\n`;
     text += `👤 نام: ${name}\n`;
     text += `📱 شماره: ${phone}\n`;
-    if (message) text += `💬 پیام: ${message}\n`;
     text += `\n🌐 منبع: سایت اطلس املاک`;
 
-    // باز کردن تلگرام با متن آماده
-    const telegramUrl = `https://t.me/KhademAbad_RealEstate_bot?text=${encodeURIComponent(text)}`;
-    
-    // برای موبایل بهتر کار می‌کنه
-    window.open(telegramUrl, "_blank");
-
-    formStatus.textContent = "✅ پیام آماده شد. در تلگرام دکمه ارسال را بزنید.";
-    formStatus.style.color = "#1e6b4c";
-    leadForm.reset();
-  });
-}
+    // باز کردن تلگرام
