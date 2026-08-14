@@ -783,13 +783,13 @@ if (submitForm) {
   });
 }
 // --------------------------------------------------------------------- //
-// ۹. فرم ثبت درخواست (Lead Form)
+// ۹. فرم ثبت درخواست (ارسال مستقیم به تلگرام)
 // --------------------------------------------------------------------- //
 const leadForm = document.getElementById("leadForm");
 const formStatus = document.getElementById("formStatus");
 
 if (leadForm) {
-  leadForm.addEventListener("submit", async (e) => {
+  leadForm.addEventListener("submit", (e) => {
     e.preventDefault();
 
     const name = document.getElementById("leadName").value.trim();
@@ -802,50 +802,21 @@ if (leadForm) {
       return;
     }
 
-    // اعتبارسنجی ساده شماره
-    const phoneClean = phone.replace(/\D/g, "");
-    if (phoneClean.length < 10) {
-      formStatus.textContent = "شماره تماس معتبر نیست.";
-      formStatus.style.color = "#c0392b";
-      return;
-    }
+    // ساخت پیام مرتب
+    let text = `📩 درخواست جدید از سایت\n\n`;
+    text += `👤 نام: ${name}\n`;
+    text += `📱 شماره: ${phone}\n`;
+    if (message) text += `💬 پیام: ${message}\n`;
+    text += `\n🌐 منبع: سایت اطلس املاک`;
 
-    const submitBtn = leadForm.querySelector('button[type="submit"]');
-    const originalBtnText = submitBtn.textContent;
-    submitBtn.disabled = true;
-    submitBtn.textContent = "در حال ارسال...";
-    formStatus.textContent = "";
+    // باز کردن تلگرام با متن آماده
+    const telegramUrl = `https://t.me/KhademAbad_RealEstate_bot?text=${encodeURIComponent(text)}`;
+    
+    // برای موبایل بهتر کار می‌کنه
+    window.open(telegramUrl, "_blank");
 
-    try {
-      const res = await fetch(`${BASE_API}/api/leads`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          name: name,
-          phone: phone,
-          message: message,
-          source: "website",
-        }),
-      });
-
-      if (!res.ok) {
-        throw new Error("خطا در ارسال");
-      }
-
-      // موفقیت
-      formStatus.textContent = "✅ پیام شما با موفقیت ثبت شد. به زودی با شما تماس می‌گیریم.";
-      formStatus.style.color = "#1e6b4c";
-      leadForm.reset();
-
-    } catch (err) {
-      console.error(err);
-      formStatus.textContent = "❌ خطا در ارسال پیام. لطفاً دوباره تلاش کنید یا مستقیم تماس بگیرید.";
-      formStatus.style.color = "#c0392b";
-    } finally {
-      submitBtn.disabled = false;
-      submitBtn.textContent = originalBtnText;
-    }
+    formStatus.textContent = "✅ پیام آماده شد. در تلگرام دکمه ارسال را بزنید.";
+    formStatus.style.color = "#1e6b4c";
+    leadForm.reset();
   });
 }
