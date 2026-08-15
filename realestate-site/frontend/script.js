@@ -86,7 +86,7 @@ function propertyCard(p) {
           ${priceLine}
           ${agentLine}
           ${agentCallBtn}
-          <img src="assets/logo.svg" alt="Baghestan Estate Guide" class="card-logo" loading="lazy">
+          <img src="assets/logo.png" alt="Baghestan Estate Guide" class="card-logo" loading="lazy">
         </div>
       </article>
     </div>
