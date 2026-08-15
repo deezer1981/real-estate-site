@@ -419,46 +419,95 @@ function drawIcon(ctx, type, x, y, size, color) {
 
 function drawPhotoPlaceholder(ctx, x, y, w, h, T) {
   ctx.save();
-  rr(ctx, x, y, w, h, 28);
+  // سایه نرم مثل نمونه
+  ctx.shadowColor = "rgba(26, 35, 50, 0.16)";
+  ctx.shadowBlur = 32;
+  ctx.shadowOffsetY = 12;
+  ctx.fillStyle = "#fff";
+  rr(ctx, x, y, w, h, 32);
+  ctx.fill();
+  ctx.restore();
+
+  ctx.save();
+  rr(ctx, x, y, w, h, 32);
   ctx.clip();
 
-  const g = ctx.createLinearGradient(x, y, x + w, y + h);
-  g.addColorStop(0, "#E8F0F8");
-  g.addColorStop(0.45, "#D0E0F0");
-  g.addColorStop(1, "#B8CDE0");
-  ctx.fillStyle = g;
+  // پس‌زمینه گرم شبیه فضای داخلی مدرن (مثل نمونه)
+  const sky = ctx.createLinearGradient(x, y, x, y + h);
+  sky.addColorStop(0, "#F7F1E8");
+  sky.addColorStop(0.35, "#EDE4D6");
+  sky.addColorStop(0.7, "#E2D5C4");
+  sky.addColorStop(1, "#D4C4AE");
+  ctx.fillStyle = sky;
   ctx.fillRect(x, y, w, h);
 
-  // اشکال نرم شبیه مبلمان/نور
-  ctx.fillStyle = "rgba(255,255,255,0.35)";
-  rr(ctx, x + w * 0.08, y + h * 0.55, w * 0.55, h * 0.28, 12);
+  // پنجره / نور از بالا
+  const winG = ctx.createLinearGradient(x, y, x, y + h * 0.45);
+  winG.addColorStop(0, "rgba(255,255,255,0.55)");
+  winG.addColorStop(1, "rgba(255,255,255,0)");
+  ctx.fillStyle = winG;
+  ctx.fillRect(x, y, w, h * 0.45);
+
+  // دیوار TV / پنل
+  ctx.fillStyle = "#C8B8A4";
+  rr(ctx, x + w * 0.52, y + h * 0.18, w * 0.38, h * 0.42, 10);
   ctx.fill();
-  ctx.fillStyle = "rgba(255,255,255,0.22)";
-  rr(ctx, x + w * 0.55, y + h * 0.2, w * 0.35, h * 0.45, 10);
+  ctx.fillStyle = "#2A2A2A";
+  rr(ctx, x + w * 0.56, y + h * 0.24, w * 0.30, h * 0.22, 6);
   ctx.fill();
 
-  // آیکون خانه در مرکز
-  ctx.globalAlpha = 0.45;
-  drawIcon(ctx, "home", x + w / 2, y + h / 2 - 10, 90, T.blue);
-  ctx.globalAlpha = 1;
+  // مبل
+  ctx.fillStyle = "#C4B5A0";
+  rr(ctx, x + w * 0.08, y + h * 0.58, w * 0.55, h * 0.22, 14);
+  ctx.fill();
+  ctx.fillStyle = "#B5A48C";
+  rr(ctx, x + w * 0.08, y + h * 0.55, w * 0.12, h * 0.18, 8);
+  ctx.fill();
+  rr(ctx, x + w * 0.51, y + h * 0.55, w * 0.12, h * 0.18, 8);
+  ctx.fill();
 
+  // میز وسط
+  ctx.fillStyle = "#A89070";
+  rr(ctx, x + w * 0.22, y + h * 0.72, w * 0.28, h * 0.06, 6);
+  ctx.fill();
+
+  // گیاه
+  ctx.fillStyle = "#6B8F71";
+  ctx.beginPath();
+  ctx.ellipse(x + w * 0.78, y + h * 0.62, w * 0.06, h * 0.08, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = "#8A6B4A";
+  rr(ctx, x + w * 0.75, y + h * 0.68, w * 0.06, h * 0.08, 4);
+  ctx.fill();
+
+  // کف براق
+  const floor = ctx.createLinearGradient(x, y + h * 0.78, x, y + h);
+  floor.addColorStop(0, "rgba(255,255,255,0.25)");
+  floor.addColorStop(1, "rgba(180,160,130,0.35)");
+  ctx.fillStyle = floor;
+  ctx.fillRect(x, y + h * 0.78, w, h * 0.22);
+
+  // لایه نرم روی همه
+  ctx.fillStyle = "rgba(26, 95, 180, 0.06)";
+  ctx.fillRect(x, y, w, h);
+
+  // برچسب وسط
+  ctx.fillStyle = "rgba(255,255,255,0.82)";
+  rr(ctx, x + w / 2 - 110, y + h / 2 - 36, 220, 72, 18);
+  ctx.fill();
+  drawIcon(ctx, "home", x + w / 2, y + h / 2 - 8, 28, T.blue);
   ctx.fillStyle = T.inkSoft;
-  setFont(ctx, 600, 26);
+  setFont(ctx, 600, 22);
   ctx.textAlign = "center";
-  ctx.fillText("تصویر ملک", x + w / 2, y + h / 2 + 70);
+  ctx.direction = "rtl";
+  ctx.fillText("بدون تصویر", x + w / 2, y + h / 2 + 28);
 
   ctx.restore();
 
-  // حاشیه و سایه
-  ctx.save();
-  ctx.shadowColor = "rgba(26, 35, 50, 0.18)";
-  ctx.shadowBlur = 28;
-  ctx.shadowOffsetY = 10;
-  ctx.strokeStyle = "rgba(26,95,180,0.2)";
+  ctx.strokeStyle = "rgba(26,95,180,0.18)";
   ctx.lineWidth = 2;
-  rr(ctx, x, y, w, h, 28);
+  rr(ctx, x, y, w, h, 32);
   ctx.stroke();
-  ctx.restore();
 }
 
 async function generateStoryImage(p) {
@@ -477,20 +526,20 @@ async function generateStoryImage(p) {
     const T = STORY_THEME;
     const isSale = p.deal_type === "فروش";
 
-    // پس‌زمینه روشن
-    ctx.fillStyle = T.bg;
+    // پس‌زمینه
+    ctx.fillStyle = "#EEF2F7";
     ctx.fillRect(0, 0, W, H);
 
-    // هدر سفید
-    ctx.fillStyle = T.white;
-    ctx.fillRect(0, 0, W, 160);
-    ctx.fillStyle = T.border;
-    ctx.fillRect(0, 160, W, 2);
+    // هدر
+    ctx.fillStyle = "#FFFFFF";
+    ctx.fillRect(0, 0, W, 150);
+    ctx.fillStyle = "#E2E8F0";
+    ctx.fillRect(0, 150, W, 2);
 
-    // لوگو + برند سمت چپ (در مختصات LTR روی canvas با جهت RTL مراقب باشیم)
-    const logoSize = 72;
-    const logoX = 48;
-    const logoY = 44;
+    // لوگو + برند
+    const logoSize = 68;
+    const logoX = 44;
+    const logoY = 40;
     if (logoImg) {
       ctx.drawImage(logoImg, logoX, logoY, logoSize, logoSize);
     } else {
@@ -498,40 +547,37 @@ async function generateStoryImage(p) {
       ctx.beginPath();
       ctx.arc(logoX + logoSize / 2, logoY + logoSize / 2, logoSize / 2, 0, Math.PI * 2);
       ctx.fill();
-      drawIcon(ctx, "home", logoX + logoSize / 2, logoY + logoSize / 2, 36, "#fff");
+      drawIcon(ctx, "home", logoX + logoSize / 2, logoY + logoSize / 2, 32, "#fff");
     }
-
-    ctx.fillStyle = T.ink;
-    setFont(ctx, 800, 28);
-    ctx.textAlign = "left";
     ctx.direction = "ltr";
-    ctx.fillText("ATLAS AMLAK", logoX + logoSize + 16, logoY + 32);
-    setFont(ctx, 600, 18);
+    ctx.textAlign = "left";
+    ctx.fillStyle = T.ink;
+    setFont(ctx, 800, 26);
+    ctx.fillText("ATLAS AMLAK", logoX + logoSize + 14, logoY + 30);
     ctx.fillStyle = T.muted;
-    ctx.fillText("KHADAMABAD  ·  BAGHESTAN", logoX + logoSize + 16, logoY + 58);
+    setFont(ctx, 600, 16);
+    ctx.fillText("KHADAMABAD  ·  BAGHESTAN", logoX + logoSize + 14, logoY + 54);
     ctx.direction = "rtl";
 
-    // بج کد ملک (بالا راست)
+    // بج کد
     const codeLabel = `کد ملک: ${p.code || "-"}`;
-    setFont(ctx, 700, 26);
-    const codeW = Math.max(180, ctx.measureText(codeLabel).width + 48);
-    const codeH = 56;
-    const codeX = W - 48 - codeW;
-    const codeY = 52;
+    setFont(ctx, 700, 24);
+    const codeW = Math.max(170, ctx.measureText(codeLabel).width + 44);
+    const codeX = W - 44 - codeW;
+    const codeY = 48;
     ctx.fillStyle = T.blue;
-    rr(ctx, codeX, codeY, codeW, codeH, 28);
+    rr(ctx, codeX, codeY, codeW, 54, 27);
     ctx.fill();
     ctx.fillStyle = "#fff";
-    rtlText(ctx, codeLabel, codeX + codeW / 2, codeY + 38);
+    rtlText(ctx, codeLabel, codeX + codeW / 2, codeY + 36);
 
-    // ناحیه عکس (چپ)
-    const photoX = 48;
-    const photoY = 200;
-    const photoW = 460;
-    const photoH = 620;
-    drawPhotoPlaceholder(ctx, photoX, photoY, photoW, photoH, T);
+    // عکس چپ
+    const photoX = 44;
+    const photoY = 180;
+    const photoW = 480;
+    const photoH = 680;
 
-    // اگر ملک عکس داشت (در آینده)
+    let drewPhoto = false;
     if (p.image_url) {
       try {
         const img = await new Promise((resolve, reject) => {
@@ -542,181 +588,190 @@ async function generateStoryImage(p) {
           im.src = p.image_url;
         });
         ctx.save();
-        rr(ctx, photoX, photoY, photoW, photoH, 28);
+        ctx.shadowColor = "rgba(26, 35, 50, 0.16)";
+        ctx.shadowBlur = 32;
+        ctx.shadowOffsetY = 12;
+        ctx.fillStyle = "#fff";
+        rr(ctx, photoX, photoY, photoW, photoH, 32);
+        ctx.fill();
+        ctx.restore();
+        ctx.save();
+        rr(ctx, photoX, photoY, photoW, photoH, 32);
         ctx.clip();
-        // cover
         const scale = Math.max(photoW / img.width, photoH / img.height);
         const dw = img.width * scale;
         const dh = img.height * scale;
         ctx.drawImage(img, photoX + (photoW - dw) / 2, photoY + (photoH - dh) / 2, dw, dh);
         ctx.restore();
-        ctx.strokeStyle = "rgba(26,95,180,0.2)";
+        ctx.strokeStyle = "rgba(26,95,180,0.18)";
         ctx.lineWidth = 2;
-        rr(ctx, photoX, photoY, photoW, photoH, 28);
+        rr(ctx, photoX, photoY, photoW, photoH, 32);
         ctx.stroke();
+        drewPhoto = true;
       } catch (_) {}
     }
+    if (!drewPhoto) {
+      drawPhotoPlaceholder(ctx, photoX, photoY, photoW, photoH, T);
+    }
 
-    // ستون اطلاعات (راست)
-    const infoX = 540;
-    const infoRight = W - 48;
-    const infoCx = (infoX + infoRight) / 2;
+    // ستون راست
+    const infoRight = W - 44;
+    const infoLeft = 560;
+    const infoCx = (infoLeft + infoRight) / 2;
 
-    // نوع معامله
     ctx.fillStyle = T.blue;
-    setFont(ctx, 800, 64);
-    rtlText(ctx, p.deal_type || "آگهی", infoCx, 280);
+    setFont(ctx, 800, 58);
+    rtlText(ctx, p.deal_type || "آگهی", infoCx, 260);
 
-    // نوع ملک
     ctx.fillStyle = T.ink;
-    setFont(ctx, 800, 48);
-    rtlText(ctx, p.property_type || "ملک", infoCx, 350);
+    setFont(ctx, 800, 44);
+    rtlText(ctx, p.property_type || "ملک", infoCx, 325);
 
-    // نقطه تزئینی
     ctx.fillStyle = T.blue;
     ctx.beginPath();
-    ctx.arc(infoCx, 385, 6, 0, Math.PI * 2);
+    ctx.arc(infoCx, 358, 5, 0, Math.PI * 2);
     ctx.fill();
 
     // موقعیت
     const addr = truncateAddress(p.address) || "خادم‌آباد";
-    drawIcon(ctx, "pin", infoRight - 28, 440, 28, T.blue);
+    let y = 420;
+    drawIcon(ctx, "pin", infoRight - 22, y, 26, T.blue);
     ctx.fillStyle = T.muted;
-    setFont(ctx, 600, 22);
-    rtlText(ctx, "موقعیت:", infoRight - 56, 430, { align: "right" });
+    setFont(ctx, 600, 20);
+    rtlText(ctx, "موقعیت:", infoRight - 48, y - 14, { align: "right" });
     ctx.fillStyle = T.ink;
-    setFont(ctx, 700, 28);
-    // wrap address if long
-    const addrMaxW = infoRight - infoX - 40;
+    setFont(ctx, 700, 26);
     let addrLine = addr;
+    const addrMaxW = infoRight - infoLeft - 30;
     if (ctx.measureText(addrLine).width > addrMaxW) {
-      while (addrLine.length > 8 && ctx.measureText(addrLine + "…").width > addrMaxW) {
-        addrLine = addrLine.slice(0, -1);
-      }
+      while (addrLine.length > 6 && ctx.measureText(addrLine + "…").width > addrMaxW) addrLine = addrLine.slice(0, -1);
       addrLine += "…";
     }
-    rtlText(ctx, addrLine, infoRight - 56, 470, { align: "right" });
+    rtlText(ctx, addrLine, infoRight - 48, y + 24, { align: "right" });
 
-    // متراژ و خواب
-    let rowY = 540;
+    y = 520;
     if (p.area_m2) {
-      drawIcon(ctx, "home", infoRight - 28, rowY, 26, T.blue);
+      drawIcon(ctx, "home", infoRight - 22, y, 24, T.blue);
       ctx.fillStyle = T.muted;
-      setFont(ctx, 600, 22);
-      rtlText(ctx, "متراژ", infoRight - 56, rowY - 12, { align: "right" });
+      setFont(ctx, 600, 20);
+      rtlText(ctx, "متراژ", infoRight - 48, y - 14, { align: "right" });
       ctx.fillStyle = T.ink;
-      setFont(ctx, 800, 32);
-      rtlText(ctx, `${p.area_m2} متر مربع`, infoRight - 56, rowY + 28, { align: "right" });
-      rowY += 90;
+      setFont(ctx, 800, 30);
+      rtlText(ctx, `${p.area_m2} متر مربع`, infoRight - 48, y + 26, { align: "right" });
+      y += 85;
     }
     if (p.rooms) {
-      drawIcon(ctx, "bed", infoRight - 28, rowY, 26, T.blue);
+      drawIcon(ctx, "bed", infoRight - 22, y, 24, T.blue);
       ctx.fillStyle = T.muted;
-      setFont(ctx, 600, 22);
-      rtlText(ctx, "تعداد اتاق خواب", infoRight - 56, rowY - 12, { align: "right" });
+      setFont(ctx, 600, 20);
+      rtlText(ctx, "تعداد اتاق خواب", infoRight - 48, y - 14, { align: "right" });
       ctx.fillStyle = T.ink;
-      setFont(ctx, 800, 32);
-      rtlText(ctx, String(p.rooms), infoRight - 56, rowY + 28, { align: "right" });
-      rowY += 90;
+      setFont(ctx, 800, 30);
+      rtlText(ctx, String(p.rooms), infoRight - 48, y + 26, { align: "right" });
+      y += 85;
     }
 
-    // امکانات با تیک
     const amenityItems = [];
-    if (p.parking) amenityItems.push({ label: "پارکینگ", icon: "car" });
-    if (p.elevator) amenityItems.push({ label: "آسانسور", icon: "elevator" });
-    if (p.storage) amenityItems.push({ label: "انباری", icon: "box" });
-
-    amenityItems.forEach((item, i) => {
-      const y = rowY + i * 58;
-      // دایره تیک سبز
+    if (p.parking) amenityItems.push("پارکینگ");
+    if (p.elevator) amenityItems.push("آسانسور");
+    if (p.storage) amenityItems.push("انباری");
+    amenityItems.forEach((label) => {
       ctx.fillStyle = T.check;
       ctx.beginPath();
-      ctx.arc(infoRight - 24, y, 16, 0, Math.PI * 2);
+      ctx.arc(infoRight - 20, y, 15, 0, Math.PI * 2);
       ctx.fill();
-      drawIcon(ctx, "check", infoRight - 24, y, 18, "#fff");
-
+      drawIcon(ctx, "check", infoRight - 20, y, 16, "#fff");
       ctx.fillStyle = T.ink;
-      setFont(ctx, 700, 28);
-      rtlText(ctx, item.label, infoRight - 56, y + 10, { align: "right" });
+      setFont(ctx, 700, 26);
+      rtlText(ctx, label, infoRight - 48, y + 9, { align: "right" });
+      y += 55;
     });
 
-    // باکس قیمت
+    // قیمت — فشرده زیر عکس و مشخصات
     const priceY = 900;
-    const priceH = 160;
-    const priceX = 48;
-    const priceW = W - 96;
+    const priceH = 150;
     ctx.fillStyle = T.priceBg;
-    rr(ctx, priceX, priceY, priceW, priceH, 24);
+    rr(ctx, 44, priceY, W - 88, priceH, 22);
     ctx.fill();
 
-    drawIcon(ctx, "tag", priceX + 56, priceY + priceH / 2, 36, "#fff");
+    // آیکون تگ سمت راست باکس (چون RTL)
+    drawIcon(ctx, "tag", W - 44 - 50, priceY + priceH / 2, 34, "#fff");
 
-    ctx.fillStyle = "rgba(255,255,255,0.85)";
-    setFont(ctx, 600, 26);
-    rtlText(ctx, isSale ? "قیمت:" : "شرایط:", priceX + 110, priceY + 55, { align: "right" });
+    ctx.fillStyle = "rgba(255,255,255,0.9)";
+    setFont(ctx, 600, 24);
+    rtlText(ctx, isSale ? "قیمت:" : "شرایط:", W - 44 - 90, priceY + 48, { align: "right" });
 
     const priceText = isSale
       ? (p.price_total || "توافقی")
       : `رهن ${p.rahn || "-"}  |  اجاره ${p.ejare || "-"}`;
     ctx.fillStyle = "#fff";
-    setFont(ctx, 800, isSale ? 52 : 36);
-    rtlText(ctx, priceText, priceX + priceW / 2 + 20, priceY + 110);
+    setFont(ctx, 800, isSale ? 48 : 34);
+    rtlText(ctx, priceText, W / 2, priceY + 108);
 
-    // نوار مشاور + تماس
-    const barY = 1100;
-    const barH = 120;
+    // نوار مشاور
+    const barY = 1080;
+    const barH = 130;
     ctx.fillStyle = T.blueDark;
-    rr(ctx, 48, barY, W - 96, barH, 24);
+    rr(ctx, 44, barY, W - 88, barH, 22);
     ctx.fill();
 
-    // نیم‌دایره مشاور
-    ctx.fillStyle = "rgba(255,255,255,0.12)";
+    // آیکون کاربر سمت راست نوار
+    const userCx = W - 44 - 60;
+    ctx.fillStyle = "rgba(255,255,255,0.14)";
     ctx.beginPath();
-    ctx.arc(48 + 70, barY + barH / 2, 42, 0, Math.PI * 2);
+    ctx.arc(userCx, barY + barH / 2, 40, 0, Math.PI * 2);
     ctx.fill();
-    drawIcon(ctx, "user", 48 + 70, barY + barH / 2, 36, "#fff");
+    drawIcon(ctx, "user", userCx, barY + barH / 2, 34, "#fff");
 
     const agentName = p.agent_name ? cleanAgentName(p.agent_name) : "دفتر اطلس";
-    ctx.fillStyle = "rgba(255,255,255,0.75)";
-    setFont(ctx, 600, 22);
-    rtlText(ctx, "مشاور املاک شما:", 48 + 130, barY + 42, { align: "right" });
-    ctx.fillStyle = "#fff";
-    setFont(ctx, 800, 32);
-    rtlText(ctx, agentName, 48 + 130, barY + 82, { align: "right" });
-
-    // تلفن سمت چپ نوار (LTR)
-    drawIcon(ctx, "phone", W - 48 - 70, barY + barH / 2, 32, "#fff");
+    ctx.fillStyle = "rgba(255,255,255,0.8)";
+    setFont(ctx, 600, 20);
+    rtlText(ctx, "مشاور املاک شما:", userCx - 55, barY + 48, { align: "right" });
     ctx.fillStyle = "#fff";
     setFont(ctx, 800, 30);
+    rtlText(ctx, agentName, userCx - 55, barY + 88, { align: "right" });
+
+    // تلفن سمت چپ نوار
+    const phoneCx = 44 + 60;
+    drawIcon(ctx, "phone", phoneCx, barY + barH / 2, 30, "#fff");
+    ctx.fillStyle = "#fff";
+    setFont(ctx, 800, 28);
     ctx.direction = "ltr";
-    ctx.textAlign = "right";
-    ctx.fillText("09106943220", W - 48 - 110, barY + barH / 2 + 10);
+    ctx.textAlign = "left";
+    ctx.fillText("09106943220", phoneCx + 28, barY + barH / 2 + 10);
     ctx.direction = "rtl";
 
-    // فوتر وبسایت
-    const footY = 1280;
-    ctx.fillStyle = T.white;
-    rr(ctx, 48, footY, W - 96, 140, 24);
+    // فوتر وبسایت — نزدیک‌تر
+    const footY = 1250;
+    ctx.fillStyle = "#FFFFFF";
+    rr(ctx, 44, footY, W - 88, 130, 22);
     ctx.fill();
-    ctx.strokeStyle = T.border;
+    ctx.strokeStyle = "#E2E8F0";
     ctx.lineWidth = 2;
-    rr(ctx, 48, footY, W - 96, 140, 24);
+    rr(ctx, 44, footY, W - 88, 130, 22);
     ctx.stroke();
 
-    drawIcon(ctx, "globe", W / 2, footY + 42, 28, T.blue);
+    drawIcon(ctx, "globe", W / 2, footY + 36, 26, T.blue);
     ctx.fillStyle = T.muted;
-    setFont(ctx, 600, 24);
-    rtlText(ctx, "مشاهده املاک بیشتر در وبسایت:", W / 2, footY + 85);
+    setFont(ctx, 600, 22);
+    rtlText(ctx, "مشاهده املاک بیشتر در وبسایت:", W / 2, footY + 78);
     ctx.fillStyle = T.blue;
-    setFont(ctx, 800, 32);
+    setFont(ctx, 800, 30);
     ctx.direction = "ltr";
     ctx.textAlign = "center";
-    ctx.fillText("www.atlas-amlak.ir", W / 2, footY + 125);
+    ctx.fillText("www.atlas-amlak.ir", W / 2, footY + 112);
     ctx.direction = "rtl";
 
-    // نوار پایین آبی
+    // نوار پایین
     ctx.fillStyle = T.blue;
-    ctx.fillRect(0, H - 16, W, 16);
+    ctx.fillRect(0, H - 14, W, 14);
+
+    // پر کردن فضای خالی پایین با گرادیان ملایم (کمتر حس خالی بودن)
+    const bottomFade = ctx.createLinearGradient(0, footY + 140, 0, H - 14);
+    bottomFade.addColorStop(0, "rgba(238,242,247,0)");
+    bottomFade.addColorStop(1, "rgba(26,95,180,0.06)");
+    ctx.fillStyle = bottomFade;
+    ctx.fillRect(0, footY + 140, W, H - 14 - (footY + 140));
 
     const dataUrl = canvas.toDataURL("image/jpeg", 0.95);
     const a = document.createElement("a");
