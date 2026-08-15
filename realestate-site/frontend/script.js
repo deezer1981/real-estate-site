@@ -348,12 +348,10 @@ async function generateStoryImage(p) {
     ctx.fillStyle = bg;
     ctx.fillRect(0, 0, W, H);
 
-    // نوار نازک بالا و پایین (مارجین بصری)
     ctx.fillStyle = T.brass;
-    ctx.fillRect(0, 0, W, 10);
-    ctx.fillRect(0, H - 10, W, 10);
+    ctx.fillRect(0, 0, W, 12);
+    ctx.fillRect(0, H - 12, W, 12);
 
-    // ——— داده ———
     const extras = buildExtras(p);
     const specs = [];
     if (p.area_m2) specs.push(`${p.area_m2} متر`);
@@ -364,158 +362,176 @@ async function generateStoryImage(p) {
       ? `${p.price_total || "توافقی"}`
       : `رهن ${p.rahn || "-"}  |  اجاره ${p.ejare || "-"}`;
 
-    // مارجین امن دور کل طرح (استوری اینستاگرام)
-    const marginX = 64;
-    const marginTop = 72;
-    const marginBottom = 72;
-
-    // عرض کارت با مارجین
+    // مارجین افقی ثابت
+    const marginX = 56;
     const cardX = marginX;
     const cardW = W - marginX * 2;
-    const padX = cardX + 44;
-    const contentW = cardW - 88;
-    const cardRight = cardX + cardW - 44;
+    const padX = cardX + 48;
+    const contentW = cardW - 96;
+    const cardRight = cardX + cardW - 48;
 
-    // ارتفاع بلوک‌های محتوا (فشرده و خوانا — بدون کش آمدن مصنوعی)
-    const S = {
-      headerBrand: 100,   // عنوان برند بالای کارت
-      cardPadTop: 44,
-      dealRow: 58,
-      gap1: 28,
-      title: 70,
-      gap2: 18,
-      divider: 8,
-      gap3: 24,
-      specs: specs.length ? 92 : 0,
-      gapSpecs: specs.length ? 22 : 0,
-      addr: 52,
-      gap4: extras.length ? 20 : 12,
-      extras: extras.length ? 56 : 0,
-      gap5: 28,
-      price: 156,
-      gap6: 32,
-      phone: 100,
-      agent: p.agent_name ? 44 : 0,
-      cardPadBot: 44,
-      gapCardFoot: 24,
-      foot: 280,
-    };
+    // ——— اندازه‌گیری ارتفاع واقعی محتوا (بدون overlap) ———
+    const hasSpecs = specs.length > 0;
+    const hasExtras = extras.length > 0;
+    const hasAgent = Boolean(p.agent_name);
 
-    const cardInner =
-      S.cardPadTop + S.dealRow + S.gap1 + S.title + S.gap2 + S.divider + S.gap3 +
-      S.specs + S.gapSpecs + S.addr + S.gap4 + S.extras + S.gap5 +
-      S.price + S.gap6 + S.phone + S.agent + S.cardPadBot;
+    // فوتر: چیدمان ترتیبی — متن‌ها بعد لوگو (لوگو آخر، جدا)
+    const logoSize = logoImg ? 58 : 0;
+    const footPadTop = 40;
+    const footPadBot = 28;
+    const footParts = [
+      32, // عنوان
+      36, // فاصله + شهر
+      28, // فاصله تا دکمه
+      52, // دکمه
+      24, // فاصله تا خط
+      2,  // خط
+      24, // فاصله تا «تهیه شده»
+      26, // متن تهیه شده
+      logoSize ? 18 + logoSize : 0,
+    ];
+    const footH = footPadTop + footParts.reduce((a, b) => a + b, 0) + footPadBot;
 
-    const totalBlock = S.headerBrand + cardInner + S.gapCardFoot + S.foot;
-    const available = H - marginTop - marginBottom - 20; // ۲۰ برای نوارها
-    // کل بلوک را عمودی وسط‌چین کن تا بالا/پایین خالیِ یکسان و متعادل بماند
-    let startY = marginTop + Math.max(0, (available - totalBlock) / 2);
+    // کارت داخلی
+    const cardPadTop = 56;
+    const cardPadBot = 56;
+    let cardInner = cardPadTop;
+    cardInner += 64; // deal
+    cardInner += 40;
+    cardInner += 76; // title
+    cardInner += 24;
+    cardInner += 4;  // divider
+    cardInner += 32;
+    if (hasSpecs) cardInner += 100 + 28;
+    cardInner += 64; // addr
+    if (hasExtras) cardInner += 26 + 60;
+    cardInner += 36;
+    cardInner += 168; // price
+    cardInner += 36;
+    cardInner += 108; // phone
+    if (hasAgent) cardInner += 48;
+    cardInner += cardPadBot;
 
-    // ——— هدر برند (بیرون کارت) ———
-    let y = startY;
+    const headerH = 130; // برند بالای کارت
+    const gapCardFoot = 28;
+    const gapTop = 48;
+    const gapBottom = 40;
+
+    const totalH = gapTop + headerH + cardInner + gapCardFoot + footH + gapBottom;
+    // اگر کل طرح کوتاه‌تر از قاب است، فاصله‌ی باقی‌مانده را نصف‌نصف به بالا/پایین بده
+    // اگر بلندتر است، از بالا با gapTop شروع کن
+    let y0 = 12; // بعد از نوار
+    if (totalH < H - 24) {
+      y0 = 12 + (H - 24 - totalH) / 2;
+    }
+    y0 += gapTop;
+
+    // ——— هدر برند ———
+    let y = y0;
     ctx.fillStyle = T.ink;
-    setFont(ctx, 800, 48);
-    rtlText(ctx, "گروه مشاورین املاک اطلس", cx, y + 40);
+    setFont(ctx, 800, 52);
+    rtlText(ctx, "گروه مشاورین املاک اطلس", cx, y + 46);
 
     ctx.fillStyle = T.brass;
-    setFont(ctx, 600, 26);
-    rtlText(ctx, "خادم‌آباد  ·  باغستان  ·  شهریار", cx, y + 78);
+    setFont(ctx, 600, 28);
+    rtlText(ctx, "خادم‌آباد  ·  باغستان  ·  شهریار", cx, y + 88);
 
-    drawOrnamentDivider(ctx, cx, y + 100, 200);
-    y += S.headerBrand;
+    drawOrnamentDivider(ctx, cx, y + 116, 220);
+    y += headerH;
 
     // ——— کارت ———
     const cardY = y;
     const cardH = cardInner;
 
     ctx.save();
-    ctx.shadowColor = "rgba(32,28,21,0.12)";
-    ctx.shadowBlur = 32;
-    ctx.shadowOffsetY = 12;
+    ctx.shadowColor = "rgba(32,28,21,0.13)";
+    ctx.shadowBlur = 36;
+    ctx.shadowOffsetY = 14;
     ctx.fillStyle = "#FFFCFA";
-    rr(ctx, cardX, cardY, cardW, cardH, 28);
+    rr(ctx, cardX, cardY, cardW, cardH, 30);
     ctx.fill();
     ctx.restore();
-    ctx.strokeStyle = "rgba(180,137,79,0.4)";
+    ctx.strokeStyle = "rgba(180,137,79,0.42)";
     ctx.lineWidth = 2;
-    rr(ctx, cardX, cardY, cardW, cardH, 28);
+    rr(ctx, cardX, cardY, cardW, cardH, 30);
     ctx.stroke();
 
-    y = cardY + S.cardPadTop;
+    y = cardY + cardPadTop;
 
-    // معامله + کد
-    setFont(ctx, 700, 28);
-    const dealW = Math.max(160, ctx.measureText(dealLabel).width + 48);
-    const dealH = 54;
+    // deal + code
+    setFont(ctx, 700, 30);
+    const dealW = Math.max(170, ctx.measureText(dealLabel).width + 52);
+    const dealH = 56;
     ctx.fillStyle = isSale ? T.sale : T.rent;
     rr(ctx, padX, y, dealW, dealH, 14);
     ctx.fill();
     ctx.fillStyle = "#fff";
     rtlText(ctx, dealLabel, padX + dealW / 2, y + dealH / 2 + 10);
 
-    setFont(ctx, 700, 30);
+    setFont(ctx, 700, 32);
     ctx.fillStyle = T.ink;
     rtlText(ctx, `کد ${p.code || "-"}`, cardRight, y + dealH / 2 + 10, { align: "right" });
-    y += S.dealRow + S.gap1;
+    y += 64 + 36;
 
-    // عنوان
+    // title
     ctx.fillStyle = T.ink;
-    setFont(ctx, 800, 58);
-    rtlText(ctx, p.property_type || "ملک", cx, y + 42);
-    y += S.title + S.gap2;
+    setFont(ctx, 800, 64);
+    rtlText(ctx, p.property_type || "ملک", cx, y + 48);
+    y += 76 + 24;
 
-    // خط
+    // divider
     ctx.strokeStyle = "rgba(32,28,21,0.12)";
     ctx.lineWidth = 2;
     ctx.beginPath();
     ctx.moveTo(padX, y);
     ctx.lineTo(cardRight, y);
     ctx.stroke();
-    y += S.divider + S.gap3;
+    y += 4 + 32;
 
-    // مشخصات
-    if (specs.length) {
-      const boxH = 86;
+    // specs
+    if (hasSpecs) {
+      const boxH = 96;
       ctx.fillStyle = "#F7F1E6";
-      rr(ctx, padX, y, contentW, boxH, 16);
+      rr(ctx, padX, y, contentW, boxH, 18);
       ctx.fill();
       ctx.fillStyle = T.ink;
-      setFont(ctx, 700, 38);
-      rtlText(ctx, specs.join("   ·   "), cx, y + boxH / 2 + 13);
-      y += S.specs + S.gapSpecs;
+      setFont(ctx, 700, 42);
+      rtlText(ctx, specs.join("   ·   "), cx, y + boxH / 2 + 15);
+      y += 100 + 28;
     }
 
-    // آدرس
+    // address
     ctx.fillStyle = T.ink;
-    setFont(ctx, 600, 32);
-    rtlText(ctx, `📍  ${addr}`, cx, y + 28);
-    y += S.addr + S.gap4;
+    setFont(ctx, 600, 36);
+    rtlText(ctx, `📍  ${addr}`, cx, y + 34);
+    y += 64;
 
-    // امکانات
-    if (extras.length) {
-      setFont(ctx, 600, 28);
+    // extras
+    if (hasExtras) {
+      y += 26;
+      setFont(ctx, 600, 30);
       const gapChip = 14;
-      const widths = extras.map((e) => ctx.measureText(e).width + 40);
+      const widths = extras.map((e) => ctx.measureText(e).width + 42);
       const totalW = widths.reduce((a, b) => a + b, 0) + gapChip * (extras.length - 1);
       let x = cx + totalW / 2;
-      const chipH = 50;
-      extras.forEach((label) => {
-        const w = widths.shift();
+      const chipH = 56;
+      extras.forEach((label, i) => {
+        const w = widths[i];
         x -= w;
         ctx.fillStyle = "#F3EBDC";
-        rr(ctx, x, y, w, chipH, 25);
+        rr(ctx, x, y, w, chipH, 26);
         ctx.fill();
         ctx.fillStyle = T.ink;
         rtlText(ctx, label, x + w / 2, y + chipH / 2 + 10);
         x -= gapChip;
       });
-      y += S.extras + S.gap5;
-    } else {
-      y += S.gap5;
+      y += 60;
     }
 
-    // قیمت
-    const priceH = 148;
+    y += 36;
+
+    // price
+    const priceH = 160;
     const priceGrad = ctx.createLinearGradient(padX, y, padX + contentW, y);
     priceGrad.addColorStop(0, "#E8D5A8");
     priceGrad.addColorStop(1, "#F5E8C8");
@@ -532,49 +548,47 @@ async function generateStoryImage(p) {
     rtlText(ctx, isSale ? "قیمت فروش" : "شرایط رهن و اجاره", cx, y + 44);
 
     ctx.fillStyle = T.ink;
-    setFont(ctx, 800, isSale ? 48 : 36);
-    rtlText(ctx, priceText, cx, y + 108);
-    y += S.price + S.gap6;
+    setFont(ctx, 800, isSale ? 50 : 38);
+    rtlText(ctx, priceText, cx, y + 116);
+    y += 168 + 40;
 
-    // تماس
+    // phone
     ctx.fillStyle = T.ink;
     setFont(ctx, 700, 32);
-    rtlText(ctx, "📞  تماس با دفتر اطلس", cx, y + 24);
+    rtlText(ctx, "📞  تماس با دفتر اطلس", cx, y + 30);
 
     ctx.fillStyle = T.sale || "#2F6B4F";
-    setFont(ctx, 800, 44);
+    setFont(ctx, 800, 46);
     ctx.direction = "ltr";
     ctx.textAlign = "center";
-    ctx.fillText("0910 694 3220", cx, y + 78);
+    ctx.fillText("0910 694 3220", cx, y + 90);
     ctx.direction = "rtl";
-    y += S.phone;
+    y += 108;
 
-    // مشاور
-    if (p.agent_name) {
+    if (hasAgent) {
       ctx.fillStyle = "#6B6358";
       setFont(ctx, 600, 28);
       rtlText(ctx, `ثبت‌شده توسط: ${cleanAgentName(p.agent_name)}`, cx, y + 28);
     }
 
-    // ——— فوتر ———
-    const footY = cardY + cardH + S.gapCardFoot;
-    const footH = S.foot;
-
+    // ——— فوتر (ترتیبی، بدون تداخل لوگو) ———
+    const footY = cardY + cardH + gapCardFoot;
     ctx.fillStyle = T.ink;
     rr(ctx, cardX, footY, cardW, footH, 26);
     ctx.fill();
 
-    let fy = footY + 44;
+    let fy = footY + footPadTop;
+
     ctx.fillStyle = T.brass;
     setFont(ctx, 700, 28);
-    rtlText(ctx, "مشاهده جزئیات و آگهی‌های مشابه", cx, fy);
+    rtlText(ctx, "مشاهده جزئیات و آگهی‌های مشابه", cx, fy + 8);
+    fy += 32 + 36;
 
-    fy += 38;
     ctx.fillStyle = "#F7F1E6";
     setFont(ctx, 600, 26);
     rtlText(ctx, "خادم‌آباد و باغستان", cx, fy);
+    fy += 28;
 
-    fy += 30;
     const btnW = 380;
     const btnH = 52;
     ctx.fillStyle = T.brass;
@@ -586,23 +600,24 @@ async function generateStoryImage(p) {
     setFont(ctx, 800, 30);
     ctx.fillText("atlas-amlak.ir", cx, fy + btnH / 2 + 10);
     ctx.direction = "rtl";
+    fy += btnH + 24;
 
-    fy += btnH + 26;
     ctx.strokeStyle = "rgba(180,137,79,0.35)";
     ctx.lineWidth = 1;
     ctx.beginPath();
-    ctx.moveTo(padX + 36, fy);
-    ctx.lineTo(cardRight - 36, fy);
+    ctx.moveTo(padX + 40, fy);
+    ctx.lineTo(cardRight - 40, fy);
     ctx.stroke();
+    fy += 2 + 24;
 
-    fy += 30;
-    ctx.fillStyle = "rgba(247,241,230,0.8)";
+    ctx.fillStyle = "rgba(247,241,230,0.85)";
     setFont(ctx, 600, 22);
-    rtlText(ctx, "تهیه شده توسط دفتر اطلس", cx, fy);
+    rtlText(ctx, "تهیه شده توسط دفتر اطلس", cx, fy + 8);
+    fy += 26;
 
     if (logoImg) {
-      const logoSize = 56;
-      ctx.drawImage(logoImg, cx - logoSize / 2, footY + footH - logoSize - 16, logoSize, logoSize);
+      fy += 18;
+      ctx.drawImage(logoImg, cx - logoSize / 2, fy, logoSize, logoSize);
     }
 
     const dataUrl = canvas.toDataURL("image/jpeg", 0.95);
