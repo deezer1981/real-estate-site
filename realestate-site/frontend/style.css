@@ -46,12 +46,11 @@ a { color: inherit; text-decoration: none; }
 }
 .brand { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 1.1rem; }
 .brand-logo {
-  height: 44px;
+  height: 48px;
   width: auto;
   object-fit: contain;
-  border-radius: 6px;
-  background: #fff;
-  padding: 2px;
+  background: transparent;
+  padding: 0;
 }
 .brand-text { display: flex; flex-direction: column; gap: 1px; line-height: 1.2; }
 .brand-text .brand-name { font-size: 0.95rem; }
