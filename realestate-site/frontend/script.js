@@ -348,25 +348,28 @@ async function generateStoryImage(p) {
     ctx.fillStyle = bg;
     ctx.fillRect(0, 0, W, H);
 
+    // نوار بالا
     ctx.fillStyle = T.brass;
-    ctx.fillRect(0, 0, W, 12);
+    ctx.fillRect(0, 0, W, 14);
 
+    // ——— هدر برند (فونت درشت) ———
     ctx.fillStyle = T.ink;
-    setFont(ctx, 800, 48);
-    rtlText(ctx, "گروه مشاورین املاک اطلس", cx, 100);
+    setFont(ctx, 800, 56);
+    rtlText(ctx, "گروه مشاورین املاک اطلس", cx, 110);
 
     ctx.fillStyle = T.brass;
-    setFont(ctx, 600, 26);
-    rtlText(ctx, "خادم‌آباد  ·  باغستان  ·  شهریار", cx, 148);
+    setFont(ctx, 600, 30);
+    rtlText(ctx, "خادم‌آباد  ·  باغستان  ·  شهریار", cx, 165);
 
-    drawOrnamentDivider(ctx, cx, 188, 200);
+    drawOrnamentDivider(ctx, cx, 210, 240);
 
-    const cardX = 72;
+    // کارت تقریباً تمام عرض و تا نزدیک فوتر
+    const cardX = 56;
     const cardW = W - cardX * 2;
-    const padX = cardX + 52;
-    const contentW = cardW - 104;
-    const cardRight = cardX + cardW - 52;
-    const cardY = 220;
+    const padX = cardX + 48;
+    const contentW = cardW - 96;
+    const cardRight = cardX + cardW - 48;
+    const cardY = 250;
 
     const extras = buildExtras(p);
     const specs = [];
@@ -378,197 +381,227 @@ async function generateStoryImage(p) {
       ? `${p.price_total || "توافقی"}`
       : `رهن ${p.rahn || "-"}  |  اجاره ${p.ejare || "-"}`;
 
-    // محاسبه ارتفاع واقعی کارت از روی همان فواصل رسم
-    let y = cardY + 48;
-    y += 52; // deal row
-    y += 36;
-    y += 56; // title
-    y += 28; // divider
-    if (specs.length) y += 84 + 28;
-    y += 52; // address
-    if (extras.length) y += 48 + 32;
-    else y += 8;
-    y += 140 + 36; // price
-    y += 48; // phone label
-    y += 48; // phone number
-    if (p.agent_name) y += 40;
-    y += 44; // bottom padding inside card
-    const cardH = y - cardY;
-
-    const footH = 248;
-    const footY = cardY + cardH + 24;
+    // فوتر ثابت نزدیک پایین — کارت تا بالای فوتر کشیده می‌شود
+    const footH = 320;
+    const footY = H - 14 - footH - 28; // فاصله از نوار پایین
+    const cardH = footY - cardY - 28;
 
     // کارت
     ctx.save();
     ctx.shadowColor = "rgba(32,28,21,0.14)";
-    ctx.shadowBlur = 36;
-    ctx.shadowOffsetY = 14;
+    ctx.shadowBlur = 40;
+    ctx.shadowOffsetY = 16;
     ctx.fillStyle = "#FFFCFA";
-    rr(ctx, cardX, cardY, cardW, cardH, 32);
+    rr(ctx, cardX, cardY, cardW, cardH, 36);
     ctx.fill();
     ctx.restore();
     ctx.strokeStyle = "rgba(180,137,79,0.45)";
-    ctx.lineWidth = 2;
-    rr(ctx, cardX, cardY, cardW, cardH, 32);
+    ctx.lineWidth = 2.5;
+    rr(ctx, cardX, cardY, cardW, cardH, 36);
     ctx.stroke();
 
-    // محتوا
-    y = cardY + 48;
+    // ——— محتوا با فاصله‌های متناسب داخل کارت ———
+    // نقاط کلیدی عمودی برای پخش یکنواخت
+    const top = cardY + 56;
+    const bottom = cardY + cardH - 56;
+    const span = bottom - top;
 
-    setFont(ctx, 700, 28);
-    const dealW = Math.max(150, ctx.measureText(dealLabel).width + 48);
-    const dealH = 52;
-    ctx.fillStyle = isSale ? T.sale : T.rent;
-    rr(ctx, padX, y, dealW, dealH, 14);
-    ctx.fill();
-    ctx.fillStyle = "#fff";
-    rtlText(ctx, dealLabel, padX + dealW / 2, y + dealH / 2 + 10);
+    // بلوک‌ها به ترتیب با وزن
+    const blocks = [];
+    blocks.push({ id: "deal", h: 64 });
+    blocks.push({ id: "title", h: 90 });
+    blocks.push({ id: "divider", h: 28 });
+    if (specs.length) blocks.push({ id: "specs", h: 110 });
+    blocks.push({ id: "addr", h: 70 });
+    if (extras.length) blocks.push({ id: "extras", h: 70 });
+    blocks.push({ id: "price", h: 180 });
+    blocks.push({ id: "phone", h: 120 });
+    if (p.agent_name) blocks.push({ id: "agent", h: 50 });
 
-    setFont(ctx, 700, 30);
-    ctx.fillStyle = T.ink;
-    rtlText(ctx, `کد ${p.code || "-"}`, cardRight, y + dealH / 2 + 10, { align: "right" });
+    const contentH = blocks.reduce((s, b) => s + b.h, 0);
+    const free = Math.max(0, span - contentH);
+    const gap = free / Math.max(1, blocks.length - 1);
 
-    y += dealH + 36;
+    let y = top;
+    const pos = {};
+    blocks.forEach((b, i) => {
+      pos[b.id] = y;
+      y += b.h + (i < blocks.length - 1 ? gap : 0);
+    });
 
-    ctx.fillStyle = T.ink;
-    setFont(ctx, 800, 56);
-    rtlText(ctx, p.property_type || "ملک", cx, y + 18);
-    y += 56;
-
-    ctx.strokeStyle = "rgba(32,28,21,0.12)";
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(padX, y);
-    ctx.lineTo(cardRight, y);
-    ctx.stroke();
-    y += 28;
-
-    if (specs.length) {
-      const boxH = 84;
-      ctx.fillStyle = "#F7F1E6";
-      rr(ctx, padX, y, contentW, boxH, 16);
+    // ردیف معامله + کد
+    {
+      const y0 = pos.deal;
+      setFont(ctx, 700, 32);
+      const dealW = Math.max(180, ctx.measureText(dealLabel).width + 56);
+      const dealH = 60;
+      ctx.fillStyle = isSale ? T.sale : T.rent;
+      rr(ctx, padX, y0, dealW, dealH, 16);
       ctx.fill();
+      ctx.fillStyle = "#fff";
+      rtlText(ctx, dealLabel, padX + dealW / 2, y0 + dealH / 2 + 11);
+
+      setFont(ctx, 700, 34);
       ctx.fillStyle = T.ink;
-      setFont(ctx, 700, 36);
-      rtlText(ctx, specs.join("   ·   "), cx, y + boxH / 2 + 12);
-      y += boxH + 28;
+      rtlText(ctx, `کد ${p.code || "-"}`, cardRight, y0 + dealH / 2 + 11, { align: "right" });
     }
 
-    ctx.fillStyle = T.ink;
-    setFont(ctx, 600, 32);
-    rtlText(ctx, `📍  ${addr}`, cx, y + 8);
-    y += 52;
+    // عنوان
+    {
+      const y0 = pos.title;
+      ctx.fillStyle = T.ink;
+      setFont(ctx, 800, 72);
+      rtlText(ctx, p.property_type || "ملک", cx, y0 + 50);
+    }
 
-    if (extras.length) {
-      setFont(ctx, 600, 28);
-      const gap = 14;
-      const widths = extras.map((e) => ctx.measureText(e).width + 36);
-      const totalW = widths.reduce((a, b) => a + b, 0) + gap * (extras.length - 1);
+    // خط
+    {
+      const y0 = pos.divider;
+      ctx.strokeStyle = "rgba(32,28,21,0.12)";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(padX, y0 + 10);
+      ctx.lineTo(cardRight, y0 + 10);
+      ctx.stroke();
+    }
+
+    // مشخصات
+    if (pos.specs != null) {
+      const y0 = pos.specs;
+      const boxH = 96;
+      ctx.fillStyle = "#F7F1E6";
+      rr(ctx, padX, y0, contentW, boxH, 20);
+      ctx.fill();
+      ctx.fillStyle = T.ink;
+      setFont(ctx, 700, 44);
+      rtlText(ctx, specs.join("   ·   "), cx, y0 + boxH / 2 + 15);
+    }
+
+    // آدرس
+    {
+      const y0 = pos.addr;
+      ctx.fillStyle = T.ink;
+      setFont(ctx, 600, 36);
+      rtlText(ctx, `📍  ${addr}`, cx, y0 + 40);
+    }
+
+    // امکانات
+    if (pos.extras != null) {
+      const y0 = pos.extras;
+      setFont(ctx, 600, 32);
+      const gapChip = 16;
+      const widths = extras.map((e) => ctx.measureText(e).width + 44);
+      const totalW = widths.reduce((a, b) => a + b, 0) + gapChip * (extras.length - 1);
       let x = cx + totalW / 2;
-      const chipH = 48;
+      const chipH = 56;
       extras.forEach((label, i) => {
         const w = widths[i];
         x -= w;
         ctx.fillStyle = "#F3EBDC";
-        rr(ctx, x, y, w, chipH, 24);
+        rr(ctx, x, y0 + 4, w, chipH, 28);
         ctx.fill();
         ctx.fillStyle = T.ink;
-        rtlText(ctx, label, x + w / 2, y + chipH / 2 + 10);
-        x -= gap;
+        rtlText(ctx, label, x + w / 2, y0 + 4 + chipH / 2 + 11);
+        x -= gapChip;
       });
-      y += chipH + 32;
-    } else {
-      y += 8;
     }
 
-    const priceH = 140;
-    const priceGrad = ctx.createLinearGradient(padX, y, padX + contentW, y);
-    priceGrad.addColorStop(0, "#E8D5A8");
-    priceGrad.addColorStop(1, "#F5E8C8");
-    ctx.fillStyle = priceGrad;
-    rr(ctx, padX, y, contentW, priceH, 20);
-    ctx.fill();
-    ctx.strokeStyle = T.brass;
-    ctx.lineWidth = 1.5;
-    rr(ctx, padX, y, contentW, priceH, 20);
-    ctx.stroke();
+    // قیمت
+    {
+      const y0 = pos.price;
+      const priceH = 168;
+      const priceGrad = ctx.createLinearGradient(padX, y0, padX + contentW, y0);
+      priceGrad.addColorStop(0, "#E8D5A8");
+      priceGrad.addColorStop(1, "#F5E8C8");
+      ctx.fillStyle = priceGrad;
+      rr(ctx, padX, y0, contentW, priceH, 24);
+      ctx.fill();
+      ctx.strokeStyle = T.brass;
+      ctx.lineWidth = 2;
+      rr(ctx, padX, y0, contentW, priceH, 24);
+      ctx.stroke();
 
-    ctx.fillStyle = T.brassDark || "#8A6A3A";
-    setFont(ctx, 600, 24);
-    rtlText(ctx, isSale ? "قیمت فروش" : "شرایط رهن و اجاره", cx, y + 42);
+      ctx.fillStyle = T.brassDark || "#8A6A3A";
+      setFont(ctx, 600, 28);
+      rtlText(ctx, isSale ? "قیمت فروش" : "شرایط رهن و اجاره", cx, y0 + 48);
 
-    ctx.fillStyle = T.ink;
-    setFont(ctx, 800, isSale ? 44 : 32);
-    rtlText(ctx, priceText, cx, y + 100);
-    y += priceH + 36;
+      ctx.fillStyle = T.ink;
+      setFont(ctx, 800, isSale ? 52 : 40);
+      rtlText(ctx, priceText, cx, y0 + 115);
+    }
 
-    ctx.fillStyle = T.ink;
-    setFont(ctx, 700, 30);
-    rtlText(ctx, "📞  تماس با دفتر اطلس", cx, y);
-    y += 48;
+    // تماس
+    {
+      const y0 = pos.phone;
+      ctx.fillStyle = T.ink;
+      setFont(ctx, 700, 34);
+      rtlText(ctx, "📞  تماس با دفتر اطلس", cx, y0 + 28);
 
-    ctx.fillStyle = T.sale || "#2F6B4F";
-    setFont(ctx, 800, 40);
-    ctx.direction = "ltr";
-    ctx.textAlign = "center";
-    ctx.fillText("0910 694 3220", cx, y);
-    ctx.direction = "rtl";
-    y += 48;
+      ctx.fillStyle = T.sale || "#2F6B4F";
+      setFont(ctx, 800, 48);
+      ctx.direction = "ltr";
+      ctx.textAlign = "center";
+      ctx.fillText("0910 694 3220", cx, y0 + 90);
+      ctx.direction = "rtl";
+    }
 
-    if (p.agent_name) {
+    // مشاور
+    if (pos.agent != null) {
+      const y0 = pos.agent;
       ctx.fillStyle = "#6B6358";
-      setFont(ctx, 600, 26);
-      rtlText(ctx, `ثبت‌شده توسط: ${cleanAgentName(p.agent_name)}`, cx, y);
+      setFont(ctx, 600, 30);
+      rtlText(ctx, `ثبت‌شده توسط: ${cleanAgentName(p.agent_name)}`, cx, y0 + 30);
     }
 
-    // فوتر
+    // ——— فوتر ———
     ctx.fillStyle = T.ink;
-    rr(ctx, cardX, footY, cardW, footH, 26);
+    rr(ctx, cardX, footY, cardW, footH, 28);
     ctx.fill();
 
-    let fy = footY + 38;
+    let fy = footY + 48;
     ctx.fillStyle = T.brass;
-    setFont(ctx, 700, 24);
+    setFont(ctx, 700, 30);
     rtlText(ctx, "مشاهده جزئیات و آگهی‌های مشابه", cx, fy);
 
-    fy += 34;
+    fy += 42;
     ctx.fillStyle = "#F7F1E6";
-    setFont(ctx, 600, 24);
+    setFont(ctx, 600, 28);
     rtlText(ctx, "خادم‌آباد و باغستان", cx, fy);
 
-    fy += 26;
-    const btnW = 360;
-    const btnH = 48;
+    fy += 32;
+    const btnW = 400;
+    const btnH = 56;
     ctx.fillStyle = T.brass;
-    rr(ctx, cx - btnW / 2, fy, btnW, btnH, 12);
+    rr(ctx, cx - btnW / 2, fy, btnW, btnH, 14);
     ctx.fill();
     ctx.fillStyle = T.ink;
     ctx.direction = "ltr";
     ctx.textAlign = "center";
-    setFont(ctx, 800, 28);
-    ctx.fillText("atlas-amlak.ir", cx, fy + btnH / 2 + 10);
+    setFont(ctx, 800, 32);
+    ctx.fillText("atlas-amlak.ir", cx, fy + btnH / 2 + 11);
     ctx.direction = "rtl";
 
-    fy += btnH + 22;
+    fy += btnH + 28;
     ctx.strokeStyle = "rgba(180,137,79,0.35)";
     ctx.lineWidth = 1;
     ctx.beginPath();
-    ctx.moveTo(padX + 30, fy);
-    ctx.lineTo(cardRight - 30, fy);
+    ctx.moveTo(padX + 40, fy);
+    ctx.lineTo(cardRight - 40, fy);
     ctx.stroke();
 
-    fy += 26;
-    ctx.fillStyle = "rgba(247,241,230,0.75)";
-    setFont(ctx, 600, 20);
+    fy += 32;
+    ctx.fillStyle = "rgba(247,241,230,0.8)";
+    setFont(ctx, 600, 24);
     rtlText(ctx, "تهیه شده توسط دفتر اطلس", cx, fy);
 
     if (logoImg) {
-      const logoSize = 52;
-      ctx.drawImage(logoImg, cx - logoSize / 2, footY + footH - logoSize - 16, logoSize, logoSize);
+      const logoSize = 64;
+      ctx.drawImage(logoImg, cx - logoSize / 2, footY + footH - logoSize - 18, logoSize, logoSize);
     }
 
+    // نوار پایین
     ctx.fillStyle = T.brass;
-    ctx.fillRect(0, H - 12, W, 12);
+    ctx.fillRect(0, H - 14, W, 14);
 
     const dataUrl = canvas.toDataURL("image/jpeg", 0.95);
     const a = document.createElement("a");
