@@ -76,7 +76,6 @@ class Lead(Base):
     name = Column(String, nullable=False)
     phone = Column(String, nullable=False)
     message = Column(Text, default="")
-    property_code = Column(String, nullable=True)
     source = Column(String, default="website")
     created_at = Column(DateTime, default=datetime.utcnow)
 
@@ -88,7 +87,6 @@ class LeadIn(BaseModel):
     name: str
     phone: str
     message: str = ""
-    property_code: Optional[str] = None
     source: str = "website"
 
 
