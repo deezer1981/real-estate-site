@@ -86,7 +86,6 @@ function propertyCard(p) {
           ${priceLine}
           ${agentLine}
           ${agentCallBtn}
-          <img src="assets/logo.png" alt="Baghestan Estate Guide" class="card-logo" loading="lazy">
         </div>
       </article>
     </div>
@@ -333,218 +332,194 @@ async function generateStoryImage(p) {
     const T = STORY_THEME;
     const cx = W / 2;
 
-    // ۱. پس‌زمینه کرم گرم (هم‌خانواده با پس‌زمینه سایت)
+    // پس‌زمینه گرم و یکدست
     const bg = ctx.createLinearGradient(0, 0, 0, H);
-    bg.addColorStop(0, T.paper);
-    bg.addColorStop(1, T.paperShade);
+    bg.addColorStop(0, "#F7F1E6");
+    bg.addColorStop(0.55, "#F3EBDC");
+    bg.addColorStop(1, "#EDE3D0");
     ctx.fillStyle = bg;
     ctx.fillRect(0, 0, W, H);
 
-    // ۲. سربرگ برند — لوگو کمی پایین‌تر و بزرگ‌تر
+    // نوار باریک برنجی بالا
+    ctx.fillStyle = T.brass;
+    ctx.fillRect(0, 0, W, 12);
+
+    // لوگو
     if (logoImg) {
-      const logoSize = 150;
-      ctx.drawImage(logoImg, cx - logoSize / 2, 56, logoSize, logoSize);
+      const logoSize = 160;
+      ctx.drawImage(logoImg, cx - logoSize / 2, 70, logoSize, logoSize);
     }
 
-    ctx.fillStyle = T.brass;
-    setFont(ctx, 600, 30);
-    rtlText(ctx, "سامانه تخصصی املاک", cx, 230, { spacing: 3 });
-
+    // نام برند
     ctx.fillStyle = T.ink;
-    setFont(ctx, 800, 52);
-    rtlText(ctx, "اطلس املاک خادم‌آباد", cx, 292);
+    setFont(ctx, 800, 48);
+    rtlText(ctx, "گروه مشاورین املاک اطلس", cx, 280);
 
-    drawOrnamentDivider(ctx, cx, 330, 240);
+    ctx.fillStyle = T.brass;
+    setFont(ctx, 600, 26);
+    rtlText(ctx, "خادم‌آباد  ·  باغستان  ·  شهریار", cx, 330);
 
-    // ۳. بدنه کارت سفید با حاشیه برنجی ظریف و سایه‌ی نرم
-    const cardX = 68, cardY = 370, cardW = W - cardX * 2, cardH = 1450;
+    // خط تزئینی
+    drawOrnamentDivider(ctx, cx, 370, 200);
 
+    // کارت اصلی
+    const cardX = 72, cardY = 410, cardW = W - cardX * 2, cardH = 1180;
     ctx.save();
-    ctx.shadowColor = "rgba(32,28,21,0.18)";
-    ctx.shadowBlur = 40;
-    ctx.shadowOffsetY = 18;
-    ctx.fillStyle = T.white;
-    rr(ctx, cardX, cardY, cardW, cardH, 36);
+    ctx.shadowColor = "rgba(32,28,21,0.14)";
+    ctx.shadowBlur = 36;
+    ctx.shadowOffsetY = 14;
+    ctx.fillStyle = "#FFFCFA";
+    rr(ctx, cardX, cardY, cardW, cardH, 32);
     ctx.fill();
     ctx.restore();
 
-    ctx.strokeStyle = T.brassLight;
+    ctx.strokeStyle = "rgba(180,137,79,0.45)";
     ctx.lineWidth = 2;
-    rr(ctx, cardX, cardY, cardW, cardH, 36);
+    rr(ctx, cardX, cardY, cardW, cardH, 32);
     ctx.stroke();
 
-    // خط ظریف سرمه‌ای داخل کارت — قاب ظریف به سبک اسناد رسمی
-    ctx.strokeStyle = "rgba(32,28,21,0.28)";
-    ctx.lineWidth = 1.6;
-    rr(ctx, cardX + 14, cardY + 14, cardW - 28, cardH - 28, 26);
-    ctx.stroke();
-
-    const padX = cardX + 64;
-    const contentW = cardW - 128;
-
-    // ۴. ردیف بالا: کد آگهی (چپ) + برچسب نوع معامله (راست)
+    const padX = cardX + 56;
+    const contentW = cardW - 112;
     const isSale = p.deal_type === "فروش";
-    const dealColor = isSale ? T.sale : T.rent;
-    const dealColorDark = isSale ? T.saleDark : T.rentDark;
 
-    ctx.fillStyle = T.paperShade;
-    ctx.strokeStyle = T.hairline;
-    ctx.lineWidth = 1;
-    rr(ctx, padX, cardY + 56, 190, 64, 18);
-    ctx.fill();
-    ctx.stroke();
-    ctx.fillStyle = T.ink;
-    setFont(ctx, 700, 34);
-    rtlText(ctx, `کد ${p.code || "-"}`, padX + 95, cardY + 98);
-
+    // برچسب نوع + کد
     const dealLabel = p.deal_type || "آگهی";
-    setFont(ctx, 700, 32);
-    const dealW = Math.max(170, ctx.measureText(dealLabel).width + 70);
-    const dealX = cardX + cardW - 64 - dealW;
-    ctx.fillStyle = dealColor;
-    rr(ctx, dealX, cardY + 56, dealW, 64, 18);
+    setFont(ctx, 700, 30);
+    const dealW = Math.max(160, ctx.measureText(dealLabel).width + 56);
+    ctx.fillStyle = isSale ? T.sale : T.rent;
+    rr(ctx, padX, cardY + 48, dealW, 56, 16);
     ctx.fill();
-    ctx.fillStyle = T.white;
-    rtlText(ctx, dealLabel, dealX + dealW / 2, cardY + 98);
+    ctx.fillStyle = "#fff";
+    rtlText(ctx, dealLabel, padX + dealW / 2, cardY + 84);
 
-    // ۵. عنوان ملک
     ctx.fillStyle = T.ink;
-    setFont(ctx, 800, 66);
-    rtlText(ctx, p.property_type || "ملک", cx, cardY + 240);
+    setFont(ctx, 700, 32);
+    rtlText(ctx, `کد ${p.code || "-"}`, cardX + cardW - 56 - 80, cardY + 84);
 
-    ctx.strokeStyle = T.hairline;
-    ctx.setLineDash([6, 8]);
+    // عنوان ملک
+    ctx.fillStyle = T.ink;
+    setFont(ctx, 800, 64);
+    rtlText(ctx, p.property_type || "ملک", cx, cardY + 200);
+
+    // خط جداکننده
+    ctx.strokeStyle = "rgba(32,28,21,0.12)";
     ctx.lineWidth = 2;
     ctx.beginPath();
-    ctx.moveTo(padX, cardY + 280);
-    ctx.lineTo(cardX + cardW - 64, cardY + 280);
-    ctx.stroke();
-    ctx.setLineDash([]);
-
-    // ۶. باکس مشخصات (متراژ / خواب)
-    const specsY = cardY + 320;
-    ctx.fillStyle = T.paper;
-    ctx.strokeStyle = T.brassLight;
-    ctx.lineWidth = 1.5;
-    rr(ctx, padX, specsY, contentW, 120, 20);
-    ctx.fill();
+    ctx.moveTo(padX, cardY + 240);
+    ctx.lineTo(cardX + cardW - 56, cardY + 240);
     ctx.stroke();
 
-    const specParts = [];
-    if (p.area_m2) specParts.push(`${p.area_m2} متر`);
-    if (p.rooms) specParts.push(`${p.rooms} خواب`);
-    ctx.fillStyle = T.ink;
-    setFont(ctx, 700, 44);
-    rtlText(ctx, specParts.join("   •   "), cx, specsY + 76);
-
-    // ۷. آدرس
-    const addrY = specsY + 190;
-    ctx.fillStyle = T.ink;
-    setFont(ctx, 700, 42);
-    rtlText(ctx, `📍 ${truncateAddress(p.address) || "خادم‌آباد"}`, cx, addrY);
-
-    // ۸. امکانات
-    const extras = buildExtras(p);
-    let extrasBottom = addrY;
-    if (extras.length) {
-      const extrasY = addrY + 78;
-      setFont(ctx, 700, 34);
-      const gap = 20;
-      const widths = extras.map((e) => ctx.measureText(e).width + 48);
-      const totalW = widths.reduce((a, b) => a + b, 0) + gap * (extras.length - 1);
-      let ex = cx + totalW / 2;
-      extras.forEach((label, i) => {
-        const w = widths[i];
-        ex -= w;
-        ctx.fillStyle = T.paperShade;
-        ctx.strokeStyle = T.hairline;
-        ctx.lineWidth = 1;
-        rr(ctx, ex, extrasY - 40, w, 60, 28);
-        ctx.fill();
-        ctx.stroke();
-        ctx.fillStyle = T.ink;
-        rtlText(ctx, label, ex + w / 2, extrasY - 2);
-        ex -= gap;
-      });
-      extrasBottom = extrasY + 28;
+    // مشخصات
+    const specs = [];
+    if (p.area_m2) specs.push(`${p.area_m2} متر`);
+    if (p.rooms) specs.push(`${p.rooms} خواب`);
+    if (specs.length) {
+      ctx.fillStyle = "#F7F1E6";
+      rr(ctx, padX, cardY + 270, contentW, 90, 18);
+      ctx.fill();
+      ctx.fillStyle = T.ink;
+      setFont(ctx, 700, 40);
+      rtlText(ctx, specs.join("   ·   "), cx, cardY + 328);
     }
 
-    // ۹. باکس قیمت — عنصر برجسته و طلایی
-    const priceY = extrasBottom + 40;
-    const priceH = 168;
+    // آدرس
+    ctx.fillStyle = T.ink;
+    setFont(ctx, 600, 36);
+    const addr = truncateAddress(p.address) || "خادم‌آباد";
+    rtlText(ctx, `📍  ${addr}`, cx, cardY + 420);
+
+    // امکانات
+    const extras = buildExtras(p);
+    if (extras.length) {
+      setFont(ctx, 600, 30);
+      const gap = 16;
+      const widths = extras.map((e) => ctx.measureText(e).width + 40);
+      const totalW = widths.reduce((a, b) => a + b, 0) + gap * (extras.length - 1);
+      let x = cx + totalW / 2;
+      extras.forEach((label, i) => {
+        const w = widths[i];
+        x -= w;
+        ctx.fillStyle = "#F3EBDC";
+        rr(ctx, x, cardY + 460, w, 52, 26);
+        ctx.fill();
+        ctx.fillStyle = T.ink;
+        rtlText(ctx, label, x + w / 2, cardY + 494);
+        x -= gap;
+      });
+    }
+
+    // باکس قیمت
+    const priceY = cardY + 560;
     const priceGrad = ctx.createLinearGradient(padX, priceY, padX + contentW, priceY);
-    priceGrad.addColorStop(0, T.brassLight);
-    priceGrad.addColorStop(1, "#F3E7C9");
+    priceGrad.addColorStop(0, "#E8D5A8");
+    priceGrad.addColorStop(1, "#F5E8C8");
     ctx.fillStyle = priceGrad;
-    rr(ctx, padX, priceY, contentW, priceH, 24);
+    rr(ctx, padX, priceY, contentW, 150, 22);
     ctx.fill();
     ctx.strokeStyle = T.brass;
     ctx.lineWidth = 1.5;
-    rr(ctx, padX, priceY, contentW, priceH, 24);
+    rr(ctx, padX, priceY, contentW, 150, 22);
     ctx.stroke();
 
-    ctx.fillStyle = T.brassDark;
-    setFont(ctx, 600, 28);
+    ctx.fillStyle = T.brassDark || "#8A6A3A";
+    setFont(ctx, 600, 26);
     rtlText(ctx, isSale ? "قیمت فروش" : "شرایط رهن و اجاره", cx, priceY + 48);
 
     const priceText = isSale
-      ? `${p.price_total || "توافقی"} تومان`
+      ? `${p.price_total || "توافقی"}`
       : `رهن ${p.rahn || "-"}  |  اجاره ${p.ejare || "-"}`;
     ctx.fillStyle = T.ink;
-    setFont(ctx, 800, isSale ? 50 : 38);
-    rtlText(ctx, priceText, cx, priceY + 118);
+    setFont(ctx, 800, isSale ? 48 : 36);
+    rtlText(ctx, priceText, cx, priceY + 110);
 
-    // ۱۰. مشاور
-    const agentY = priceY + priceH + 80;
-    if (p.agent_name || p.agent_phone) {
-      ctx.fillStyle = T.ink;
-      setFont(ctx, 700, 40);
-      rtlText(ctx, `👤 مشاور: ${cleanAgentName(p.agent_name) || "اطلس املاک"}`, cx, agentY);
+    // تماس دفتر
+    ctx.fillStyle = T.ink;
+    setFont(ctx, 700, 34);
+    rtlText(ctx, "📞  تماس با دفتر اطلس", cx, cardY + 800);
 
-      if (p.agent_phone) {
-        ctx.fillStyle = T.sale;
-        setFont(ctx, 700, 40);
-        rtlText(ctx, `📞 ${p.agent_phone}`, cx, agentY + 62);
-      }
+    ctx.fillStyle = T.sale || "#2F6B4F";
+    setFont(ctx, 800, 42);
+    ctx.direction = "ltr";
+    ctx.textAlign = "center";
+    ctx.fillText("0910 694 3220", cx, cardY + 860);
+    ctx.direction = "rtl";
+
+    // مشاور (اگر باشد)
+    if (p.agent_name) {
+      ctx.fillStyle = "#6B6358";
+      setFont(ctx, 600, 28);
+      rtlText(ctx, `ثبت‌شده توسط: ${cleanAgentName(p.agent_name)}`, cx, cardY + 930);
     }
 
-    // ۱۱. بنر پایانی — دعوت به بازدید از سایت (بزرگ‌تر و پرکنتراست‌تر)
-    const ctaH = 400;
-    const ctaY = cardY + cardH - 64 - ctaH;
+    // فوتر تیره
+    const footY = cardY + cardH + 36;
     ctx.fillStyle = T.ink;
-    rr(ctx, padX, ctaY, contentW, ctaH, 28);
+    rr(ctx, cardX, footY, cardW, 220, 28);
     ctx.fill();
-    ctx.strokeStyle = "rgba(180,137,79,0.55)";
-    ctx.lineWidth = 1.5;
-    rr(ctx, padX, ctaY, contentW, ctaH, 28);
-    ctx.stroke();
 
-    // برچسب کوچک برنجی بالای بنر
     ctx.fillStyle = T.brass;
     setFont(ctx, 700, 26);
-    rtlText(ctx, "همین حالا ببینید", cx, ctaY + 48, { spacing: 2 });
+    rtlText(ctx, "مشاهده جزئیات و آگهی‌های مشابه", cx, footY + 58);
 
-    // متن دعوت‌کننده با کنتراست بالا (کرم روشن روی جوهری تیره) — فاصله‌ی بیشتر بین دو خط
-    ctx.fillStyle = "#FBF6EC";
-    setFont(ctx, 700, 40);
-    rtlText(ctx, "برای جزئیات کامل و آگهی‌های مشابه", cx, ctaY + 122);
-    rtlText(ctx, "در خادم‌آباد و باغستان", cx, ctaY + 200);
+    ctx.fillStyle = "#F7F1E6";
+    setFont(ctx, 600, 30);
+    rtlText(ctx, "خادم‌آباد و باغستان", cx, footY + 108);
 
-    // دکمه‌ی دامنه
-    const btnY = ctaY + 248;
-    const btnH = 108;
+    // دکمه دامنه
     ctx.fillStyle = T.brass;
-    rr(ctx, padX + 50, btnY, contentW - 100, btnH, 18);
+    rr(ctx, cx - 200, footY + 136, 400, 58, 14);
     ctx.fill();
-
     ctx.fillStyle = T.ink;
     ctx.direction = "ltr";
     ctx.textAlign = "center";
-    setFont(ctx, 800, 48);
-    ctx.fillText("atlas-amlak.ir", cx, btnY + btnH / 2 + 16);
+    setFont(ctx, 800, 32);
+    ctx.fillText("atlas-amlak.ir", cx, footY + 174);
     ctx.direction = "rtl";
 
-    // دانلود تصویر نهایی — JPEG با کیفیت بالا برای حجم کم و اشتراک‌گذاری راحت
+    // نوار پایین
+    ctx.fillStyle = T.brass;
+    ctx.fillRect(0, H - 12, W, 12);
+
     const dataUrl = canvas.toDataURL("image/jpeg", 0.95);
     const a = document.createElement("a");
     a.href = dataUrl;
@@ -557,9 +532,7 @@ async function generateStoryImage(p) {
   }
 }
 
-// --------------------------------------------------------------------- //
-// ۷. سیستم پاپ‌آپ تعاملی اشتراک‌گذاری
-// --------------------------------------------------------------------- //
+
 function showShareModal(p, shareBtn) {
   const oldModal = document.getElementById("shareModal");
   if (oldModal) oldModal.remove();
