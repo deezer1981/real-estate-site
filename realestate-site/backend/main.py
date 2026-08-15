@@ -56,6 +56,9 @@ CACHE_TTL_SECONDS = 120
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./local.db")
 if DATABASE_URL.startswith("postgres://"):
     DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
+# Supabase معمولاً به SSL نیاز دارد
+if "supabase" in DATABASE_URL and "sslmode" not in DATABASE_URL:
+    DATABASE_URL += ("&" if "?" in DATABASE_URL else "?") + "sslmode=require"
 connect_args = {"check_same_thread": False} if DATABASE_URL.startswith("sqlite") else {}
 engine = create_engine(DATABASE_URL, connect_args=connect_args)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
@@ -211,12 +214,18 @@ async def list_properties(deal_type: Optional[str] = None):
 @app.post("/api/leads", response_model=LeadOut)
 def create_lead(item: LeadIn):
     db = SessionLocal()
-    obj = Lead(**item.dict())
-    db.add(obj)
-    db.commit()
-    db.refresh(obj)
-    db.close()
-    return obj
+    try:
+        data = item.model_dump() if hasattr(item, "model_dump") else item.dict()
+        obj = Lead(**data)
+        db.add(obj)
+        db.commit()
+        db.refresh(obj)
+        return obj
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"خطا در ذخیره لید: {str(e)}")
+    finally:
+        db.close()
 
 
 @app.get("/api/leads", response_model=List[LeadOut])
@@ -248,18 +257,17 @@ async def create_pending_property(item: PendingPropertyIn):
         extras.append("انباری")
     extras_text = "، ".join(extras) if extras else "ندارد"
 
-    # ساخت آبجکت فیلدها با کلیدهای فارسی (خوانا برای شیت و ربات)
-    fields = {
-        "آدرس": item.address,
-        "متراژ": item.area_m2 or "-",
-        "خواب": item.rooms or "-",
-        "قیمت": item.price_info,
-        "امکانات": extras_text,
-        "توضیحات": item.description or "-",
-        "شماره تماس ثبت‌کننده": item.submitter_phone,
-        "منبع": "سایت",
-    }
-    fields_json = json.dumps(fields, ensure_ascii=False)
+    # متن خوانا برای ستون «فیلدها» (نه JSON) تا در شیت قاطی و چندستونه نشود
+    fields_json = (
+        f"آدرس: {item.address}\n"
+        f"متراژ: {item.area_m2 or '-'}\n"
+        f"خواب: {item.rooms or '-'}\n"
+        f"قیمت: {item.price_info}\n"
+        f"امکانات: {extras_text}\n"
+        f"توضیحات: {item.description or '-'}\n"
+        f"شماره تماس: {item.submitter_phone}\n"
+        f"منبع: سایت"
+    )
 
     # تاریخ (فرمت ساده؛ ربات می‌تونه شمسی‌ش کنه)
     now_str = datetime.now().strftime("%Y/%m/%d %H:%M")
