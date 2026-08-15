@@ -742,3 +742,65 @@ if (submitForm) {
     }
   });
 }
+
+// --------------------------------------------------------------------- //
+// ۱۰. فرم تماس (سوالی دارید؟)
+// --------------------------------------------------------------------- //
+const leadForm = document.getElementById("leadForm");
+if (leadForm) {
+  leadForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const statusEl = document.getElementById("formStatus");
+    const btn = leadForm.querySelector("button[type=submit]");
+    const name = document.getElementById("leadName")?.value.trim() || "";
+    const phone = document.getElementById("leadPhone")?.value.trim() || "";
+    const message = document.getElementById("leadMessage")?.value.trim() || "";
+
+    if (!name || !phone) {
+      if (statusEl) {
+        statusEl.textContent = "نام و شماره تماس الزامی است.";
+        statusEl.className = "form-status error";
+      }
+      return;
+    }
+
+    if (btn) {
+      btn.disabled = true;
+      btn.textContent = "در حال ارسال...";
+    }
+    if (statusEl) {
+      statusEl.textContent = "";
+      statusEl.className = "form-status";
+    }
+
+    try {
+      const res = await fetch(`${BASE_API}/api/leads`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, phone, message, source: "website" })
+      });
+
+      if (!res.ok) {
+        const errText = await res.text();
+        throw new Error(errText || "خطا در ارسال");
+      }
+
+      if (statusEl) {
+        statusEl.textContent = "✅ پیام شما ثبت شد. به زودی تماس می‌گیریم.";
+        statusEl.classList.add("success");
+      }
+      leadForm.reset();
+    } catch (err) {
+      if (statusEl) {
+        statusEl.textContent = "❌ مشکلی پیش آمد. لطفاً دوباره تلاش کنید یا مستقیم تماس بگیرید.";
+        statusEl.classList.add("error");
+      }
+      console.error(err);
+    } finally {
+      if (btn) {
+        btn.disabled = false;
+        btn.textContent = "ارسال پیام";
+      }
+    }
+  });
+}
