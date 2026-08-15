@@ -344,26 +344,20 @@ async function generateStoryImage(p) {
     ctx.fillStyle = T.brass;
     ctx.fillRect(0, 0, W, 12);
 
-    // لوگو
-    if (logoImg) {
-      const logoSize = 160;
-      ctx.drawImage(logoImg, cx - logoSize / 2, 70, logoSize, logoSize);
-    }
-
-    // نام برند
+    // نام برند (بدون لوگو در بالا)
     ctx.fillStyle = T.ink;
-    setFont(ctx, 800, 48);
-    rtlText(ctx, "گروه مشاورین املاک اطلس", cx, 280);
+    setFont(ctx, 800, 52);
+    rtlText(ctx, "گروه مشاورین املاک اطلس", cx, 110);
 
     ctx.fillStyle = T.brass;
-    setFont(ctx, 600, 26);
-    rtlText(ctx, "خادم‌آباد  ·  باغستان  ·  شهریار", cx, 330);
+    setFont(ctx, 600, 28);
+    rtlText(ctx, "خادم‌آباد  ·  باغستان  ·  شهریار", cx, 165);
 
     // خط تزئینی
-    drawOrnamentDivider(ctx, cx, 370, 200);
+    drawOrnamentDivider(ctx, cx, 210, 220);
 
     // کارت اصلی
-    const cardX = 72, cardY = 410, cardW = W - cardX * 2, cardH = 1180;
+    const cardX = 72, cardY = 250, cardW = W - cardX * 2, cardH = 1280;
     ctx.save();
     ctx.shadowColor = "rgba(32,28,21,0.14)";
     ctx.shadowBlur = 36;
@@ -491,30 +485,48 @@ async function generateStoryImage(p) {
       rtlText(ctx, `ثبت‌شده توسط: ${cleanAgentName(p.agent_name)}`, cx, cardY + 930);
     }
 
-    // فوتر تیره
-    const footY = cardY + cardH + 36;
+    // فوتر تیره + لوگو پایین
+    const footY = cardY + cardH + 28;
     ctx.fillStyle = T.ink;
-    rr(ctx, cardX, footY, cardW, 220, 28);
+    rr(ctx, cardX, footY, cardW, 300, 28);
     ctx.fill();
 
     ctx.fillStyle = T.brass;
     setFont(ctx, 700, 26);
-    rtlText(ctx, "مشاهده جزئیات و آگهی‌های مشابه", cx, footY + 58);
+    rtlText(ctx, "مشاهده جزئیات و آگهی‌های مشابه", cx, footY + 48);
 
     ctx.fillStyle = "#F7F1E6";
-    setFont(ctx, 600, 30);
-    rtlText(ctx, "خادم‌آباد و باغستان", cx, footY + 108);
+    setFont(ctx, 600, 28);
+    rtlText(ctx, "خادم‌آباد و باغستان", cx, footY + 90);
 
     // دکمه دامنه
     ctx.fillStyle = T.brass;
-    rr(ctx, cx - 200, footY + 136, 400, 58, 14);
+    rr(ctx, cx - 190, footY + 112, 380, 52, 14);
     ctx.fill();
     ctx.fillStyle = T.ink;
     ctx.direction = "ltr";
     ctx.textAlign = "center";
-    setFont(ctx, 800, 32);
-    ctx.fillText("atlas-amlak.ir", cx, footY + 174);
+    setFont(ctx, 800, 30);
+    ctx.fillText("atlas-amlak.ir", cx, footY + 146);
     ctx.direction = "rtl";
+
+    // خط جدا + تهیه شده توسط
+    ctx.strokeStyle = "rgba(180,137,79,0.35)";
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(padX + 40, footY + 178);
+    ctx.lineTo(cardX + cardW - 56 - 40, footY + 178);
+    ctx.stroke();
+
+    ctx.fillStyle = "rgba(247,241,230,0.75)";
+    setFont(ctx, 600, 22);
+    rtlText(ctx, "تهیه شده توسط دفتر اطلس", cx, footY + 208);
+
+    // لوگو زیر متن
+    if (logoImg) {
+      const logoSize = 70;
+      ctx.drawImage(logoImg, cx - logoSize / 2, footY + 218, logoSize, logoSize);
+    }
 
     // نوار پایین
     ctx.fillStyle = T.brass;
