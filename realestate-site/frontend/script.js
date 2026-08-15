@@ -711,7 +711,9 @@ if (submitForm) {
       submitter_name: document.getElementById("submitName").value.trim(),
       submitter_phone: document.getElementById("submitPhone").value.trim(),
       is_agent: document.getElementById("submitIsAgent").value === "yes",
-      agent_name: document.getElementById("submitAgentName")?.value.trim() || "",
+      agent_name: (document.getElementById("submitAgentName")?.value.trim()
+                    || document.getElementById("submitName")?.value.trim()
+                    || ""),
       source: "website"
     };
 
@@ -802,5 +804,34 @@ if (leadForm) {
         btn.textContent = "ارسال پیام";
       }
     }
+  });
+}
+
+// --------------------------------------------------------------------- //
+// ۱۱. دکمه‌های دسترسی سریع (فروش / رهن)
+// --------------------------------------------------------------------- //
+const quickSale = document.getElementById("quickSale");
+const quickRent = document.getElementById("quickRent");
+
+function filterByDealType(dealType) {
+  const dealTypeEl = document.getElementById("dealType");
+  if (dealTypeEl) dealTypeEl.value = dealType;
+  if (typeof applyFilters === "function") {
+    applyFilters();
+  }
+  const listings = document.getElementById("listings");
+  if (listings) listings.scrollIntoView({ behavior: "smooth" });
+}
+
+if (quickSale) {
+  quickSale.addEventListener("click", (e) => {
+    e.preventDefault();
+    filterByDealType("فروش");
+  });
+}
+if (quickRent) {
+  quickRent.addEventListener("click", (e) => {
+    e.preventDefault();
+    filterByDealType("رهن و اجاره");
   });
 }
