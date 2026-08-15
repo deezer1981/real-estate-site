@@ -376,7 +376,8 @@ async function generateStoryImage(p) {
     const hasAgent = Boolean(p.agent_name);
 
     // فوتر: چیدمان ترتیبی — متن‌ها بعد لوگو (لوگو آخر، جدا)
-    const logoSize = logoImg ? 58 : 0;
+    const logoMaxH = logoImg ? 96 : 0;
+    const logoMaxW = logoImg ? 220 : 0;
     const footPadTop = 40;
     const footPadBot = 28;
     const footParts = [
@@ -388,7 +389,7 @@ async function generateStoryImage(p) {
       2,  // خط
       24, // فاصله تا «تهیه شده»
       26, // متن تهیه شده
-      logoSize ? 18 + logoSize : 0,
+      logoMaxH ? 20 + logoMaxH : 0,
     ];
     const footH = footPadTop + footParts.reduce((a, b) => a + b, 0) + footPadBot;
 
@@ -412,7 +413,7 @@ async function generateStoryImage(p) {
     if (hasAgent) cardInner += 48;
     cardInner += cardPadBot;
 
-    const headerH = 130; // برند بالای کارت
+    const headerH = 170; // برند بالای کارت
     const gapCardFoot = 28;
     const gapTop = 48;
     const gapBottom = 40;
@@ -430,13 +431,13 @@ async function generateStoryImage(p) {
     let y = y0;
     ctx.fillStyle = T.ink;
     setFont(ctx, 800, 52);
-    rtlText(ctx, "گروه مشاورین املاک اطلس", cx, y + 46);
+    rtlText(ctx, "گروه مشاورین املاک اطلس", cx, y + 44);
 
     ctx.fillStyle = T.brass;
     setFont(ctx, 600, 28);
-    rtlText(ctx, "خادم‌آباد  ·  باغستان  ·  شهریار", cx, y + 88);
+    rtlText(ctx, "خادم‌آباد  ·  باغستان  ·  شهریار", cx, y + 110);
 
-    drawOrnamentDivider(ctx, cx, y + 116, 220);
+    drawOrnamentDivider(ctx, cx, y + 148, 220);
     y += headerH;
 
     // ——— کارت ———
@@ -616,8 +617,14 @@ async function generateStoryImage(p) {
     fy += 26;
 
     if (logoImg) {
-      fy += 18;
-      ctx.drawImage(logoImg, cx - logoSize / 2, fy, logoSize, logoSize);
+      fy += 20;
+      // حفظ نسبت تصویر — بدون کشیدگی
+      const natW = logoImg.naturalWidth || logoImg.width || 1;
+      const natH = logoImg.naturalHeight || logoImg.height || 1;
+      const scale = Math.min(logoMaxW / natW, logoMaxH / natH);
+      const dw = Math.round(natW * scale);
+      const dh = Math.round(natH * scale);
+      ctx.drawImage(logoImg, cx - dw / 2, fy, dw, dh);
     }
 
     const dataUrl = canvas.toDataURL("image/jpeg", 0.95);
