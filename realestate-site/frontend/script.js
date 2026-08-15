@@ -376,8 +376,8 @@ async function generateStoryImage(p) {
     const hasAgent = Boolean(p.agent_name);
 
     // فوتر: چیدمان ترتیبی — متن‌ها بعد لوگو (لوگو آخر، جدا)
-    const logoMaxH = logoImg ? 96 : 0;
-    const logoMaxW = logoImg ? 220 : 0;
+    const logoMaxH = logoImg ? 140 : 0;
+    const logoMaxW = logoImg ? 320 : 0;
     const footPadTop = 40;
     const footPadBot = 28;
     const footParts = [
