@@ -729,14 +729,22 @@ if (submitForm) {
         body: JSON.stringify(payload)
       });
 
-      if (!res.ok) throw new Error("خطا در ارسال");
+      if (!res.ok) {
+        let errMsg = "خطا در ارسال";
+        try {
+          const errJson = await res.json();
+          if (errJson.detail) errMsg = typeof errJson.detail === "string" ? errJson.detail : errMsg;
+        } catch (_) {}
+        throw new Error(errMsg);
+      }
 
       statusEl.textContent = "✅ فایل با موفقیت ارسال شد. به زودی با شما تماس می‌گیریم.";
       statusEl.classList.add("success");
       submitForm.reset();
       if (agentNameGroup) agentNameGroup.style.display = "none";
+      if (typeof updatePriceFields === "function") updatePriceFields();
     } catch (err) {
-      statusEl.textContent = "❌ مشکلی پیش آمد. لطفاً دوباره تلاش کنید یا مستقیم تماس بگیرید.";
+      statusEl.textContent = "❌ " + (err.message || "مشکلی پیش آمد. لطفاً دوباره تلاش کنید.");
       statusEl.classList.add("error");
     } finally {
       btn.disabled = false;
@@ -783,8 +791,12 @@ if (leadForm) {
       });
 
       if (!res.ok) {
-        const errText = await res.text();
-        throw new Error(errText || "خطا در ارسال");
+        let errMsg = "خطا در ارسال";
+        try {
+          const errJson = await res.json();
+          if (errJson.detail) errMsg = typeof errJson.detail === "string" ? errJson.detail : errMsg;
+        } catch (_) {}
+        throw new Error(errMsg);
       }
 
       if (statusEl) {
@@ -794,7 +806,7 @@ if (leadForm) {
       leadForm.reset();
     } catch (err) {
       if (statusEl) {
-        statusEl.textContent = "❌ مشکلی پیش آمد. لطفاً دوباره تلاش کنید یا مستقیم تماس بگیرید.";
+        statusEl.textContent = "❌ " + (err.message || "مشکلی پیش آمد. لطفاً دوباره تلاش کنید.");
         statusEl.classList.add("error");
       }
       console.error(err);
