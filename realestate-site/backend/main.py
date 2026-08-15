@@ -41,6 +41,40 @@ API_KEY = os.getenv("API_KEY", "change-me")
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
 TELEGRAM_ADMIN_CHAT_ID = os.getenv("TELEGRAM_ADMIN_CHAT_ID", "")
 
+# محدودیت نرخ: هر شماره هر چند ثانیه یک‌بار
+RATE_LIMIT_SECONDS = int(os.getenv("RATE_LIMIT_SECONDS", "600"))  # پیش‌فرض ۱۰ دقیقه
+_rate_limit_store: dict[str, float] = {}  # phone -> last submit timestamp
+
+
+def _normalize_phone(phone: str) -> str:
+    """یکسان‌سازی شماره برای محدودیت نرخ."""
+    digits = "".join(c for c in (phone or "") if c.isdigit())
+    if digits.startswith("98") and len(digits) >= 12:
+        digits = "0" + digits[2:]
+    return digits
+
+
+def check_rate_limit(phone: str) -> None:
+    """اگر شماره اخیراً ارسال کرده باشد، خطای ۴۲۹ می‌دهد."""
+    key = _normalize_phone(phone)
+    if not key:
+        return
+    now = time.time()
+    last = _rate_limit_store.get(key)
+    if last is not None and (now - last) < RATE_LIMIT_SECONDS:
+        remain = int(RATE_LIMIT_SECONDS - (now - last))
+        minutes = max(1, remain // 60)
+        raise HTTPException(
+            status_code=429,
+            detail=f"از این شماره اخیراً درخواست ثبت شده. لطفاً حدود {minutes} دقیقه دیگر دوباره تلاش کنید."
+        )
+    _rate_limit_store[key] = now
+    # پاکسازی کلیدهای قدیمی (جلوگیری از رشد بی‌نهایت حافظه)
+    if len(_rate_limit_store) > 2000:
+        cutoff = now - RATE_LIMIT_SECONDS
+        _rate_limit_store.clear()  # ساده‌ترین روش روی پلن رایگان
+        _rate_limit_store[key] = now
+
 # لینک Web App گوگل‌اسکریپت (همون که ربات هم ازش استفاده می‌کنه)
 APPS_SCRIPT_URL = os.getenv(
     "APPS_SCRIPT_URL",
@@ -232,6 +266,7 @@ async def list_properties(deal_type: Optional[str] = None):
 
 @app.post("/api/leads", response_model=LeadOut)
 async def create_lead(item: LeadIn):
+    check_rate_limit(item.phone)
     db = SessionLocal()
     try:
         data = item.model_dump() if hasattr(item, "model_dump") else item.dict()
@@ -275,6 +310,7 @@ async def create_pending_property(item: PendingPropertyIn):
     فایل ثبت‌شده از فرم سایت را مستقیم به تب «در انتظار تایید»
     گوگل‌شیت می‌فرستد (از طریق Apps Script Web App).
     """
+    check_rate_limit(item.submitter_phone)
     # ساخت شناسه یکتا
     pending_id = f"web-{int(time.time())}-{uuid.uuid4().hex[:6]}"
 
