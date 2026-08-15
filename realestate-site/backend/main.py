@@ -38,6 +38,8 @@ from sqlalchemy.orm import declarative_base, sessionmaker
 
 SPREADSHEET_ID = os.getenv("SPREADSHEET_ID", "")
 API_KEY = os.getenv("API_KEY", "change-me")
+TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
+TELEGRAM_ADMIN_CHAT_ID = os.getenv("TELEGRAM_ADMIN_CHAT_ID", "")
 
 # لینک Web App گوگل‌اسکریپت (همون که ربات هم ازش استفاده می‌کنه)
 APPS_SCRIPT_URL = os.getenv(
@@ -180,6 +182,25 @@ def row_to_property(row: dict, deal_type: str) -> dict:
     return result
 
 
+
+async def send_telegram_message(text: str) -> bool:
+    """ارسال پیام به ادمین از طریق ربات تلگرام."""
+    if not TELEGRAM_BOT_TOKEN or not TELEGRAM_ADMIN_CHAT_ID:
+        return False
+    url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
+    payload = {
+        "chat_id": TELEGRAM_ADMIN_CHAT_ID,
+        "text": text,
+        "parse_mode": "HTML",
+    }
+    try:
+        async with httpx.AsyncClient(timeout=10) as client:
+            resp = await client.post(url, json=payload)
+        return resp.status_code == 200
+    except Exception:
+        return False
+
+
 # --------------------------------------------------------------------------- #
 # اپ FastAPI
 # --------------------------------------------------------------------------- #
@@ -210,7 +231,7 @@ async def list_properties(deal_type: Optional[str] = None):
 
 
 @app.post("/api/leads", response_model=LeadOut)
-def create_lead(item: LeadIn):
+async def create_lead(item: LeadIn):
     db = SessionLocal()
     try:
         data = item.model_dump() if hasattr(item, "model_dump") else item.dict()
@@ -218,6 +239,18 @@ def create_lead(item: LeadIn):
         db.add(obj)
         db.commit()
         db.refresh(obj)
+
+        # اطلاع‌رسانی به تلگرام ادمین
+        msg = (
+            "📩 <b>پیام جدید از سایت اطلس</b>\n\n"
+            f"👤 نام: {item.name}\n"
+            f"📱 شماره: {item.phone}\n"
+        )
+        if item.message:
+            msg += f"💬 پیام: {item.message}\n"
+        msg += f"\n🌐 منبع: سایت"
+        await send_telegram_message(msg)
+
         return obj
     except Exception as e:
         db.rollback()
