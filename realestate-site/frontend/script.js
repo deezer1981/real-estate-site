@@ -243,9 +243,16 @@ function loadStoryLogo() {
   if (!_storyLogoPromise) {
     _storyLogoPromise = new Promise((resolve) => {
       const img = new Image();
+      img.crossOrigin = "anonymous";
       img.onload = () => resolve(img);
-      img.onerror = () => resolve(null);
-      img.src = STORY_LOGO_DATA_URI;
+      img.onerror = () => {
+        // fallback به لوگوی قدیمی داخل کد
+        const fallback = new Image();
+        fallback.onload = () => resolve(fallback);
+        fallback.onerror = () => resolve(null);
+        fallback.src = STORY_LOGO_DATA_URI;
+      };
+      img.src = "assets/logo.png?v=2";
     });
   }
   return _storyLogoPromise;
