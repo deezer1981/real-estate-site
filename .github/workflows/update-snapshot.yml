@@ -1,0 +1,37 @@
+name: Update Property Snapshot
+
+on:
+  schedule:
+    - cron: '0 * * * *'   # هر ساعت
+  workflow_dispatch: {}    # امکان اجرای دستی
+
+permissions:
+  contents: write
+
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Build snapshot
+        env:
+          SPREADSHEET_ID: ${{ secrets.SPREADSHEET_ID }}
+        run: python realestate-site/scripts/build_snapshot.py
+
+      - name: Commit and push if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add realestate-site/frontend/index.html
+          git diff --cached --quiet || git commit -m "Auto-update property snapshot"
+          git push
