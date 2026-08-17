@@ -836,21 +836,22 @@ a { color: inherit; text-decoration: none; }
   .menu-toggle { display: none !important; } /* فعلاً منوی همبرگری غیرفعال */
   .header-inner {
     min-height: 54px;
-    padding: 8px 16px;
-    justify-content: flex-end; /* در RTL: برند سمت چپ صفحه */
+    padding: 8px 24px; /* دقیقاً مثل .wrap تا با کارت باغ‌ویلا هم‌راستا بشه */
+    justify-content: flex-end !important; /* اجبار: برند سمت چپ */
   }
   .stats-ribbon { padding: 6px 12px; font-size: 0.8rem; }
   .brand-mark { display: none; }
 
-  /* لوگو سمت چپ + فاصله از لبه (مارجین به داخل) */
+  /* لوگو سمت چپ هدر، هم‌راستا با باغ‌ویلا */
   .site-header .brand,
   .site-header a.brand {
-    flex-direction: row;
-    direction: ltr;
+    flex-direction: row !important;
+    direction: ltr !important;
     gap: 7px;
     max-width: 100%;
     overflow: hidden;
-    margin-left: 14px; /* فاصله از لبه چپ صفحه */
+    margin: 0 !important;
+    order: 0;
   }
   .brand-logo {
     height: 32px;
