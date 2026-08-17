@@ -57,12 +57,30 @@ def fetch_sheet(deal_type: str) -> list[dict]:
         return []
 
 
+def short_address(raw: str) -> str:
+    """فقط تا «لاله X» (و جهت اصلی/غربی/شرقی) نگه می‌دارد؛ جزئیات دقیق‌تر حذف می‌شود."""
+    import re
+    text = (raw or "").strip()
+    if not text:
+        return ""
+    # مثال: بلوار رسول اکرم لاله ۱۱ شرقی پلاک ۱۲ → بلوار رسول اکرم لاله ۱۱ شرقی
+    m = re.search(
+        r"^(.*?لاله\s*[\d۰-۹]+\s*(?:اصلی|غربی|شرقی)?)",
+        text,
+    )
+    if m:
+        return m.group(1).strip()
+    # اگر الگوی لاله نبود، حداکثر ۴۰ کاراکتر
+    return (text[:40].strip() + "…") if len(text) > 40 else text
+
+
 def row_to_property(row: dict, deal_type: str) -> dict:
+    # فقط فیلدهای ملک — اطلاعات شخصی (مالک، مشتری، شماره) عمداً خوانده نمی‌شود
     result = {
         "code": row.get("کد", ""),
         "deal_type": deal_type,
         "property_type": row.get("نوع ملک", ""),
-        "address": row.get("آدرس", ""),
+        "address": short_address(row.get("آدرس", "")),
         "area_m2": (row.get("متراژ") or "").strip(),
         "rooms": (row.get("خواب") or "").strip(),
         "floor": (row.get("طبقه") or "").strip(),
@@ -70,7 +88,7 @@ def row_to_property(row: dict, deal_type: str) -> dict:
         "elevator": (row.get("آسانسور") or "").strip() == "دارد",
         "storage": (row.get("انباری") or "").strip() == "دارد",
         "agent_name": (row.get("مشاور") or "").strip(),
-        "agent_phone": (row.get("شماره مشاور") or "").strip(),
+        # agent_phone / مالک / مشتری عمداً حذف شدند
     }
     if deal_type == "فروش":
         result["price_total"] = (row.get("قیمت کل") or "").strip() or "توافقی"
