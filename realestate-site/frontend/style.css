@@ -51,18 +51,35 @@ a { color: inherit; text-decoration: none; }
   object-fit: contain;
   background: transparent;
   padding: 0;
+  flex-shrink: 0;
 }
 .brand-text { display: flex; flex-direction: column; gap: 1px; line-height: 1.2; }
 .brand-text .brand-name { font-size: 0.95rem; }
-.brand-text .brand-en-sub {
-  font-size: 0.7rem;
-  font-weight: 600;
-  color: var(--brass);
-  letter-spacing: 0.02em;
+.brand-en {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.25;
+  font-family: "Playfair Display", Georgia, serif;
+  direction: ltr;
+  text-align: left;
+  gap: 1px;
 }
-.brand-mark { display: none; } /* لوگو پیش‌فرض ⌁ حذف — از assets/logo.png استفاده شود */
+.brand-en-title {
+  font-style: italic;
+  font-weight: 700;
+  font-size: 1.15rem;
+  color: #ffffff;
+  letter-spacing: 0.01em;
+}
+.brand-en-sub {
+  font-style: normal;
+  font-weight: 600;
+  font-size: 0.72rem;
+  color: #F3D9A4;
+  letter-spacing: 0.03em;
+}
+.brand-mark { display: none; }
 .brand img.brand-logo { flex-shrink: 0; }
-.brand-en { display: none; }
 
 /* لوگو روی کارت آگهی */
 .card-logo {
@@ -756,14 +773,8 @@ a { color: inherit; text-decoration: none; }
    MOBILE OVERRIDES (max-width: 720px)
    ===================================================================== */
 @media (max-width: 720px) {
-  /* هدر موبایل: لوگو کوچک + فقط اسم فارسی */
-  .site-header .brand-text .brand-en-sub { display: none !important; }
+  /* هدر موبایل: لوگو + متن انگلیسی */
   .site-header .brand-logo { height: 40px; width: auto; }
-  .site-header .brand-text .brand-name {
-    font-size: 0.88rem;
-    line-height: 1.25;
-    max-width: 58vw;
-  }
   .site-header .brand,
   .site-header a.brand { gap: 8px; max-width: 100%; }
 
@@ -826,41 +837,24 @@ a { color: inherit; text-decoration: none; }
 
   .main-nav { display: none; }
   .menu-toggle { display: none !important; } /* فعلاً منوی همبرگری غیرفعال */
-  .site-header .brand-text .brand-name { font-size: 0.9rem; }
-  .header-inner { min-height: 56px; padding: 8px 16px; justify-content: flex-start; }
+  .header-inner {
+    min-height: 56px;
+    padding: 8px 16px;
+    justify-content: flex-end; /* در RTL: برند می‌ره سمت چپ صفحه */
+  }
   .stats-ribbon { padding: 6px 12px; font-size: 0.8rem; }
   .brand-mark { display: none; }
-  .brand-logo { height: 48px; }
+  .brand-logo { height: 42px; }
   .brand-text { display: flex; }
+  .brand-en-title { font-size: 1.05rem; }
+  .brand-en-sub { font-size: 0.7rem; }
 
   /* لوگو کارت در موبایل: سمت چپ پایین، بزرگ‌تر */
   .card-logo {
     height: 40px;
-    margin: 14px auto 0 0; /* راست‌چین در RTL یعنی سمت چپ بصری */
+    margin: 14px auto 0 0;
     margin-inline-start: 0;
     margin-inline-end: auto;
-  }
-  .brand-en {
-    display: flex;
-    flex-direction: column;
-    line-height: 1.3;
-    font-family: "Playfair Display", serif;
-    direction: ltr;
-    text-align: left;
-  }
-  .brand-en-title {
-    font-style: italic;
-    font-weight: 700;
-    font-size: 1.05rem;
-    color: #ffffff;
-    letter-spacing: 0.02em;
-  }
-  .brand-en-sub {
-    font-style: normal;
-    font-weight: 600;
-    font-size: 0.72rem;
-    color: #F3D9A4;
-    letter-spacing: 0.02em;
   }
 
   .carousel { height: 282px; } /* ارتفاع مناسب در گوشی */
@@ -1027,15 +1021,21 @@ a { color: inherit; text-decoration: none; }
     gap: 8px;
     justify-content: flex-start;
   }
-  .filter-chip,
+  .filter-chip {
+    padding: 8px 18px;
+    min-height: 38px;
+    font-size: 0.84rem;
+    flex: 1 1 auto;
+    min-width: 0;
+    text-align: center;
+  }
   .filter-more-btn {
     padding: 8px 14px;
     min-height: 38px;
     font-size: 0.84rem;
     flex: 0 0 auto;
-  }
-  .filter-more-btn {
     margin-right: 0;
+    margin-top: 4px;
   }
 }
 
@@ -1186,7 +1186,7 @@ a { color: inherit; text-decoration: none; }
   font-family: inherit;
   font-weight: 700;
   font-size: 0.88rem;
-  padding: 8px 16px;
+  padding: 8px 22px;
   min-height: 40px;
   border-radius: 999px;
   cursor: pointer;
@@ -1194,6 +1194,7 @@ a { color: inherit; text-decoration: none; }
   align-items: center;
   justify-content: center;
   line-height: 1.2;
+  min-width: 88px;
 }
 .filter-chip:hover { background: #F7F1E6; }
 .filter-chip.active { background: var(--ink); color: #FFFCFA; border-color: var(--ink); }
