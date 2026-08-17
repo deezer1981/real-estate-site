@@ -1,2 +1,0 @@
-const WHATSAPP_NUMBER = "989106943220";
-const BALE_USERNAME = "Nobody_Mohsen";
