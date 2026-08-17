@@ -44,7 +44,7 @@ a { color: inherit; text-decoration: none; }
   padding: 12px 24px;
   min-height: 60px;
 }
-.brand { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 1.1rem; }
+.brand, a.brand { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 1.1rem; color: inherit; text-decoration: none; }
 .brand-logo {
   height: 48px;
   width: auto;
@@ -768,6 +768,37 @@ a { color: inherit; text-decoration: none; }
   }
 
   .footer-inner { grid-template-columns: 1fr; gap: 20px; text-align: center; }
+
+  .footer-meta {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    padding-top: 8px;
+    border-top: 1px solid rgba(255,255,255,0.08);
+  }
+  .footer-meta p { margin: 0; }
+  .footer-meta .phone-row {
+    justify-content: center;
+    font-size: 1.05rem;
+  }
+  .footer-meta .phone-ltr {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #F3EDE0;
+  }
+  .footer-hours {
+    font-size: 0.85rem;
+    opacity: 0.9;
+  }
+  .header-inner {
+    flex-wrap: nowrap;
+    gap: 12px;
+  }
+  .main-nav {
+    flex-shrink: 0;
+  }
+
   .footer-links { align-items: center; }
   .card-body h3 { font-size: 1.12rem; }
   .card-meta { font-size: 0.95rem; }
