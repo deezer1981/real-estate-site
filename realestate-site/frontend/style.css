@@ -836,13 +836,13 @@ a { color: inherit; text-decoration: none; }
   .menu-toggle { display: none !important; } /* فعلاً منوی همبرگری غیرفعال */
   .header-inner {
     min-height: 54px;
-    padding: 8px 20px;
-    justify-content: flex-start; /* در RTL برند سمت راست می‌مونه — داخل‌تر و طبیعی‌تر */
+    padding: 8px 16px;
+    justify-content: flex-end; /* در RTL: برند سمت چپ صفحه */
   }
   .stats-ribbon { padding: 6px 12px; font-size: 0.8rem; }
   .brand-mark { display: none; }
 
-  /* لوگو + متن انگلیسی کنار هم */
+  /* لوگو سمت چپ + فاصله از لبه (مارجین به داخل) */
   .site-header .brand,
   .site-header a.brand {
     flex-direction: row;
@@ -850,6 +850,7 @@ a { color: inherit; text-decoration: none; }
     gap: 7px;
     max-width: 100%;
     overflow: hidden;
+    margin-left: 14px; /* فاصله از لبه چپ صفحه */
   }
   .brand-logo {
     height: 32px;
