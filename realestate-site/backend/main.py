@@ -193,18 +193,24 @@ async def fetch_sheet_records(deal_type: str) -> list[dict]:
 
 def row_to_property(row: dict, deal_type: str) -> dict:
     """یک ردیف خام گوگل‌شیت را به فرمت ساده‌ای برای نمایش در سایت تبدیل می‌کند."""
+    import re
+    raw_addr = (row.get("آدرس") or "").strip()
+    m = re.search(r"^(.*?لاله\s*[\d۰-۹]+\s*(?:اصلی|غربی|شرقی)?)", raw_addr)
+    short_addr = m.group(1).strip() if m else (raw_addr[:40] + "…" if len(raw_addr) > 40 else raw_addr)
+
     result = {
         "code": row.get("کد", ""),
         "deal_type": deal_type,
         "property_type": row.get("نوع ملک", ""),
-        "address": row.get("آدرس", ""),
+        "address": short_addr,
         "area_m2": row.get("متراژ", ""),
         "rooms": row.get("خواب", ""),
+        "floor": (row.get("طبقه") or "").strip(),
         "parking": (row.get("پارکینگ") or "").strip() == "دارد",
         "elevator": (row.get("آسانسور") or "").strip() == "دارد",
         "storage": (row.get("انباری") or "").strip() == "دارد",
         "agent_name": (row.get("مشاور") or "").strip(),
-        "agent_phone": (row.get("شماره مشاور") or "").strip(),
+        # اطلاعات شخصی (شماره / مالک / مشتری) عمداً حذف شده
     }
     if deal_type == "فروش":
         result["price_total"] = row.get("قیمت کل", "") or "توافقی"
