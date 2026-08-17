@@ -29,7 +29,8 @@ let visibleCount = PAGE_SIZE;
 function truncateAddress(address) {
   if (!address) return "";
   const text = address.trim();
-  const match = text.match(/^(.*?لاله\s*[\u06F0-\u06F90-9]+\s*(اصلی|غربی|شرقی)?)/);
+  // فقط تا «لاله X» (+ جهت) — جزئیات دقیق‌تر نشان داده نمی‌شود
+  const match = text.match(/^(.*?لاله\s*[\u06F0-\u06F90-9]+\s*(?:اصلی|غربی|شرقی)?)/);
   if (match && match[1]) return match[1].trim();
   return text.length > 40 ? text.slice(0, 40).trim() + "…" : text;
 }
@@ -100,9 +101,9 @@ function propertyCard(p) {
           <p class="card-meta">📍 ${shortAddress || "-"}</p>
           ${(() => {
             const parts = [];
-            if (p.area_m2) parts.push(p.area_m2 + " متر");
-            if (p.rooms) parts.push(p.rooms + " خواب");
-            if (p.floor) parts.push("طبقه " + p.floor);
+            if (p.area_m2) parts.push("📐 " + p.area_m2 + " متر");
+            if (p.rooms) parts.push("🛏️ " + p.rooms + " خواب");
+            if (p.floor) parts.push("🏢 طبقه " + p.floor);
             return parts.length ? `<p class="card-meta">${parts.join(" · ")}</p>` : "";
           })()}
           ${extras.length ? `<p class="card-meta">${extras.join(" | ")}</p>` : ""}
@@ -744,10 +745,11 @@ function showShareModal(p, shareBtn) {
     p.floor ? "طبقه " + p.floor : ""
   ].filter(Boolean);
   const priceExtra = (p.deal_type === "فروش" && p.price_per_m2) ? `\n📏 قیمت متری: ${p.price_per_m2}` : "";
+  const shortAddr = truncateAddress(p.address) || "خادم‌آباد";
   const shareText =
 `🏠 ${p.property_type || "ملک"} · کد ${p.code}
 
-📍 ${p.address || "خادم‌آباد"}
+📍 ${shortAddr}
 📐 ${specsParts.join(" · ")}${priceExtra}
 ${extras.length ? "✨ " + extras.join(" · ") + "\n" : ""}${priceText}
 
