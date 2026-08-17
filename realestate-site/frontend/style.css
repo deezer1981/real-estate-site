@@ -528,22 +528,25 @@ a { color: inherit; text-decoration: none; }
 .card-agent strong { color: var(--ink); }
 .card-actions {
   display: flex;
-  gap: 8px;
-  margin-top: 10px;
+  gap: 6px;
+  margin-top: 12px;
 }
 .agent-call-btn,
 .agent-msg-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  flex: 1;
-  min-height: 42px;
+  flex: 1 1 0;
+  min-width: 0;
+  min-height: 36px;
   font-weight: 700;
-  font-size: 0.82rem;
+  font-size: 0.75rem;
   border-radius: 8px;
   text-decoration: none;
   white-space: nowrap;
-  padding: 0 8px;
+  padding: 6px 6px;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
 }
 .agent-call-btn { background: var(--sage); color: #fff; }
 .agent-call-btn:hover { background: #3d5a50; }
@@ -751,6 +754,17 @@ a { color: inherit; text-decoration: none; }
    MOBILE OVERRIDES (max-width: 720px)
    ===================================================================== */
 @media (max-width: 720px) {
+  /* هدر موبایل: لوگو کوچک + فقط اسم فارسی */
+  .site-header .brand-text .brand-en-sub { display: none !important; }
+  .site-header .brand-logo { height: 40px; width: auto; }
+  .site-header .brand-text .brand-name {
+    font-size: 0.88rem;
+    line-height: 1.25;
+    max-width: 58vw;
+  }
+  .site-header .brand,
+  .site-header a.brand { gap: 8px; max-width: 100%; }
+
   body { padding-bottom: 72px; }
   .page-cta,
   .contact-buttons {
