@@ -207,12 +207,14 @@
         <button type="button" class="filter-chip active" data-deal="">همه</button>
         <button type="button" class="filter-chip" data-deal="فروش">فروشی</button>
         <button type="button" class="filter-chip" data-deal="رهن و اجاره">رهن و اجاره</button>
-        <button type="button" class="filter-more-btn" id="filterMoreBtn">فیلتر بیشتر ▾</button>
       </div>
-      <div class="filter-advanced" id="filterAdvanced">
-        <input type="text" id="citySearch" placeholder="آدرس، کد ملک یا نوع ملک...">
-        <button type="button" class="filter-apply-btn" id="searchBtn">اعمال</button>
-        <button type="button" class="filter-reset-btn" id="filterResetBtn">پاک کردن</button>
+      <div class="filter-search-bar" id="filterAdvanced">
+        <div class="filter-search-inner">
+          <span class="filter-search-icon" aria-hidden="true">🔍</span>
+          <input type="text" id="citySearch" placeholder="جستجو آدرس، کد یا نوع ملک...">
+          <button type="button" class="filter-clear-btn" id="filterResetBtn" title="پاک کردن" aria-label="پاک کردن">✕</button>
+          <button type="button" class="filter-apply-btn" id="searchBtn">جستجو</button>
+        </div>
       </div>
     </div>
     <div class="section-head">

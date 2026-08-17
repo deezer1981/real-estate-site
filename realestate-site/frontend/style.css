@@ -773,10 +773,7 @@ a { color: inherit; text-decoration: none; }
    MOBILE OVERRIDES (max-width: 720px)
    ===================================================================== */
 @media (max-width: 720px) {
-  /* هدر موبایل: لوگو + متن انگلیسی */
-  .site-header .brand-logo { height: 40px; width: auto; }
-  .site-header .brand,
-  .site-header a.brand { gap: 8px; max-width: 100%; }
+  /* هدر موبایل — قوانین اصلی پایین‌تر تعریف شده */
 
   body { padding-bottom: 72px; }
   .page-cta,
@@ -839,15 +836,40 @@ a { color: inherit; text-decoration: none; }
   .menu-toggle { display: none !important; } /* فعلاً منوی همبرگری غیرفعال */
   .header-inner {
     min-height: 56px;
-    padding: 8px 16px;
-    justify-content: flex-end; /* در RTL: برند می‌ره سمت چپ صفحه */
+    padding: 8px 14px;
+    justify-content: flex-end; /* در RTL: کل برند می‌ره سمت چپ صفحه */
   }
   .stats-ribbon { padding: 6px 12px; font-size: 0.8rem; }
   .brand-mark { display: none; }
-  .brand-logo { height: 42px; }
-  .brand-text { display: flex; }
-  .brand-en-title { font-size: 1.05rem; }
-  .brand-en-sub { font-size: 0.7rem; }
+
+  /* لوگو و متن انگلیسی همیشه کنار هم و مرتب روی موبایل */
+  .site-header .brand,
+  .site-header a.brand {
+    flex-direction: row;
+    direction: ltr;          /* لوگو سمت چپ متن، نه برعکس */
+    gap: 8px;
+    max-width: calc(100% - 8px);
+    overflow: hidden;
+  }
+  .brand-logo {
+    height: 40px;
+    flex-shrink: 0;
+  }
+  .brand-en {
+    min-width: 0;
+    overflow: hidden;
+  }
+  .brand-en-title {
+    font-size: 0.98rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .brand-en-sub {
+    font-size: 0.65rem;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+  }
 
   /* لوگو کارت در موبایل: سمت چپ پایین، بزرگ‌تر */
   .card-logo {
@@ -1016,26 +1038,30 @@ a { color: inherit; text-decoration: none; }
     cursor: pointer;
   }
 
-  /* یکدست کردن فیلترها روی موبایل */
+  /* فیلترها روی موبایل */
   .filter-chips {
     gap: 8px;
     justify-content: flex-start;
   }
   .filter-chip {
-    padding: 8px 18px;
+    padding: 8px 16px;
     min-height: 38px;
     font-size: 0.84rem;
     flex: 1 1 auto;
     min-width: 0;
     text-align: center;
   }
-  .filter-more-btn {
-    padding: 8px 14px;
-    min-height: 38px;
+  .filter-search-inner {
+    padding: 3px 3px 3px 10px;
+  }
+  .filter-search-inner input {
+    font-size: 0.88rem;
+    padding: 9px 6px;
+  }
+  .filter-apply-btn {
+    padding: 9px 14px;
     font-size: 0.84rem;
-    flex: 0 0 auto;
-    margin-right: 0;
-    margin-top: 4px;
+    min-height: 36px;
   }
 }
 
@@ -1198,45 +1224,87 @@ a { color: inherit; text-decoration: none; }
 }
 .filter-chip:hover { background: #F7F1E6; }
 .filter-chip.active { background: var(--ink); color: #FFFCFA; border-color: var(--ink); }
-.filter-more-btn {
-  border: 1.5px dashed var(--brass);
+
+/* نوار جستجوی مینیمال — همیشه باز */
+.filter-search-bar {
+  margin-bottom: 8px;
+}
+.filter-search-inner {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  background: #fff;
+  border: 1.5px solid #E4DFD3;
+  border-radius: 12px;
+  padding: 4px 4px 4px 12px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.filter-search-inner:focus-within {
+  border-color: var(--brass);
+  box-shadow: 0 0 0 3px rgba(184, 137, 79, 0.15);
+}
+.filter-search-icon {
+  font-size: 0.95rem;
+  opacity: 0.55;
+  flex-shrink: 0;
+  margin-left: 4px;
+}
+.filter-search-inner input {
+  flex: 1;
+  min-width: 0;
+  border: none;
   background: transparent;
-  color: var(--ink);
+  padding: 10px 8px;
   font-family: inherit;
-  font-weight: 700;
-  font-size: 0.85rem;
-  padding: 8px 14px;
-  min-height: 40px;
-  border-radius: 999px;
+  font-size: 0.92rem;
+  color: var(--text);
+  outline: none;
+}
+.filter-search-inner input::placeholder {
+  color: #A89F8E;
+}
+.filter-clear-btn {
+  background: transparent;
+  border: none;
+  color: #A89F8E;
+  font-size: 0.9rem;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
   cursor: pointer;
-  display: inline-flex;
+  display: flex;
   align-items: center;
   justify-content: center;
-  line-height: 1.2;
+  flex-shrink: 0;
+  opacity: 0.6;
+  transition: opacity 0.15s, background 0.15s;
 }
-.filter-more-btn:hover { background: #F7F1E6; }
-.filter-more-btn.open { background: var(--brass); border-style: solid; color: #fff; }
-.filter-advanced {
-  display: none; gap: 10px; flex-wrap: wrap; background: var(--paper);
-  padding: 12px; border-radius: var(--radius); border: 1px solid #E8DFD0; margin-bottom: 8px;
+.filter-clear-btn:hover {
+  opacity: 1;
+  background: #F5F0E8;
+  color: var(--ink);
 }
-.filter-advanced.open { display: flex; }
-.filter-advanced input {
-  flex: 1; min-width: 160px; border: 1px solid #E4DFD3; background: #fff;
-  padding: 11px 12px; min-height: 44px; font-family: inherit; font-size: 0.92rem;
-  border-radius: 8px; color: var(--text);
+.filter-apply-btn {
+  background: var(--ink);
+  color: #FFFCFA;
+  border: none;
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 0.88rem;
+  padding: 10px 18px;
+  min-height: 40px;
+  border-radius: 9px;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.15s;
 }
-.filter-advanced input:focus { outline: 2px solid var(--brass); }
-.filter-advanced .filter-apply-btn {
-  background: var(--brass); color: var(--ink); border: none; font-family: inherit;
-  font-weight: 700; font-size: 0.9rem; padding: 11px 20px; min-height: 44px;
-  border-radius: 8px; cursor: pointer;
+.filter-apply-btn:hover {
+  background: #1a2a4a;
 }
-.filter-advanced .filter-reset-btn {
-  background: transparent; border: 1px solid #C9BFAE; color: var(--ink);
-  font-family: inherit; font-weight: 600; font-size: 0.88rem; padding: 11px 16px;
-  min-height: 44px; border-radius: 8px; cursor: pointer;
-}
+
+/* مخفی کردن دکمه قدیمی فیلتر بیشتر */
+.filter-more-btn { display: none !important; }
+.filter-advanced { display: none !important; }
 
 
 /* صفحات داخلی: عنوان زیر عکس hero مثل صفحه اصلی */

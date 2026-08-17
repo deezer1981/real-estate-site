@@ -959,15 +959,10 @@ function filterListings(dealType, query) {
   document.querySelectorAll(".filter-chip").forEach((c) => {
     c.classList.toggle("active", (c.getAttribute("data-deal") || "") === (dealType || ""));
   });
-  // open advanced filter if there's a text query so user sees it
-  const advanced = document.getElementById("filterAdvanced");
-  const moreBtn = document.getElementById("filterMoreBtn");
-  if (query && advanced) {
-    advanced.classList.add("open");
-    if (moreBtn) {
-      moreBtn.classList.add("open");
-      moreBtn.textContent = "بستن فیلتر ▴";
-    }
+  // نوار جستجو همیشه باز است — فقط مقدار را پر می‌کنیم
+  const cityInputFocus = document.getElementById("citySearch");
+  if (query && cityInputFocus) {
+    cityInputFocus.focus();
   }
   if (typeof applyFilters === "function") applyFilters();
   const listings = document.getElementById("listings");
