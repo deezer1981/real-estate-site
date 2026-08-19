@@ -51,6 +51,14 @@ function cleanAgentName(name) {
   return stripped || name;
 }
 
+function formatRentPrice(p) {
+  const parts = [];
+  if (p.rahn && p.rahn !== "-") parts.push(`رهن: ${p.rahn}`);
+  if (p.ejare && p.ejare !== "-") parts.push(`اجاره: ${p.ejare}`);
+  if (!parts.length) return "💰 توافقی";
+  return `💰 ${parts.join(" | ")}`;
+}
+
 function propertyCard(p) {
   const urlParams = new URLSearchParams(window.location.search);
   const isSingleMode = Boolean(urlParams.get("code"));
@@ -69,47 +77,58 @@ function propertyCard(p) {
   ` : "";
 
   const priceLine = p.deal_type === "فروش"
-    ? `<p class="card-price">💰 ${p.price_total || "توافقی"}</p>${p.price_per_m2 ? `<p class="card-meta">قیمت متری: ${p.price_per_m2}</p>` : ""}`
-    : `<p class="card-price">💰 رهن: ${p.rahn || "-"} | اجاره: ${p.ejare || "-"}</p>`;
+    ? `<p class="card-price">💰 ${p.price_total || "توافقی"}</p>${p.price_per_m2 ? `<p class="card-meta card-price-m2">قیمت متری: ${p.price_per_m2}</p>` : ""}`
+    : `<p class="card-price">${formatRentPrice(p)}</p>`;
 
   const extras = buildExtras(p);
   const shortAddress = truncateAddress(p.address);
-  const agentLine = p.agent_name ? `<p class="card-agent">👤 ثبت‌شده توسط: <strong>${p.agent_name}</strong></p>` : "";
+  const agentLine = p.agent_name
+    ? `<p class="card-agent">👤 ثبت‌شده توسط: <strong>${p.agent_name}</strong></p>`
+    : "";
+  const dateLine = p.registered_at
+    ? `<p class="card-date">📅 ثبت: ${p.registered_at}</p>`
+    : "";
   const officePhone = (typeof OFFICE_PHONE !== "undefined") ? OFFICE_PHONE : "09106943220";
   const baleUser = (typeof BALE_USERNAME !== "undefined") ? BALE_USERNAME : "Nobody_Mohsen";
   const baleMsg = encodeURIComponent(`سلام، در مورد آگهی کد ${p.code || ""} از سایت اطلس املاک پیام می‌دم.`);
   const agentActions = `
     <div class="card-actions">
-      <a class="agent-call-btn" href="tel:${officePhone}">📞 تماس با دفتر اطلس</a>
-      <a class="agent-msg-btn" href="https://ble.ir/${baleUser}?text=${baleMsg}" target="_blank" rel="noopener">💬 پیام به دفتر اطلس</a>
+      <a class="agent-call-btn agent-btn-primary" href="tel:${officePhone}">📞 مشاوره / بازدید</a>
+      <a class="agent-msg-btn agent-btn-secondary" href="https://ble.ir/${baleUser}?text=${baleMsg}" target="_blank" rel="noopener">💬 پیام</a>
     </div>`;
 
   const wrapperStyle = isSingleMode
-    ? 'grid-column: 1 / -1; max-width: 540px; margin: 0 auto; width: 100%;'
-    : 'width: 100%;';
+    ? "grid-column: 1 / -1; max-width: 540px; margin: 0 auto; width: 100%;"
+    : "width: 100%;";
+
+  const specsParts = [];
+  if (p.area_m2) specsParts.push("📐 " + p.area_m2 + " متر");
+  if (p.rooms) specsParts.push("🛏️ " + p.rooms + " خواب");
+  if (p.floor) specsParts.push("🏢 طبقه " + p.floor);
+  const specsLine = specsParts.length
+    ? `<p class="card-meta">${specsParts.join(" · ")}</p>`
+    : "";
+
+  const titleType = p.property_type || "ملک";
+  const titleCode = p.code ? `<span class="card-code">کد ${p.code}</span>` : "";
 
   return `
     <div style="${wrapperStyle}">
       ${backBanner}
-      <article class="card" id="card-${p.code || ''}" data-code="${p.code || ''}">
+      <article class="card" id="card-${p.code || ""}" data-code="${p.code || ""}">
         <div class="card-body">
           <div class="card-top-row">
             <span class="deal-tag ${p.deal_type === "فروش" ? "sale" : "rent"}">${p.deal_type || "آگهی"}</span>
-            <button class="share-btn" data-code="${p.code || ''}" type="button" aria-label="اشتراک‌گذاری آگهی">🔗 اشتراک</button>
+            <button class="share-btn" data-code="${p.code || ""}" type="button" aria-label="اشتراک‌گذاری آگهی">🔗 اشتراک</button>
           </div>
-          <h3>${p.property_type || "ملک"} · کد ${p.code || "-"}</h3>
-          <p class="card-meta">📍 ${shortAddress || "-"}</p>
-          ${(() => {
-            const parts = [];
-            if (p.area_m2) parts.push("📐 " + p.area_m2 + " متر");
-            if (p.rooms) parts.push("🛏️ " + p.rooms + " خواب");
-            if (p.floor) parts.push("🏢 طبقه " + p.floor);
-            return parts.length ? `<p class="card-meta">${parts.join(" · ")}</p>` : "";
-          })()}
-          ${extras.length ? `<p class="card-meta">${extras.join(" | ")}</p>` : ""}
+          <h3 class="card-title">${titleType} ${titleCode}</h3>
+          ${shortAddress ? `<p class="card-meta card-address">📍 ${shortAddress}</p>` : ""}
+          ${specsLine}
+          ${extras.length ? `<p class="card-meta card-extras">${extras.join(" | ")}</p>` : ""}
           ${priceLine}
           ${agentLine}
           ${agentActions}
+          ${dateLine}
         </div>
       </article>
     </div>
@@ -737,7 +756,7 @@ function showShareModal(p, shareBtn) {
   const extras = buildExtras(p);
   const priceText = p.deal_type === "فروش"
     ? `💰 قیمت: ${p.price_total || "توافقی"}`
-    : `💰 رهن: ${p.rahn || "-"} | اجاره: ${p.ejare || "-"}`;
+    : formatRentPrice(p);
 
   const specsParts = [
     p.area_m2 ? p.area_m2 + " متر" : "",
