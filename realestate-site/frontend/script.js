@@ -59,6 +59,40 @@ function formatRentPrice(p) {
   return `💰 ${parts.join(" | ")}`;
 }
 
+/** عنوان با نوع معامله: آپارتمان فروشی / رهن و اجاره آپارتمان */
+function labeledPropertyType(p) {
+  const type = (p.property_type || "ملک").trim();
+  if (p.deal_type === "فروش") return `${type} فروشی`;
+  return `رهن و اجاره ${type}`;
+}
+
+/** متن کوتاه مناسب SMS (حدود ۱ تا ۲ پیامک) */
+function buildSmsText(p) {
+  const title = labeledPropertyType(p);
+  const bits = [title];
+  if (p.area_m2) bits.push(`${p.area_m2} متر`);
+  if (p.rooms) bits.push(`${p.rooms} خواب`);
+
+  if (p.deal_type === "فروش") {
+    if (p.price_total) bits.push(`قیمت کل ${p.price_total}`);
+  } else {
+    if (p.rahn && p.rahn !== "-") bits.push(`رهن ${p.rahn}`);
+    if (p.ejare && p.ejare !== "-") bits.push(`اجاره ${p.ejare}`);
+  }
+
+  const addr = truncateAddress(p.address);
+  if (addr) bits.push(addr);
+
+  const line1 = bits.join(" ");
+  const agent = cleanAgentName(p.agent_name);
+  const line2 = agent ? `مشاور: ${agent} ۰۹۱۰۶۹۴۳۲۲۰` : `تماس: ۰۹۱۰۶۹۴۳۲۲۰`;
+  const line3 = "اطلس املاک";
+  const line4 = p.code ? `کدفایل: ${p.code}` : "";
+  const line5 = "www.atlas-amlak.ir";
+
+  return [line1, line2, line3, line4, line5].filter(Boolean).join("\n");
+}
+
 function propertyCard(p) {
   const urlParams = new URLSearchParams(window.location.search);
   const isSingleMode = Boolean(urlParams.get("code"));
@@ -109,7 +143,7 @@ function propertyCard(p) {
     ? `<p class="card-meta">${specsParts.join(" · ")}</p>`
     : "";
 
-  const titleType = p.property_type || "ملک";
+  const titleType = labeledPropertyType(p);
   const titleCode = p.code ? `<span class="card-code">کد ${p.code}</span>` : "";
 
   return `
@@ -426,26 +460,28 @@ async function generateStoryImage(p) {
     const cx = W / 2;
     const isSale = p.deal_type === "فروش";
 
-    // رنگ‌ها: پس‌زمینه سفید، متن‌های تیره
+    // سفید + متن تیره + آبی آرامش‌بخش برای اعتماد
     const C = {
       bg: "#FFFFFF",
-      ink: "#1A1A1A",
-      soft: "#333333",
-      muted: "#555555",
-      line: "#DDDDDD",
-      tagSale: "#1B4332",
-      tagRent: "#7C4A03",
+      ink: "#0F172A",
+      soft: "#1E293B",
+      muted: "#475569",
+      line: "#CBD5E1",
+      blue: "#1D4ED8",
+      blueDeep: "#1E3A8A",
+      blueSoft: "#EFF6FF",
+      blueBorder: "#93C5FD",
+      tagSale: "#0F766E",
+      tagRent: "#B45309",
       tagText: "#FFFFFF",
-      priceBg: "#F5F5F5",
-      priceBorder: "#CCCCCC",
+      phone: "#0F172A",
     };
 
-    // پس‌زمینه کاملاً سفید
     ctx.fillStyle = C.bg;
     ctx.fillRect(0, 0, W, H);
 
-    // حاشیه امن از لبه‌ها
-    const M = 90;
+    // حاشیه امن بیشتر از لبه‌ها
+    const M = 80;
     const contentW = W - M * 2;
 
     const extras = buildExtras(p);
@@ -468,53 +504,53 @@ async function generateStoryImage(p) {
       priceMain = rp.length ? rp.join("  |  ") : "توافقی";
     }
 
-    // چیدمان عمودی با فاصله ثابت و متعادل
     const blocks = [];
     blocks.push({ type: "brand" });
-    blocks.push({ type: "gap", h: 48 });
+    blocks.push({ type: "gap", h: 40 });
     blocks.push({ type: "line" });
-    blocks.push({ type: "gap", h: 56 });
+    blocks.push({ type: "gap", h: 52 });
     blocks.push({ type: "deal" });
-    blocks.push({ type: "gap", h: 48 });
+    blocks.push({ type: "gap", h: 52 });
     blocks.push({ type: "title" });
     if (specs.length) {
-      blocks.push({ type: "gap", h: 40 });
+      blocks.push({ type: "gap", h: 36 });
       blocks.push({ type: "specs" });
     }
     if (addr) {
-      blocks.push({ type: "gap", h: 36 });
+      blocks.push({ type: "gap", h: 32 });
       blocks.push({ type: "addr" });
     }
     if (extras.length) {
-      blocks.push({ type: "gap", h: 32 });
+      blocks.push({ type: "gap", h: 28 });
       blocks.push({ type: "extras" });
     }
-    blocks.push({ type: "gap", h: 48 });
+    blocks.push({ type: "gap", h: 44 });
     blocks.push({ type: "price" });
-    blocks.push({ type: "gap", h: 48 });
+    blocks.push({ type: "gap", h: 44 });
     blocks.push({ type: "phone" });
     if (p.agent_name) {
-      blocks.push({ type: "gap", h: 36 });
+      blocks.push({ type: "gap", h: 32 });
       blocks.push({ type: "agent" });
     }
-    blocks.push({ type: "gap", h: 64 });
+    blocks.push({ type: "gap", h: 52 });
     blocks.push({ type: "line" });
-    blocks.push({ type: "gap", h: 40 });
+    blocks.push({ type: "gap", h: 36 });
     blocks.push({ type: "footer" });
 
+    // فونت‌ها و ارتفاع‌ها درشت‌تر برای خوانایی روی موبایل
     const blockH = {
-      brand: 110,
+      brand: 130,
       gap: 0,
-      line: 2,
-      deal: 56,
-      title: 80,
-      specs: 48,
-      addr: 44,
-      extras: 52,
-      price: priceSub ? 150 : 120,
-      phone: 100,
-      agent: 36,
-      footer: 90,
+      line: 3,
+      deal: 64,
+      title: 96,
+      specs: 56,
+      addr: 52,
+      extras: 56,
+      price: priceSub ? 180 : 150,
+      phone: 120,
+      agent: 42,
+      footer: 110,
     };
 
     let totalContent = 0;
@@ -523,9 +559,9 @@ async function generateStoryImage(p) {
       else totalContent += blockH[b.type] || 40;
     });
 
-    let y = M + 20;
+    let y = M + 10;
     if (totalContent < H - M * 2) {
-      y = Math.max(M + 20, (H - totalContent) / 2);
+      y = Math.max(M + 10, (H - totalContent) / 2);
     }
 
     blocks.forEach((b) => {
@@ -536,38 +572,38 @@ async function generateStoryImage(p) {
 
       if (b.type === "brand") {
         ctx.fillStyle = C.ink;
-        setFont(ctx, 800, 44);
-        rtlText(ctx, "گروه مشاورین املاک اطلس", cx, y + 24);
-        ctx.fillStyle = C.muted;
-        setFont(ctx, 600, 28);
-        rtlText(ctx, "خادم‌آباد  ·  باغستان  ·  شهریار", cx, y + 80);
+        setFont(ctx, 800, 52);
+        rtlText(ctx, "گروه مشاورین املاک اطلس", cx, y + 28);
+        ctx.fillStyle = C.blue;
+        setFont(ctx, 600, 32);
+        rtlText(ctx, "خادم‌آباد  ·  باغستان  ·  شهریار", cx, y + 92);
         y += blockH.brand;
         return;
       }
 
       if (b.type === "line") {
-        ctx.strokeStyle = C.line;
-        ctx.lineWidth = 2;
+        ctx.strokeStyle = C.blueBorder;
+        ctx.lineWidth = 2.5;
         ctx.beginPath();
-        ctx.moveTo(M + 40, y);
-        ctx.lineTo(W - M - 40, y);
+        ctx.moveTo(M + 30, y);
+        ctx.lineTo(W - M - 30, y);
         ctx.stroke();
         y += blockH.line;
         return;
       }
 
       if (b.type === "deal") {
-        setFont(ctx, 800, 30);
-        const dealW = Math.max(150, ctx.measureText(dealLabel).width + 48);
-        const dealH = 52;
+        setFont(ctx, 800, 34);
+        const dealW = Math.max(170, ctx.measureText(dealLabel).width + 56);
+        const dealH = 60;
         ctx.fillStyle = isSale ? C.tagSale : C.tagRent;
-        rr(ctx, M, y, dealW, dealH, 12);
+        rr(ctx, M, y, dealW, dealH, 14);
         ctx.fill();
         ctx.fillStyle = C.tagText;
         rtlText(ctx, dealLabel, M + dealW / 2, y + dealH / 2);
 
         ctx.fillStyle = C.muted;
-        setFont(ctx, 700, 30);
+        setFont(ctx, 700, 34);
         rtlText(ctx, `کد ${p.code || "—"}`, W - M, y + dealH / 2, { align: "right" });
         y += blockH.deal;
         return;
@@ -575,58 +611,66 @@ async function generateStoryImage(p) {
 
       if (b.type === "title") {
         ctx.fillStyle = C.ink;
-        setFont(ctx, 800, 64);
-        rtlText(ctx, p.property_type || "ملک", cx, y + 36);
+        setFont(ctx, 800, 76);
+        rtlText(ctx, labeledPropertyType(p), cx, y + 42);
         y += blockH.title;
         return;
       }
 
       if (b.type === "specs") {
+        // کادر آبی ملایم برای مشخصات
+        ctx.fillStyle = C.blueSoft;
+        rr(ctx, M, y - 8, contentW, 64, 16);
+        ctx.fill();
+        ctx.strokeStyle = C.blueBorder;
+        ctx.lineWidth = 1.5;
+        rr(ctx, M, y - 8, contentW, 64, 16);
+        ctx.stroke();
         ctx.fillStyle = C.soft;
-        setFont(ctx, 700, 34);
-        rtlText(ctx, specs.join("   ·   "), cx, y + 20);
+        setFont(ctx, 700, 38);
+        rtlText(ctx, specs.join("   ·   "), cx, y + 24);
         y += blockH.specs;
         return;
       }
 
       if (b.type === "addr") {
         ctx.fillStyle = C.soft;
-        setFont(ctx, 600, 32);
-        rtlText(ctx, `📍  ${addr}`, cx, y + 18);
+        setFont(ctx, 600, 36);
+        rtlText(ctx, `📍  ${addr}`, cx, y + 22);
         y += blockH.addr;
         return;
       }
 
       if (b.type === "extras") {
         ctx.fillStyle = C.muted;
-        setFont(ctx, 600, 28);
-        rtlText(ctx, extras.join("  |  "), cx, y + 22);
+        setFont(ctx, 600, 32);
+        rtlText(ctx, extras.join("  |  "), cx, y + 24);
         y += blockH.extras;
         return;
       }
 
       if (b.type === "price") {
         const ph = blockH.price;
-        ctx.fillStyle = C.priceBg;
-        rr(ctx, M, y, contentW, ph, 16);
+        ctx.fillStyle = C.blueSoft;
+        rr(ctx, M, y, contentW, ph, 20);
         ctx.fill();
-        ctx.strokeStyle = C.priceBorder;
-        ctx.lineWidth = 1.5;
-        rr(ctx, M, y, contentW, ph, 16);
+        ctx.strokeStyle = C.blue;
+        ctx.lineWidth = 2.5;
+        rr(ctx, M, y, contentW, ph, 20);
         ctx.stroke();
 
-        ctx.fillStyle = C.muted;
-        setFont(ctx, 600, 26);
-        rtlText(ctx, isSale ? "قیمت فروش" : "رهن و اجاره", cx, y + 32);
+        ctx.fillStyle = C.blueDeep;
+        setFont(ctx, 700, 30);
+        rtlText(ctx, isSale ? "قیمت فروش" : "رهن و اجاره", cx, y + 38);
 
         ctx.fillStyle = C.ink;
-        setFont(ctx, 800, isSale ? 48 : 36);
-        rtlText(ctx, priceMain, cx, y + 78);
+        setFont(ctx, 800, isSale ? 58 : 44);
+        rtlText(ctx, priceMain, cx, y + (priceSub ? 92 : 96));
 
         if (priceSub) {
           ctx.fillStyle = C.muted;
-          setFont(ctx, 600, 26);
-          rtlText(ctx, priceSub, cx, y + 122);
+          setFont(ctx, 600, 30);
+          rtlText(ctx, priceSub, cx, y + 142);
         }
         y += ph;
         return;
@@ -634,13 +678,13 @@ async function generateStoryImage(p) {
 
       if (b.type === "phone") {
         ctx.fillStyle = C.soft;
-        setFont(ctx, 700, 28);
-        rtlText(ctx, "تماس با دفتر اطلس", cx, y + 16);
-        ctx.fillStyle = C.ink;
-        setFont(ctx, 800, 46);
+        setFont(ctx, 700, 32);
+        rtlText(ctx, "تماس با دفتر اطلس", cx, y + 20);
+        ctx.fillStyle = C.blueDeep;
+        setFont(ctx, 800, 54);
         ctx.direction = "ltr";
         ctx.textAlign = "center";
-        ctx.fillText("0910 694 3220", cx, y + 68);
+        ctx.fillText("0910 694 3220", cx, y + 80);
         ctx.direction = "rtl";
         y += blockH.phone;
         return;
@@ -648,21 +692,28 @@ async function generateStoryImage(p) {
 
       if (b.type === "agent") {
         ctx.fillStyle = C.muted;
-        setFont(ctx, 600, 26);
-        rtlText(ctx, `ثبت‌شده توسط: ${cleanAgentName(p.agent_name)}`, cx, y + 14);
+        setFont(ctx, 600, 30);
+        rtlText(ctx, `ثبت‌شده توسط: ${cleanAgentName(p.agent_name)}`, cx, y + 18);
         y += blockH.agent;
         return;
       }
 
       if (b.type === "footer") {
         ctx.fillStyle = C.soft;
-        setFont(ctx, 700, 28);
-        rtlText(ctx, "مشاهده جزئیات در سایت", cx, y + 16);
-        ctx.fillStyle = C.ink;
+        setFont(ctx, 700, 32);
+        rtlText(ctx, "مشاهده جزئیات در سایت", cx, y + 20);
+        // دکمه آبی سایت
+        const btnW = 420;
+        const btnH = 58;
+        const btnY = y + 58;
+        ctx.fillStyle = C.blue;
+        rr(ctx, cx - btnW / 2, btnY - btnH / 2, btnW, btnH, 14);
+        ctx.fill();
+        ctx.fillStyle = "#FFFFFF";
         setFont(ctx, 800, 34);
         ctx.direction = "ltr";
         ctx.textAlign = "center";
-        ctx.fillText("atlas-amlak.ir", cx, y + 58);
+        ctx.fillText("atlas-amlak.ir", cx, btnY);
         ctx.direction = "rtl";
         y += blockH.footer;
       }
@@ -687,6 +738,7 @@ function showShareModal(p, shareBtn) {
 
   const shareUrl = `${window.location.origin}${window.location.pathname}?code=${p.code}`;
   const extras = buildExtras(p);
+  const label = labeledPropertyType(p);
   const priceText = p.deal_type === "فروش"
     ? `💰 قیمت: ${p.price_total || "توافقی"}`
     : formatRentPrice(p);
@@ -699,7 +751,7 @@ function showShareModal(p, shareBtn) {
   const priceExtra = (p.deal_type === "فروش" && p.price_per_m2) ? `\n📏 قیمت متری: ${p.price_per_m2}` : "";
   const shortAddr = truncateAddress(p.address) || "خادم‌آباد";
   const shareText =
-`🏠 ${p.property_type || "ملک"} · کد ${p.code}
+`🏠 ${label} · کد ${p.code}
 
 📍 ${shortAddr}
 📐 ${specsParts.join(" · ")}${priceExtra}
@@ -713,11 +765,13 @@ ${shareUrl}
 🌐 atlas-amlak.ir
 گروه مشاورین املاک اطلس — خادم‌آباد و باغستان`;
 
+  const smsText = buildSmsText(p);
+
   const modalHtml = `
     <div id="shareModal" style="position:fixed;inset:0;z-index:9999;background:rgba(32,28,21,0.55);backdrop-filter:blur(5px);display:flex;align-items:center;justify-content:center;padding:16px;">
       <div style="background:#FFFCFA;border:1px solid #E8DFD0;border-radius:20px;width:100%;max-width:380px;padding:24px;text-align:center;box-shadow:0 16px 40px rgba(32,28,21,0.2);">
         <h3 style="margin:0 0 6px;color:#201C15;font-size:1.15rem;font-weight:800;">اشتراک‌گذاری آگهی</h3>
-        <p style="margin:0 0 18px;color:#6B6358;font-size:0.85rem;">کد ${p.code || "—"} · ${p.property_type || "ملک"}</p>
+        <p style="margin:0 0 18px;color:#6B6358;font-size:0.85rem;">کد ${p.code || "—"} · ${label}</p>
 
         <div style="display:flex;flex-direction:column;gap:10px;">
           <button id="modalNativeShareBtn" type="button" style="background:#201C15;color:#FFFCFA;border:none;padding:13px;border-radius:12px;font-weight:700;font-size:0.92rem;cursor:pointer;">
@@ -728,6 +782,9 @@ ${shareUrl}
           </button>
           <button id="modalTextBtn" type="button" style="background:#FFFCFA;color:#201C15;border:1px solid #D4C4A8;padding:13px;border-radius:12px;font-weight:700;font-size:0.92rem;cursor:pointer;">
             📋 کپی متن آگهی
+          </button>
+          <button id="modalSmsBtn" type="button" style="background:#EFF6FF;color:#1E3A8A;border:1px solid #93C5FD;padding:13px;border-radius:12px;font-weight:700;font-size:0.92rem;cursor:pointer;">
+            📱 کپی متن پیامک
           </button>
         </div>
 
@@ -746,12 +803,11 @@ ${shareUrl}
   document.getElementById("modalCloseBtn").addEventListener("click", closeModal);
   modal.addEventListener("click", (e) => { if (e.target === modal) closeModal(); });
 
-  // اشتراک بومی (واتساپ، تلگرام، ...)
   document.getElementById("modalNativeShareBtn").addEventListener("click", async () => {
     if (navigator.share) {
       try {
         await navigator.share({
-          title: `${p.property_type || "ملک"} · کد ${p.code} | اطلس املاک`,
+          title: `${label} · کد ${p.code} | اطلس املاک`,
           text: shareText,
           url: shareUrl
         });
@@ -773,7 +829,6 @@ ${shareUrl}
 
   document.getElementById("modalStoryBtn").addEventListener("click", async () => {
     const btn = document.getElementById("modalStoryBtn");
-    const original = btn.innerHTML;
     btn.innerHTML = "⏳ در حال ساخت...";
     btn.disabled = true;
     await generateStoryImage(p);
@@ -784,6 +839,12 @@ ${shareUrl}
   document.getElementById("modalTextBtn").addEventListener("click", () => {
     forceCopyText(shareText);
     showCopySuccess(shareBtn, "📋 متن کپی شد");
+    closeModal();
+  });
+
+  document.getElementById("modalSmsBtn").addEventListener("click", () => {
+    forceCopyText(smsText);
+    showCopySuccess(shareBtn, "📱 متن پیامک کپی شد");
     closeModal();
   });
 }
