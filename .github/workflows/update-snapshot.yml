@@ -7,10 +7,20 @@ on:
 
 permissions:
   contents: write
+  pages: write
+  id-token: write
+
+# جلوگیری از تداخل دیپلوی‌های همزمان
+concurrency:
+  group: pages
+  cancel-in-progress: false
 
 jobs:
-  snapshot:
+  snapshot-and-deploy:
     runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -35,3 +45,15 @@ jobs:
           git add realestate-site/frontend/index.html
           git diff --cached --quiet || git commit -m "Auto-update property snapshot"
           git push
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: './realestate-site/frontend'
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v5
