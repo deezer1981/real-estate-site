@@ -19,7 +19,17 @@ SHEET_GIDS = {
     "فروش": "883906283",
     "رهن و اجاره": "388590955",
 }
+
+# وضعیت‌هایی که نباید روی سایت بیایند
+INACTIVE_STATUSES = {
+    "لغو شده",
+    "حذف شده",
+    "غیرفعال",
+    "غیر فعال",
+    "غیرفعال شده",
+}
 # ================================================
+
 
 def find_index_html() -> Path:
     cwd = Path.cwd()
@@ -46,11 +56,16 @@ def fetch_sheet(deal_type: str) -> list[dict]:
         reader = csv.DictReader(f)
         rows = [row for row in reader if any((v or "").strip() for v in row.values())]
 
-        # فقط ردیف‌های فعال
-        active = [
-            row for row in rows
-            if (row.get("وضعیت") or "فعال").strip() not in ("لغو شده", "حذف شده", "غیرفعال")
-        ]
+        # فقط ردیف‌های فعال + دارای کد
+        active = []
+        for row in rows:
+            status = (row.get("وضعیت") or "فعال").strip()
+            if status in INACTIVE_STATUSES:
+                continue
+            code = (row.get("کد") or "").strip()
+            if not code:
+                continue
+            active.append(row)
         return active
     except Exception as e:
         print(f"خطا در خواندن تب {deal_type}: {e}")
@@ -77,9 +92,9 @@ def short_address(raw: str) -> str:
 def row_to_property(row: dict, deal_type: str) -> dict:
     # فقط فیلدهای ملک — اطلاعات شخصی (مالک، مشتری، شماره) عمداً خوانده نمی‌شود
     result = {
-        "code": row.get("کد", ""),
+        "code": (row.get("کد") or "").strip(),
         "deal_type": deal_type,
-        "property_type": row.get("نوع ملک", ""),
+        "property_type": (row.get("نوع ملک") or "").strip(),
         "address": short_address(row.get("آدرس", "")),
         "area_m2": (row.get("متراژ") or "").strip(),
         "rooms": (row.get("خواب") or "").strip(),
@@ -88,14 +103,17 @@ def row_to_property(row: dict, deal_type: str) -> dict:
         "elevator": (row.get("آسانسور") or "").strip() == "دارد",
         "storage": (row.get("انباری") or "").strip() == "دارد",
         "agent_name": (row.get("مشاور") or "").strip(),
+        # تاریخ ثبت (اگر در شیت باشد) — فقط نمایش عمومی، بدون اطلاعات شخصی
+        "registered_at": (row.get("تاریخ ثبت فایل") or "").strip(),
         # agent_phone / مالک / مشتری عمداً حذف شدند
     }
     if deal_type == "فروش":
         result["price_total"] = (row.get("قیمت کل") or "").strip() or "توافقی"
         result["price_per_m2"] = (row.get("قیمت متری") or "").strip()
     else:
-        result["rahn"] = (row.get("رهن") or "").strip() or "-"
-        result["ejare"] = (row.get("کرایه") or "").strip() or "-"
+        # خالی بماند تا در فرانت فقط مقادیر پر نشان داده شوند
+        result["rahn"] = (row.get("رهن") or "").strip()
+        result["ejare"] = (row.get("کرایه") or "").strip()
     return result
 
 
