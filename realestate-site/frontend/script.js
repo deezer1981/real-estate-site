@@ -5,11 +5,8 @@ const resultCount = document.getElementById("resultCount");
 const loadMoreBtn = document.getElementById("loadMoreBtn");
 const statsText = document.getElementById("statsText");
 
-function sortSaleFirst(list) {
+function sortNewestFirst(list) {
   return (list || []).slice().sort((a, b) => {
-    const aSale = a.deal_type === "فروش" ? 0 : 1;
-    const bSale = b.deal_type === "فروش" ? 0 : 1;
-    if (aSale !== bSale) return aSale - bSale;
     const num = (x) => {
       const d = String(x.code || "").replace(/\D/g, "");
       return d ? parseInt(d, 10) : 0;
@@ -18,7 +15,7 @@ function sortSaleFirst(list) {
   });
 }
 
-let allProperties = sortSaleFirst(window.__PRELOADED_PROPERTIES__ || []);
+let allProperties = sortNewestFirst(window.__PRELOADED_PROPERTIES__ || []);
 let currentFiltered = [];
 const PAGE_SIZE = 6;
 let visibleCount = PAGE_SIZE;
@@ -279,7 +276,7 @@ function loadProperties() {
     return;
   }
   if (!checkSinglePropertyMode()) {
-    allProperties = sortSaleFirst(allProperties);
+    allProperties = sortNewestFirst(allProperties);
     currentFiltered = allProperties.slice();
     renderProperties();
     updateStatsRibbon();
