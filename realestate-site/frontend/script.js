@@ -172,7 +172,7 @@ function propertyCard(p) {
   return `
     <div style="${wrapperStyle}">
       ${backBanner}
-      <article class="card" id="card-${p.code || ""}" data-code="${p.code || ""}">
+      <article class="card ${p.deal_type === "فروش" ? "card-sale" : "card-rent"}" id="card-${p.code || ""}" data-code="${p.code || ""}">
         <div class="card-body">
           <div class="card-top-row">
             <span class="deal-tag ${p.deal_type === "فروش" ? "sale" : "rent"}">${p.deal_type || "آگهی"}</span>

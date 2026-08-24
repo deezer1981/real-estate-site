@@ -1412,3 +1412,18 @@ a { color: inherit; text-decoration: none; }
 }
 /* عکس جداى page-photo دیگر لازم نیست در صفحات داخلی */
 .page-content .page-photo { display: none; }
+
+/* تفاوت ملایم کارت فروش و رهن */
+.card-sale {
+  border-right: 4px solid var(--brass);
+}
+.card-sale .card-price {
+  color: #154F38;
+}
+.card-rent {
+  border-right: 4px solid #2A6FDB;
+}
+.card-rent .card-price {
+  color: #1a4a8a;
+  font-size: 1.2rem;
+}
