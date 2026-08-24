@@ -89,31 +89,89 @@ def short_address(raw: str) -> str:
     return (text[:40].strip() + "…") if len(text) > 40 else text
 
 
+# --------------------------------------------------------------------------- #
+# حریم خصوصی: فقط این ستون‌ها از شیت مجازند وارد سایت شوند.
+# هر ستون دیگری (مالک، شماره مالک، مشتری، تلفن مشاور، ...) نادیده گرفته می‌شود.
+# --------------------------------------------------------------------------- #
+ALLOWED_SHEET_COLUMNS = {
+    "کد",
+    "نوع ملک",
+    "آدرس",
+    "متراژ",
+    "خواب",
+    "طبقه",
+    "پارکینگ",
+    "آسانسور",
+    "انباری",
+    "مشاور",          # فقط نام مشاور دفتر — نه شماره
+    "تاریخ ثبت فایل",
+    "قیمت کل",
+    "قیمت متری",
+    "رهن",
+    "کرایه",
+    "وضعیت",          # فقط برای فیلتر فعال/غیرفعال
+}
+
+# کلیدهایی که حتی اگر تصادفاً در خروجی بیایند باید حذف شوند
+BLOCKED_OUTPUT_KEYS = {
+    "owner", "owner_name", "owner_phone", "مالک", "نام مالک", "شماره مالک",
+    "customer", "مشتری", "نام مشتری", "شماره مشتری",
+    "phone", "mobile", "tel", "شماره", "تلفن", "موبایل",
+    "agent_phone", "شماره مشاور", "تلفن مشاور",
+    "national_id", "کد ملی", "کدملی",
+}
+
+
+def _safe_get(row: dict, col: str) -> str:
+    """فقط از ستون‌های مجاز مقدار می‌خواند."""
+    if col not in ALLOWED_SHEET_COLUMNS:
+        return ""
+    return (row.get(col) or "").strip()
+
+
+def _strip_phone_like(text: str) -> str:
+    """اگر داخل متن چیزی شبیه شماره تلفن باشد حذفش می‌کند."""
+    import re
+    if not text:
+        return ""
+    # حذف دنباله‌های ۸+ رقمی (فارسی و لاتین)
+    cleaned = re.sub(r"[\d۰-۹]{8,}", "", text)
+    return cleaned.strip(" -–|/\\")
+
+
 def row_to_property(row: dict, deal_type: str) -> dict:
-    # فقط فیلدهای ملک — اطلاعات شخصی (مالک، مشتری، شماره) عمداً خوانده نمی‌شود
+    """
+    تبدیل ردیف شیت به آبجکت عمومی سایت.
+    فقط whitelist ستون‌ها خوانده می‌شود؛ اطلاعات شخصی هرگز وارد خروجی نمی‌شود.
+    """
+    agent = _strip_phone_like(_safe_get(row, "مشاور"))
+
     result = {
-        "code": (row.get("کد") or "").strip(),
+        "code": _safe_get(row, "کد"),
         "deal_type": deal_type,
-        "property_type": (row.get("نوع ملک") or "").strip(),
-        "address": short_address(row.get("آدرس", "")),
-        "area_m2": (row.get("متراژ") or "").strip(),
-        "rooms": (row.get("خواب") or "").strip(),
-        "floor": (row.get("طبقه") or "").strip(),
-        "parking": (row.get("پارکینگ") or "").strip() == "دارد",
-        "elevator": (row.get("آسانسور") or "").strip() == "دارد",
-        "storage": (row.get("انباری") or "").strip() == "دارد",
-        "agent_name": (row.get("مشاور") or "").strip(),
-        # تاریخ ثبت (اگر در شیت باشد) — فقط نمایش عمومی، بدون اطلاعات شخصی
-        "registered_at": (row.get("تاریخ ثبت فایل") or "").strip(),
-        # agent_phone / مالک / مشتری عمداً حذف شدند
+        "property_type": _safe_get(row, "نوع ملک"),
+        "address": short_address(_safe_get(row, "آدرس")),
+        "area_m2": _safe_get(row, "متراژ"),
+        "rooms": _safe_get(row, "خواب"),
+        "floor": _safe_get(row, "طبقه"),
+        "parking": _safe_get(row, "پارکینگ") == "دارد",
+        "elevator": _safe_get(row, "آسانسور") == "دارد",
+        "storage": _safe_get(row, "انباری") == "دارد",
+        "agent_name": agent,
+        "registered_at": _safe_get(row, "تاریخ ثبت فایل"),
     }
     if deal_type == "فروش":
-        result["price_total"] = (row.get("قیمت کل") or "").strip() or "توافقی"
-        result["price_per_m2"] = (row.get("قیمت متری") or "").strip()
+        result["price_total"] = _safe_get(row, "قیمت کل") or "توافقی"
+        result["price_per_m2"] = _safe_get(row, "قیمت متری")
     else:
-        # خالی بماند تا در فرانت فقط مقادیر پر نشان داده شوند
-        result["rahn"] = (row.get("رهن") or "").strip()
-        result["ejare"] = (row.get("کرایه") or "").strip()
+        result["rahn"] = _safe_get(row, "رهن")
+        result["ejare"] = _safe_get(row, "کرایه")
+
+    # لایه دفاعی نهایی: حذف هر کلید مسدود
+    for bad in list(result.keys()):
+        if bad in BLOCKED_OUTPUT_KEYS or any(b in bad for b in ("phone", "مالک", "مشتری", "شماره")):
+            del result[bad]
+
     return result
 
 
