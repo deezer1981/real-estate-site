@@ -187,11 +187,24 @@ def update_snapshot():
         rows = fetch_sheet(deal_type)
         all_props.extend(row_to_property(r, deal_type) for r in rows)
 
-    # جدیدترین‌ها اول (بر اساس کد آگهی، بزرگ‌تر = جدیدتر)
+    # جدیدترین‌ها اول: اول تاریخ ثبت، بعد کد
+    import re as _re
+    def _parse_reg(s):
+        m = _re.match(
+            r"^(\d{4})/(\d{1,2})/(\d{1,2})(?:\s+(\d{1,2}):(\d{1,2}))?",
+            str(s or "").strip(),
+        )
+        if not m:
+            return 0
+        y, mo, d = int(m.group(1)), int(m.group(2)), int(m.group(3))
+        hh, mm = int(m.group(4) or 0), int(m.group(5) or 0)
+        return y * 10**10 + mo * 10**8 + d * 10**6 + hh * 10**4 + mm * 100
+
     def sort_key(item):
         code = str(item.get("code") or "0")
         digits = "".join(c for c in code if c.isdigit())
-        return int(digits) if digits else 0
+        code_n = int(digits) if digits else 0
+        return (_parse_reg(item.get("registered_at")), code_n)
 
     all_props.sort(key=sort_key, reverse=True)
     print(f"تعداد فایل‌های فعال: {len(all_props)}")
