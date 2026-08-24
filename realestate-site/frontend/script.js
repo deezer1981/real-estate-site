@@ -6,12 +6,25 @@ const loadMoreBtn = document.getElementById("loadMoreBtn");
 const statsText = document.getElementById("statsText");
 
 function sortNewestFirst(list) {
+  // اول تاریخ ثبت (جدیدتر بالاتر)، اگر نبود بر اساس کد
+  const parseReg = (s) => {
+    const m = String(s || "").trim().match(
+      /^(\d{4})\/(\d{1,2})\/(\d{1,2})(?:\s+(\d{1,2}):(\d{1,2}))?/
+    );
+    if (!m) return 0;
+    const y = +m[1], mo = +m[2], d = +m[3];
+    const hh = +(m[4] || 0), mm = +(m[5] || 0);
+    return y * 1e10 + mo * 1e8 + d * 1e6 + hh * 1e4 + mm * 100;
+  };
+  const codeNum = (x) => {
+    const d = String(x.code || "").replace(/\D/g, "");
+    return d ? parseInt(d, 10) : 0;
+  };
   return (list || []).slice().sort((a, b) => {
-    const num = (x) => {
-      const d = String(x.code || "").replace(/\D/g, "");
-      return d ? parseInt(d, 10) : 0;
-    };
-    return num(b) - num(a); // کد بالاتر = جدیدتر
+    const da = parseReg(a.registered_at);
+    const db = parseReg(b.registered_at);
+    if (da !== db) return db - da; // تاریخ جدیدتر اول
+    return codeNum(b) - codeNum(a); // در غیر این صورت کد بالاتر
   });
 }
 
