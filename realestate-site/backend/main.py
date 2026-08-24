@@ -191,32 +191,67 @@ async def fetch_sheet_records(deal_type: str) -> list[dict]:
         return cached[1] if cached else []
 
 
-def row_to_property(row: dict, deal_type: str) -> dict:
-    """یک ردیف خام گوگل‌شیت را به فرمت ساده‌ای برای نمایش در سایت تبدیل می‌کند."""
+# حریم خصوصی: فقط این ستون‌ها از شیت مجازند
+_ALLOWED_SHEET_COLUMNS = {
+    "کد", "نوع ملک", "آدرس", "متراژ", "خواب", "طبقه",
+    "پارکینگ", "آسانسور", "انباری", "مشاور",
+    "قیمت کل", "قیمت متری", "رهن", "کرایه", "وضعیت",
+}
+_BLOCKED_OUTPUT_KEYS = {
+    "owner", "owner_name", "owner_phone", "مالک", "نام مالک", "شماره مالک",
+    "customer", "مشتری", "نام مشتری", "شماره مشتری",
+    "phone", "mobile", "tel", "شماره", "تلفن", "موبایل",
+    "agent_phone", "شماره مشاور", "تلفن مشاور",
+    "national_id", "کد ملی", "کدملی",
+}
+
+
+def _safe_get(row: dict, col: str) -> str:
+    if col not in _ALLOWED_SHEET_COLUMNS:
+        return ""
+    return (row.get(col) or "").strip()
+
+
+def _strip_phone_like(text: str) -> str:
     import re
-    raw_addr = (row.get("آدرس") or "").strip()
+    if not text:
+        return ""
+    return re.sub(r"[\d۰-۹]{8,}", "", text).strip(" -–|/\\")
+
+
+def row_to_property(row: dict, deal_type: str) -> dict:
+    """
+    ردیف شیت → آبجکت عمومی سایت.
+    فقط whitelist ستون‌ها خوانده می‌شود؛ اطلاعات شخصی هرگز وارد خروجی نمی‌شود.
+    """
+    import re
+    raw_addr = _safe_get(row, "آدرس")
     m = re.search(r"^(.*?لاله\s*[\d۰-۹]+\s*(?:اصلی|غربی|شرقی)?)", raw_addr)
     short_addr = m.group(1).strip() if m else (raw_addr[:40] + "…" if len(raw_addr) > 40 else raw_addr)
 
     result = {
-        "code": row.get("کد", ""),
+        "code": _safe_get(row, "کد"),
         "deal_type": deal_type,
-        "property_type": row.get("نوع ملک", ""),
+        "property_type": _safe_get(row, "نوع ملک"),
         "address": short_addr,
-        "area_m2": row.get("متراژ", ""),
-        "rooms": row.get("خواب", ""),
-        "floor": (row.get("طبقه") or "").strip(),
-        "parking": (row.get("پارکینگ") or "").strip() == "دارد",
-        "elevator": (row.get("آسانسور") or "").strip() == "دارد",
-        "storage": (row.get("انباری") or "").strip() == "دارد",
-        "agent_name": (row.get("مشاور") or "").strip(),
-        # اطلاعات شخصی (شماره / مالک / مشتری) عمداً حذف شده
+        "area_m2": _safe_get(row, "متراژ"),
+        "rooms": _safe_get(row, "خواب"),
+        "floor": _safe_get(row, "طبقه"),
+        "parking": _safe_get(row, "پارکینگ") == "دارد",
+        "elevator": _safe_get(row, "آسانسور") == "دارد",
+        "storage": _safe_get(row, "انباری") == "دارد",
+        "agent_name": _strip_phone_like(_safe_get(row, "مشاور")),
     }
     if deal_type == "فروش":
-        result["price_total"] = row.get("قیمت کل", "") or "توافقی"
+        result["price_total"] = _safe_get(row, "قیمت کل") or "توافقی"
+        result["price_per_m2"] = _safe_get(row, "قیمت متری")
     else:
-        result["rahn"] = row.get("رهن", "") or "-"
-        result["ejare"] = row.get("کرایه", "") or "-"
+        result["rahn"] = _safe_get(row, "رهن") or "-"
+        result["ejare"] = _safe_get(row, "کرایه") or "-"
+
+    for bad in list(result.keys()):
+        if bad in _BLOCKED_OUTPUT_KEYS or any(b in bad for b in ("phone", "مالک", "مشتری", "شماره")):
+            del result[bad]
     return result
 
 
