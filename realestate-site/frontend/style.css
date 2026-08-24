@@ -1427,3 +1427,21 @@ a { color: inherit; text-decoration: none; }
   color: #1a4a8a;
   font-size: 1.2rem;
 }
+
+/* اینستاگرام و ایمیل در بخش تماس */
+.bot-cta-big.instagram {
+  background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
+  color: #fff !important;
+}
+.bot-cta-big.email {
+  background: #5B6B7C;
+  color: #fff !important;
+}
+.footer-meta a {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.footer-meta a:hover {
+  color: var(--brass);
+}
