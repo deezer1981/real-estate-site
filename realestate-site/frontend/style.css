@@ -1428,15 +1428,21 @@ a { color: inherit; text-decoration: none; }
   font-size: 1.2rem;
 }
 
-/* اینستاگرام و ایمیل در بخش تماس */
-.bot-cta-big.instagram {
-  background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
-  color: #fff !important;
+/* اینستاگرام و ایمیل در بخش تماس — لینک‌های کوچک و ساده، جدا از دکمه‌های اصلی */
+.contact-social-links {
+  display: flex;
+  gap: 20px;
+  margin-top: 14px;
 }
-.bot-cta-big.email {
-  background: #5B6B7C;
-  color: #fff !important;
+.contact-social-links a {
+  color: var(--text);
+  font-size: 0.88rem;
+  font-weight: 600;
+  text-decoration: none;
+  opacity: 0.85;
+  transition: opacity 0.2s;
 }
+.contact-social-links a:hover { opacity: 1; color: var(--brass); }
 .footer-meta a {
   color: inherit;
   text-decoration: underline;
