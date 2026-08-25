@@ -397,12 +397,19 @@ function applyFilters() {
   let filtered = allProperties;
   if (dealType) filtered = filtered.filter((p) => p.deal_type === dealType);
   if (keyword) {
-    filtered = filtered.filter(
-      (p) =>
-        (p.address || "").includes(keyword) ||
-        (p.property_type || "").includes(keyword) ||
-        (p.code || "").includes(keyword)
-    );
+    // برای دسته باغ/باغچه/ویلا: هر سه را پوشش بده
+    const gardenKeys = ["باغ", "باغچه", "ویلا", "باغ‌ویلا", "باغ ویلا", "باغ-ویلا"];
+    const isGardenSearch = keyword === "باغ" || gardenKeys.some((k) => keyword.includes(k));
+    filtered = filtered.filter((p) => {
+      const addr = p.address || "";
+      const ptype = p.property_type || "";
+      const code = p.code || "";
+      if (addr.includes(keyword) || ptype.includes(keyword) || code.includes(keyword)) return true;
+      if (isGardenSearch) {
+        return gardenKeys.some((k) => ptype.includes(k) || addr.includes(k));
+      }
+      return false;
+    });
   }
   currentFiltered = filtered;
   visibleCount = PAGE_SIZE;
