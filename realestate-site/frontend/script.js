@@ -1092,7 +1092,10 @@ document.querySelectorAll(".quick-card[href='#listings']").forEach((card) => {
 
   chips.forEach((chip) => {
     chip.addEventListener("click", () => {
-      setActiveChip(chip.getAttribute("data-deal") || "");
+      const deal = chip.getAttribute("data-deal") || "";
+      setActiveChip(deal);
+      // وقتی «همه» انتخاب می‌شود، کلمه جستجو هم پاک شود تا به همه آگهی‌ها برگردد
+      if (!deal && cityInput) cityInput.value = "";
       if (typeof applyFilters === "function") applyFilters();
     });
   });
