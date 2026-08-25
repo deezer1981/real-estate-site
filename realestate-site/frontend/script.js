@@ -5,6 +5,17 @@ const resultCount = document.getElementById("resultCount");
 const loadMoreBtn = document.getElementById("loadMoreBtn");
 const statsText = document.getElementById("statsText");
 
+// مبلغ‌های آماده از شیت گاهی صفرهای اضافه دارن (مثلاً «7.000 میلیارد»)
+// این تابع صفرهای بی‌فایده‌ی اعشار رو پاک می‌کنه: «7.000 میلیارد» -> «7 میلیارد»
+// و «4.970 میلیارد» -> «4.97 میلیارد» (خودِ عدد دست نمی‌خوره، فقط نمایشش تمیز میشه)
+function cleanPriceText(text) {
+  if (!text) return text;
+  return String(text).replace(/(\d+)\.(\d+)/g, (match, intPart, decPart) => {
+    const trimmed = decPart.replace(/0+$/, "");
+    return trimmed ? `${intPart}.${trimmed}` : intPart;
+  });
+}
+
 function sortNewestFirst(list) {
   // اول تاریخ ثبت (جدیدتر بالاتر)، اگر نبود بر اساس کد
   const parseReg = (s) => {
@@ -100,8 +111,8 @@ function cleanAgentName(name) {
 
 function formatRentPrice(p) {
   const parts = [];
-  if (p.rahn && p.rahn !== "-") parts.push(`رهن: ${p.rahn}`);
-  if (p.ejare && p.ejare !== "-") parts.push(`اجاره: ${p.ejare}`);
+  if (p.rahn && p.rahn !== "-") parts.push(`رهن: ${cleanPriceText(p.rahn)}`);
+  if (p.ejare && p.ejare !== "-") parts.push(`اجاره: ${cleanPriceText(p.ejare)}`);
   if (!parts.length) return "💰 توافقی";
   return `💰 ${parts.join(" | ")}`;
 }
@@ -131,11 +142,11 @@ function buildSmsText(p) {
   if (amenities.length) lines.push(amenities.join(" · "));
 
   if (p.deal_type === "فروش") {
-    if (p.price_total) lines.push(`قیمت کل: ${p.price_total}`);
+    if (p.price_total) lines.push(`قیمت کل: ${cleanPriceText(p.price_total)}`);
   } else {
     const rentBits = [];
-    if (p.rahn && p.rahn !== "-") rentBits.push(`رهن ${p.rahn}`);
-    if (p.ejare && p.ejare !== "-") rentBits.push(`اجاره ${p.ejare}`);
+    if (p.rahn && p.rahn !== "-") rentBits.push(`رهن ${cleanPriceText(p.rahn)}`);
+    if (p.ejare && p.ejare !== "-") rentBits.push(`اجاره ${cleanPriceText(p.ejare)}`);
     if (rentBits.length) lines.push(rentBits.join(" · "));
   }
 
@@ -171,7 +182,7 @@ function propertyCard(p) {
   ` : "";
 
   const priceLine = p.deal_type === "فروش"
-    ? `<p class="card-price">💰 ${p.price_total || "توافقی"}</p>${p.price_per_m2 ? `<p class="card-meta card-price-m2">قیمت متری: ${p.price_per_m2}</p>` : ""}`
+    ? `<p class="card-price">💰 ${cleanPriceText(p.price_total) || "توافقی"}</p>${p.price_per_m2 ? `<p class="card-meta card-price-m2">قیمت متری: ${cleanPriceText(p.price_per_m2)}</p>` : ""}`
     : `<p class="card-price">${formatRentPrice(p)}</p>`;
 
   const extras = buildExtras(p);
@@ -550,12 +561,12 @@ async function generateStoryCanvas(p) {
   let priceMain = "";
   let priceSub = "";
   if (isSale) {
-    priceMain = p.price_total || "توافقی";
-    priceSub = p.price_per_m2 ? `قیمت متری: ${p.price_per_m2}` : "";
+    priceMain = cleanPriceText(p.price_total) || "توافقی";
+    priceSub = p.price_per_m2 ? `قیمت متری: ${cleanPriceText(p.price_per_m2)}` : "";
   } else {
     const rp = [];
-    if (p.rahn && p.rahn !== "-") rp.push(`رهن: ${p.rahn}`);
-    if (p.ejare && p.ejare !== "-") rp.push(`اجاره: ${p.ejare}`);
+    if (p.rahn && p.rahn !== "-") rp.push(`رهن: ${cleanPriceText(p.rahn)}`);
+    if (p.ejare && p.ejare !== "-") rp.push(`اجاره: ${cleanPriceText(p.ejare)}`);
     priceMain = rp.length ? rp.join("  |  ") : "توافقی";
   }
 
@@ -767,7 +778,7 @@ function showShareModal(p, shareBtn) {
   const extras = buildExtras(p);
   const label = labeledPropertyType(p);
   const priceText = p.deal_type === "فروش"
-    ? `💰 قیمت: ${p.price_total || "توافقی"}`
+    ? `💰 قیمت: ${cleanPriceText(p.price_total) || "توافقی"}`
     : formatRentPrice(p);
 
   const specsParts = [
@@ -775,7 +786,7 @@ function showShareModal(p, shareBtn) {
     p.rooms ? p.rooms + " خواب" : "",
     p.floor ? "طبقه " + p.floor : ""
   ].filter(Boolean);
-  const priceExtra = (p.deal_type === "فروش" && p.price_per_m2) ? `\n📏 قیمت متری: ${p.price_per_m2}` : "";
+  const priceExtra = (p.deal_type === "فروش" && p.price_per_m2) ? `\n📏 قیمت متری: ${cleanPriceText(p.price_per_m2)}` : "";
   const shortAddr = truncateAddress(p.address) || "خادم‌آباد";
   const shareText =
 `🏠 ${label} · کد ${p.code}
