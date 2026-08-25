@@ -110,6 +110,7 @@ ALLOWED_SHEET_COLUMNS = {
     "رهن",
     "کرایه",
     "وضعیت",          # فقط برای فیلتر فعال/غیرفعال
+    "عکس",            # لینک عکس آگهی (اختیاری)
 }
 
 # کلیدهایی که حتی اگر تصادفاً در خروجی بیایند باید حذف شوند
@@ -160,6 +161,9 @@ def row_to_property(row: dict, deal_type: str) -> dict:
         "agent_name": agent,
         "registered_at": _safe_get(row, "تاریخ ثبت فایل"),
     }
+    image_url = _safe_get(row, "عکس")
+    if image_url:
+        result["image"] = image_url
     if deal_type == "فروش":
         result["price_total"] = _safe_get(row, "قیمت کل") or "توافقی"
         result["price_per_m2"] = _safe_get(row, "قیمت متری")
