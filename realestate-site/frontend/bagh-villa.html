@@ -60,6 +60,11 @@
     color: var(--sage);
     font-size: 2.5rem;
   }
+  .page-content h2 {
+    font-size: 1.2rem;
+    color: var(--ink);
+    margin: 28px 0 12px;
+  }
 </style>
 </head>
 <body id="top">
@@ -107,22 +112,22 @@
   <div class="carousel">
     <div class="carousel-track">
       <div class="carousel-slide active">
-        <img src="assets/office.jpg" alt="باغ و ویلا در باغستان و خادم‌آباد" fetchpriority="high" width="1200" height="675">
+        <img src="assets/office.jpg" alt="باغ و ویلا در باغستان و خادم‌آباد" fetchpriority="high" width="1200" height="675" id="hero-image">
       </div>
     </div>
   </div>
   <div class="brand-heading">
     <div class="wrap">
-      <p class="page-eyebrow">املاک سبز و ویلایی</p>
-      <h1>باغ، باغچه و ویلا</h1>
-      <p class="carousel-caption active">باغستان، خادم‌آباد و شهریار</p>
+      <p class="page-eyebrow" id="page-subtitle">املاک سبز و ویلایی</p>
+      <h1 id="page-title">باغ، باغچه و ویلا</h1>
+      <p class="carousel-caption active" id="page-caption">باغستان، خادم‌آباد و شهریار</p>
     </div>
   </div>
 </section>
 
 <section class="page-content">
   <div class="wrap">
-    <!-- SNAPSHOT_CONTENT_START -->
+    <!-- SNAPSHOT_BAGH_START -->
     <p id="page-intro">
       منطقه باغستان و خادم‌آباد به‌خاطر فضای باز، درختان قدیمی و دسترسی مناسب به تهران،
       یکی از بهترین گزینه‌ها برای کسانی است که به‌دنبال باغ، باغچه یا باغ‌ویلا هستند.
@@ -136,7 +141,7 @@
       در محدوده‌های لاله‌های بالاتر قرار دارند و هنوز فضای آرام و کم‌تراکم خود را حفظ کرده‌اند.
     </p>
 
-    <h2 style="font-size:1.2rem;color:var(--ink);margin:28px 0 12px;">چه گزینه‌هایی معمولاً پیدا می‌شود؟</h2>
+    <h2 id="page-list-title">چه گزینه‌هایی معمولاً پیدا می‌شود؟</h2>
     <ul class="page-list" id="page-list">
       <li>باغ و باغ‌ویلا با متراژهای مختلف (از حدود ۵۰۰ متر تا چند هزار متر)</li>
       <li>باغچه مناسب استفاده شخصی یا کاشت درخت</li>
@@ -150,7 +155,6 @@
       می‌تواند بر اساس بودجه و هدف شما، بهترین گزینه‌های موجود را معرفی کند.
     </p>
 
-    <!-- گالری عکس — فعلاً جای‌نگهدار؛ بعداً از شیت/imgbb پر می‌شود -->
     <div class="page-gallery" id="page-gallery">
       <figure>
         <div class="gallery-placeholder">🌳</div>
@@ -165,7 +169,7 @@
         <figcaption>عکس باغچه (به‌زودی)</figcaption>
       </figure>
     </div>
-    <!-- SNAPSHOT_CONTENT_END -->
+    <!-- SNAPSHOT_BAGH_END -->
 
     <div class="page-cta">
       <a class="bot-cta-big phone" id="phoneLinkBig" href="#">تماس تلفنی</a>
