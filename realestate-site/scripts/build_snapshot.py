@@ -20,6 +20,11 @@ SHEET_GIDS = {
     "رهن و اجاره": "388590955",
 }
 
+# GID تب «دکمه‌ها» (متن دکمه‌های میان‌بر بالای صفحه اصلی) — اختیاری.
+# اگه این تب رو نساختی یا GID رو خالی بذاری، فقط همون متن‌های پیش‌فرض توی
+# index.html می‌مونن و هیچ‌چیزی خراب نمی‌شه.
+MENU_SHEET_GID = os.getenv("MENU_SHEET_GID", "")
+
 # وضعیت‌هایی که نباید روی سایت بیایند
 INACTIVE_STATUSES = {
     "لغو شده",
@@ -29,6 +34,41 @@ INACTIVE_STATUSES = {
     "غیرفعال شده",
 }
 # ================================================
+
+
+def fetch_menu_items() -> dict:
+    """تب اختیاری «دکمه‌ها»: کلید | متن | آیکون | عکس -> {key: {text, icon, image}}.
+    اگه GID تنظیم نشده یا تب خالی/خراب بود، دیکشنری خالی برمی‌گرده (یعنی متن‌های
+    پیش‌فرض همون‌جوری که توی index.html نوشته شدن می‌مونن)."""
+    if not SPREADSHEET_ID or not MENU_SHEET_GID:
+        return {}
+    url = f"https://docs.google.com/spreadsheets/d/{SPREADSHEET_ID}/gviz/tq?tqx=out:csv&gid={MENU_SHEET_GID}"
+    try:
+        resp = requests.get(url, timeout=20)
+        resp.raise_for_status()
+        f = io.StringIO(resp.text)
+        reader = csv.DictReader(f)
+        items = {}
+        for row in reader:
+            key = (row.get("کلید") or "").strip()
+            if not key:
+                continue
+            entry = {}
+            text = (row.get("متن") or "").strip()
+            icon = (row.get("آیکون") or "").strip()
+            image = (row.get("عکس") or "").strip()
+            if text:
+                entry["text"] = text
+            if image:
+                entry["image"] = image
+            elif icon:
+                entry["icon"] = icon
+            if entry:
+                items[key] = entry
+        return items
+    except Exception as e:
+        print(f"خطا در خواندن تب «دکمه‌ها» (نادیده گرفته شد): {e}")
+        return {}
 
 
 def find_index_html() -> Path:
@@ -213,6 +253,9 @@ def update_snapshot():
     all_props.sort(key=sort_key, reverse=True)
     print(f"تعداد فایل‌های فعال: {len(all_props)}")
 
+    menu_items = fetch_menu_items()
+    print(f"تعداد دکمه‌های سفارشی‌شده: {len(menu_items)}")
+
     index_path = find_index_html()
     if not index_path:
         print("Error: index.html پیدا نشد")
@@ -231,6 +274,7 @@ def update_snapshot():
         exit(1)
 
     properties_json = json.dumps(all_props, ensure_ascii=False)
+    menu_items_json = json.dumps(menu_items, ensure_ascii=False)
 
     before = content.split(start_marker)[0]
     after = content.split(end_marker)[1]
@@ -238,6 +282,7 @@ def update_snapshot():
     new_content = (
         f"{before}{start_marker}\n"
         f"<script>window.__PRELOADED_PROPERTIES__ = {properties_json};</script>\n"
+        f"<script>window.__MENU_ITEMS__ = {menu_items_json};</script>\n"
         f"{end_marker}{after}"
     )
 
