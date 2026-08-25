@@ -16,6 +16,30 @@ function cleanPriceText(text) {
   });
 }
 
+/**
+ * متن/آیکون دکمه‌های میان‌بر بالای صفحه (خانه فروشی، رهن و اجاره، ...) رو
+ * از window.__MENU_ITEMS__ (که از یه تب جدا توی گوگل‌شیت میاد) بازنویسی می‌کنه.
+ * اگه اون snapshot خالی یا نبود، همون متن‌های پیش‌فرض توی HTML می‌مونه — هیچی خراب نمی‌شه.
+ * فرمت هر آیتم: { text: "متن دکمه", icon: "🏢" } یا { text: "...", image: "https://..." }
+ */
+function applyMenuOverrides() {
+  const items = window.__MENU_ITEMS__;
+  if (!items || typeof items !== "object") return;
+  Object.keys(items).forEach((key) => {
+    const card = document.querySelector(`.quick-card[data-key="${key}"]`);
+    if (!card) return;
+    const item = items[key] || {};
+    const labelEl = card.querySelector(".quick-label");
+    if (labelEl && item.text) labelEl.textContent = item.text;
+    const iconEl = card.querySelector(".quick-icon");
+    if (iconEl && item.image) {
+      iconEl.innerHTML = `<img src="${item.image}" alt="" loading="lazy" style="width:28px;height:28px;object-fit:cover;border-radius:8px;">`;
+    } else if (iconEl && item.icon) {
+      iconEl.textContent = item.icon;
+    }
+  });
+}
+
 function sortNewestFirst(list) {
   // اول تاریخ ثبت (جدیدتر بالاتر)، اگر نبود بر اساس کد
   const parseReg = (s) => {
@@ -1106,3 +1130,5 @@ document.querySelectorAll(".quick-card[href='#listings']").forEach((card) => {
     });
   }
 })();
+
+applyMenuOverrides();
