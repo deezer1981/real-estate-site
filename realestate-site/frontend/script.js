@@ -53,6 +53,43 @@ function buildExtras(p) {
   return extras;
 }
 
+// آیکون جایگزین وقتی آگهی عکس ندارد — بر اساس نوع ملک
+function placeholderIcon(propertyType) {
+  const t = (propertyType || "").trim();
+  if (t.includes("آپارتمان")) return "🏢";
+  if (t.includes("ویلایی")) return "🏡";
+  if (t.includes("تجاری")) return "🏬";
+  if (t.includes("زمین")) return "🟫";
+  if (t.includes("باغ")) return "🌳";
+  return "🏠";
+}
+
+/** بخش عکس کارت: اگر آگهی عکس داشت نمایش لود-تنبل، وگرنه جایگزین سبک
+ *  برچسب معامله و دکمه اشتراک روی خود عکس قرار می‌گیرند تا فضای بدنه کارت خلوت بماند */
+function buildCardImage(p, isSale) {
+  const icon = placeholderIcon(p.property_type);
+  const overlay = `
+    <div class="card-image-overlay">
+      <span class="deal-tag ${isSale ? "sale" : "rent"}">${p.deal_type || "آگهی"}</span>
+      <button class="share-btn" data-code="${p.code || ""}" type="button" aria-label="اشتراک‌گذاری آگهی">🔗</button>
+    </div>`;
+  if (p.image) {
+    return `
+      <div class="card-image-wrap">
+        <img class="card-image" src="${p.image}" alt="${labeledPropertyType(p)} کد ${p.code || ""}"
+             loading="lazy" decoding="async" width="400" height="280"
+             onerror="this.closest('.card-image-wrap').classList.add('no-image'); this.remove();">
+        <div class="card-image-fallback"><span>${icon}</span></div>
+        ${overlay}
+      </div>`;
+  }
+  return `
+    <div class="card-image-wrap no-image">
+      <div class="card-image-fallback"><span>${icon}</span></div>
+      ${overlay}
+    </div>`;
+}
+
 // اگر نام مشاور از قبل شامل کلمه‌ی «مشاور» باشد (مثل «مشاور آقای علیزاده»)،
 // از تکرار آن در برچسب‌هایی که خودمان پیشوند «مشاور:» می‌گذاریم جلوگیری می‌کند
 function cleanAgentName(name) {
@@ -168,16 +205,14 @@ function propertyCard(p) {
 
   const titleType = labeledPropertyType(p);
   const titleCode = p.code ? `<span class="card-code">کد ${p.code}</span>` : "";
+  const imageBlock = buildCardImage(p, p.deal_type === "فروش");
 
   return `
     <div style="${wrapperStyle}">
       ${backBanner}
       <article class="card ${p.deal_type === "فروش" ? "card-sale" : "card-rent"}" id="card-${p.code || ""}" data-code="${p.code || ""}">
+        ${imageBlock}
         <div class="card-body">
-          <div class="card-top-row">
-            <span class="deal-tag ${p.deal_type === "فروش" ? "sale" : "rent"}">${p.deal_type || "آگهی"}</span>
-            <button class="share-btn" data-code="${p.code || ""}" type="button" aria-label="اشتراک‌گذاری آگهی">🔗 اشتراک</button>
-          </div>
           <h3 class="card-title">${titleType} ${titleCode}</h3>
           ${shortAddress ? `<p class="card-meta card-address">📍 ${shortAddress}</p>` : ""}
           ${specsLine}
@@ -252,6 +287,7 @@ function showSkeleton(count = 6) {
   if (!grid) return;
   grid.innerHTML = Array.from({ length: count }, () => `
     <article class="card skeleton-card" aria-hidden="true">
+      <div class="card-image-wrap sk-image"></div>
       <div class="card-body">
         <div class="sk-line sk-tag"></div>
         <div class="sk-line sk-title"></div>
