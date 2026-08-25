@@ -397,22 +397,26 @@ function applyFilters() {
   let filtered = allProperties;
   if (dealType) filtered = filtered.filter((p) => p.deal_type === dealType);
   if (keyword) {
-    // دسته باغ/باغچه/ویلا — «ویلایی» و آپارتمان را قاطی نکند
-    const isGardenSearch = keyword === "باغ" || keyword.includes("باغچه") || keyword.includes("باغ");
+    // دسته باغ/باغچه/ویلا — فقط روی نوع ملک، نه آدرس (تا «باغستان» قاطی نشود)
+    const isGardenSearch = keyword === "باغ";
     const isGardenType = (t) => {
       t = (t || "").trim();
       if (!t) return false;
+      if (t.includes("باغستان")) return false; // منطقه است، نوع ملک نیست
       if (t.includes("باغچه")) return true;
-      if (t.includes("باغ")) return true; // باغ، باغ‌ویلا، باغ ویلا
+      if (t.includes("باغ‌ویلا") || t.includes("باغ ویلا") || t.includes("باغ-ویلا")) return true;
+      if (t === "باغ" || t.startsWith("باغ ")) return true;
+      if (t.includes("باغ") && !t.includes("آپارتمان")) return true;
       if (t === "ویلا" || t.startsWith("ویلا ")) return true;
-      return false; // «ویلایی» و «خانه ویلایی» را شامل نشود
+      return false; // «ویلایی» و «خانه ویلایی» نه
     };
     filtered = filtered.filter((p) => {
       const addr = p.address || "";
       const ptype = p.property_type || "";
       const code = String(p.code || "");
       if (isGardenSearch) {
-        return isGardenType(ptype) || isGardenType(addr) || addr.includes("باغ") || addr.includes("باغچه");
+        // فقط نوع ملک — آدرس را چک نکن (باغستان داخل آدرس است)
+        return isGardenType(ptype);
       }
       return addr.includes(keyword) || ptype.includes(keyword) || code.includes(keyword);
     });
