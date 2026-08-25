@@ -37,13 +37,14 @@ jobs:
         env:
           SPREADSHEET_ID: ${{ secrets.SPREADSHEET_ID }}
           MENU_SHEET_GID: ${{ secrets.MENU_SHEET_GID }}
+          BAGH_SHEET_GID: ${{ secrets.BAGH_SHEET_GID }}
         run: python realestate-site/scripts/build_snapshot.py
 
       - name: Commit and push if changed
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add realestate-site/frontend/index.html
+          git add realestate-site/frontend/index.html realestate-site/frontend/bagh-villa.html
           git diff --cached --quiet || git commit -m "Auto-update property snapshot"
           git push
 
