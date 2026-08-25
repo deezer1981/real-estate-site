@@ -476,7 +476,7 @@ a { color: inherit; text-decoration: none; }
   position: relative;
   width: 100%;
   aspect-ratio: 4 / 3;
-  background: linear-gradient(135deg, #EDE7D9, #E2DBC9);
+  background: linear-gradient(145deg, #FBF3E6, #F0E4CE 55%, #E8D9B8);
   overflow: hidden;
 }
 .card-image {
@@ -489,10 +489,26 @@ a { color: inherit; text-decoration: none; }
   position: absolute;
   inset: 0;
   display: none;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  font-size: 2.6rem;
-  opacity: 0.35;
+  gap: 10px;
+}
+.card-image-fallback .fallback-icon-circle {
+  width: 68px;
+  height: 68px;
+  border-radius: 50%;
+  background: rgba(184, 137, 79, 0.16);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.1rem;
+}
+.card-image-fallback .fallback-caption {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--brass);
+  opacity: 0.85;
 }
 /* وقتی عکس نیست (یا لود نشد) جایگزین را نشان بده */
 .card-image-wrap.no-image .card-image-fallback { display: flex; }
