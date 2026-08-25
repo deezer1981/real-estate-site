@@ -133,23 +133,50 @@ def fetch_sheet(deal_type: str) -> list[dict]:
 
 
 def short_address(raw: str) -> str:
+    """آدرس را کوتاه و یکدست می‌کند: باغستان - خادم‌آباد - ... تا لاله X"""
     text = (raw or "").strip()
     if not text:
         return ""
+    # یکدست‌سازی فاصله و خط تیره
+    text = re.sub(r"\s*-\s*", " - ", text)
+    text = re.sub(r"\s+", " ", text).strip()
+    # تا لاله + جهت
     m = re.search(
         r"^(.*?لاله\s*[\d۰-۹]+\s*(?:اصلی|غربی|شرقی)?)",
         text,
     )
     if m:
-        return m.group(1).strip()
-    return (text[:40].strip() + "…") if len(text) > 40 else text
+        text = m.group(1).strip()
+    elif len(text) > 55:
+        text = text[:55].strip() + "…"
+    # پیشوند یکسان باغستان - خادم‌آباد
+    low = text.replace("ي", "ی").replace("ك", "ک")
+    has_bagh = "باغستان" in low
+    has_khad = "خادم" in low  # خادم‌آباد / خادم آباد
+    if has_bagh and has_khad:
+        # مرتب کردن ترتیب: اول باغستان بعد خادم‌آباد
+        rest = low
+        rest = re.sub(r"^باغستان\s*-\s*", "", rest)
+        rest = re.sub(r"^خادم[\u200c\s]*آباد\s*-\s*", "", rest)
+        # اگر rest با خادم شروع شده بود دوباره پاک
+        rest = re.sub(r"^خادم[\u200c\s]*آباد\s*-\s*", "", rest)
+        rest = rest.strip(" -")
+        text = f"باغستان - خادم‌آباد - {rest}" if rest else "باغستان - خادم‌آباد"
+    elif has_bagh and not has_khad:
+        rest = re.sub(r"^باغستان\s*-\s*", "", low).strip(" -")
+        text = f"باغستان - خادم‌آباد - {rest}" if rest else "باغستان - خادم‌آباد"
+    elif has_khad and not has_bagh:
+        rest = re.sub(r"^خادم[\u200c\s]*آباد\s*-\s*", "", low).strip(" -")
+        text = f"باغستان - خادم‌آباد - {rest}" if rest else "باغستان - خادم‌آباد"
+    # اگر هیچ‌کدام نبود همان متن کوتاه‌شده
+    return text
 
 
 ALLOWED_SHEET_COLUMNS = {
     "کد", "نوع ملک", "آدرس", "متراژ", "خواب", "طبقه",
     "پارکینگ", "آسانسور", "انباری", "مشاور",
     "تاریخ ثبت فایل", "قیمت کل", "قیمت متری", "رهن", "کرایه",
-    "وضعیت", "عکس",
+    "وضعیت", "عکس", "مدارک",
 }
 
 BLOCKED_OUTPUT_KEYS = {
@@ -190,6 +217,9 @@ def row_to_property(row: dict, deal_type: str) -> dict:
         "agent_name": agent,
         "registered_at": _safe_get(row, "تاریخ ثبت فایل"),
     }
+    docs = _safe_get(row, "مدارک")
+    if docs:
+        result["documents"] = docs
     image_url = _safe_get(row, "عکس")
     if image_url:
         result["image"] = image_url
