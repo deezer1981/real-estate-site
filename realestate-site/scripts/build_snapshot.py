@@ -663,23 +663,29 @@ def render_listing_html(p: dict) -> str:
         extras.append("انباری")
     extras_txt = " | ".join(extras)
 
-    # توضیح غنی‌تر برای واتساپ (قیمت اول — مهم‌ترین)
-    og_bits = []
-    if price:
-        og_bits.append("💰 " + price)
-    if specs_txt:
-        og_bits.append(specs_txt)
-    if extras_txt:
-        og_bits.append(extras_txt)
+    # توضیح چندخطی برای پیش‌نمایش — هر خط یک بخش (خواناتر در واتساپ/تلگرام)
+    price_plain = _listing_price_line(p)
     short_addr = (p.get("address") or "").strip()
-    if len(short_addr) > 48:
-        short_addr = short_addr[:48].rstrip() + "…"
+    if len(short_addr) > 45:
+        short_addr = short_addr[:45].rstrip() + "…"
+    lines = []
+    if specs_txt:
+        lines.append(specs_txt)
+    if price_plain:
+        lines.append("قیمت: " + price_plain)
     if short_addr:
-        og_bits.append("📍 " + short_addr)
-    if docs:
-        og_bits.append("📄 " + (p.get("documents") or "").strip()[:30])
-    og_bits.append("📞 0910 694 3220 · اطلس املاک")
-    desc = escape(" · ".join(og_bits))
+        lines.append(short_addr)
+    if extras_txt:
+        lines.append(extras_txt)
+    lines.append("تماس: 0910 694 3220")
+    # فقط کاراکترهای خطرناک HTML را escape کن؛ خط جدید بماند
+    desc_raw = "\n".join(lines)
+    desc = (
+        desc_raw.replace("&", "&amp;")
+        .replace('"', "&quot;")
+        .replace("<", "&lt;")
+        .replace(">", "&gt;")
+    )
     title = f"{label} · کد {code} | اطلس"
 
     extras_html = f'<p style="margin:6px 0;color:#57503F;font-size:0.95rem;">{escape(extras_txt)}</p>' if extras_txt else ""
