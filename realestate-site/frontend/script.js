@@ -232,6 +232,20 @@ function parseSalePriceBillion(p) {
   return num;
 }
 
+/** رهن نرمال‌شده به «میلیون تومان» برای فیلتر */
+function parseRahnMillion(p) {
+  if (p.deal_type === "فروش") return null;
+  let s = cleanPriceText(p.rahn);
+  if (!s || s === "-" || /توافقی/.test(s)) return null;
+  const m = String(s).match(/([\d,]+(?:\.\d+)?)/);
+  if (!m) return null;
+  let num = parseFloat(m[1].replace(/,/g, ""));
+  if (!Number.isFinite(num)) return null;
+  if (/میلیارد/.test(s)) num = num * 1000; // 1.5 میلیارد → 1500 میلیون
+  // اگر فقط عدد بود و خیلی بزرگ (≥100 و بدون واحد مشخص قبلاً میلیارد فرض می‌شد) همان میلیون فرض می‌شود
+  return num;
+}
+
 function getActiveFilterValue(group) {
   const el = document.querySelector(`[data-filter-group="${group}"].active, .filter-chip.active[data-filter-group="${group}"]`);
   // chips use class on button
@@ -600,6 +614,7 @@ function applyFilters() {
   const areaVal = (document.querySelector('.filter-chip[data-filter-group="area"].active') || {}).getAttribute?.("data-value") || "";
   const roomsVal = (document.querySelector('.filter-chip[data-filter-group="rooms"].active') || {}).getAttribute?.("data-value") || "";
   const priceVal = (document.querySelector('.filter-chip[data-filter-group="price"].active') || {}).getAttribute?.("data-value") || "";
+  const rahnVal = (document.querySelector('.filter-chip[data-filter-group="rahn"].active') || {}).getAttribute?.("data-value") || "";
   const needParking = isAmenityOn("parking");
   const needElevator = isAmenityOn("elevator");
   const needStorage = isAmenityOn("storage");
@@ -661,6 +676,20 @@ function applyFilters() {
       if (priceVal === "5-8") return bil >= 5 && bil < 8;
       if (priceVal === "8-11") return bil >= 8 && bil < 11;
       if (priceVal === "11+") return bil >= 11;
+      return true;
+    });
+  }
+
+  // مبلغ رهن (میلیون تومان) — فقط فایل‌های رهن و اجاره
+  if (rahnVal && dealType !== "فروش") {
+    filtered = filtered.filter((p) => {
+      if (p.deal_type === "فروش") return false;
+      const mil = parseRahnMillion(p);
+      if (mil == null) return false;
+      if (rahnVal === "0-200") return mil < 200;
+      if (rahnVal === "200-500") return mil >= 200 && mil < 500;
+      if (rahnVal === "500-1000") return mil >= 500 && mil < 1000;
+      if (rahnVal === "1000+") return mil >= 1000;
       return true;
     });
   }
@@ -870,10 +899,10 @@ ${shareUrl}
 
         <div style="display:flex;flex-direction:column;gap:10px;">
           <button id="modalNativeShareBtn" type="button" style="background:#201C15;color:#FFFCFA;border:none;padding:13px;border-radius:12px;font-weight:700;font-size:0.92rem;cursor:pointer;">
-            📤 اشتراک عکس کارت آگهی (بله / روبیکا / استوری و ...)
+            📤 اشتراک از طریق برنامه‌ها
           </button>
-          <button id="modalStoryBtn" type="button" style="background:#B4894F;color:#201C15;border:none;padding:13px;border-radius:12px;font-weight:700;font-size:0.92rem;cursor:pointer;">
-            🖼️ دانلود اسکرین کارت آگهی
+          <button id="modalLinkBtn" type="button" style="background:#B4894F;color:#201C15;border:none;padding:13px;border-radius:12px;font-weight:700;font-size:0.92rem;cursor:pointer;">
+            🔗 کپی لینک آگهی
           </button>
           <button id="modalTextBtn" type="button" style="background:#FFFCFA;color:#201C15;border:1px solid #D4C4A8;padding:13px;border-radius:12px;font-weight:700;font-size:0.92rem;cursor:pointer;">
             📋 کپی متن آگهی
@@ -904,31 +933,20 @@ ${shareUrl}
     btn.innerHTML = "⏳ در حال آماده‌سازی...";
     btn.disabled = true;
     try {
-      // اول تلاش برای اشتراک مستقیم «عکس کارت آگهی» — همون چیزی که توی روبیکا/بله/استوری
-      // به‌صورت پیام تصویری میره، نه فقط لینک متنی
-      const canvas = await captureCardScreenshot(p);
-      const blob = await canvasToBlob(canvas);
-      const file = new File([blob], `card-${p.code || "property"}.jpg`, { type: "image/jpeg" });
       const shareData = {
         title: `${label} · کد ${p.code} | اطلس املاک`,
         text: shareText,
-        files: [file],
+        url: shareUrl,
       };
-      if (navigator.canShare && navigator.canShare(shareData)) {
+      if (navigator.share) {
         await navigator.share(shareData);
         showCopySuccess(shareBtn, "✅ اشتراک‌گذاری شد");
         closeModal();
         return;
       }
-      // مرورگرهایی که اشتراک فایل رو پشتیبانی نمی‌کنن (مثل بعضی نسخه‌های دسکتاپ):
-      // فقط متن + لینک رو با همون شیت اشتراک‌گذاری بفرست
-      if (navigator.share) {
-        await navigator.share({ title: shareData.title, text: shareText, url: shareUrl });
-        showCopySuccess(shareBtn, "✅ اشتراک‌گذاری شد");
-        closeModal();
-        return;
-      }
-      throw new Error("share not supported");
+      forceCopyText(shareText);
+      showCopySuccess(shareBtn, "📋 متن کپی شد (اشتراک مستقیم پشتیبانی نمی‌شود)");
+      closeModal();
     } catch (err) {
       if (err && err.name === "AbortError") {
         btn.innerHTML = originalLabel;
@@ -936,17 +954,14 @@ ${shareUrl}
         return;
       }
       forceCopyText(shareText);
-      showCopySuccess(shareBtn, "📋 متن کپی شد (اشتراک مستقیم روی این مرورگر پشتیبانی نمی‌شود)");
+      showCopySuccess(shareBtn, "📋 متن کپی شد");
       closeModal();
     }
   });
 
-  document.getElementById("modalStoryBtn").addEventListener("click", async () => {
-    const btn = document.getElementById("modalStoryBtn");
-    btn.innerHTML = "⏳ در حال ساخت...";
-    btn.disabled = true;
-    await generateStoryImage(p);
-    showCopySuccess(shareBtn, "🖼️ کارت دانلود شد");
+  document.getElementById("modalLinkBtn").addEventListener("click", () => {
+    forceCopyText(shareUrl);
+    showCopySuccess(shareBtn, "🔗 لینک کپی شد");
     closeModal();
   });
 
