@@ -173,7 +173,7 @@ function buildCardImage(p, isSale) {
   const overlay = `
     <div class="card-image-overlay">
       <span class="deal-tag ${isSale ? "sale" : "rent"}">${p.deal_type || "آگهی"}</span>
-      <button class="share-btn" data-code="${p.code || ""}" type="button" aria-label="اشتراک‌گذاری آگهی">🔗</button>
+      <button class="share-btn share-btn-card" data-code="${p.code || ""}" type="button" aria-label="اشتراک‌گذاری آگهی">🔗 اشتراک‌گذاری</button>
     </div>`;
   if (p.image) {
     return `
@@ -198,6 +198,50 @@ function cleanAgentName(name) {
   if (!name) return name;
   const stripped = name.replace(/^\s*مشاور[\s:،-]*/, "").trim();
   return stripped || name;
+}
+
+
+/** عدد متراژ از متن فارسی/انگلیسی */
+function parseAreaM2(p) {
+  const raw = toEnglishDigits(String(p.area_m2 || "")).replace(/[^\d.]/g, "");
+  const n = parseFloat(raw);
+  return Number.isFinite(n) ? n : 0;
+}
+
+/** عدد خواب */
+function parseRooms(p) {
+  const raw = toEnglishDigits(String(p.rooms || "")).replace(/[^\d]/g, "");
+  const n = parseInt(raw, 10);
+  return Number.isFinite(n) ? n : 0;
+}
+
+/**
+ * قیمت فروش نرمال‌شده به «میلیارد» برای فیلتر عددی.
+ * همان منطق formatSaleTotal: عدد >=100 با برچسب میلیارد → تقسیم بر ۱۰۰۰
+ */
+function parseSalePriceBillion(p) {
+  if (p.deal_type !== "فروش") return null;
+  let s = cleanPriceText(p.price_total);
+  if (!s || s === "-" || /توافقی/.test(s)) return null;
+  const m = String(s).match(/([\d,]+(?:\.\d+)?)/);
+  if (!m) return null;
+  let num = parseFloat(m[1].replace(/,/g, ""));
+  if (!Number.isFinite(num)) return null;
+  if (/میلیارد/.test(s) && num >= 100) num = num / 1000;
+  else if (/میلیون/.test(s) && !/میلیارد/.test(s)) num = num / 1000;
+  return num;
+}
+
+function getActiveFilterValue(group) {
+  const el = document.querySelector(`[data-filter-group="${group}"].active, .filter-chip.active[data-filter-group="${group}"]`);
+  // chips use class on button
+  const chip = document.querySelector(`.filter-chip[data-filter-group="${group}"].active`);
+  return chip ? (chip.getAttribute("data-value") || "") : "";
+}
+
+function isAmenityOn(name) {
+  const chip = document.querySelector(`.filter-chip[data-amenity="${name}"].active`);
+  return Boolean(chip);
 }
 
 function formatRentPrice(p) {
@@ -358,12 +402,69 @@ function checkSinglePropertyMode() {
     // حس صفحه جزئیات: عنوان تب، مخفی کردن فیلتر/هیرو اضافه، اسکرول به کارت
     document.body.classList.add("single-ad-mode");
     const label = labeledPropertyType(found);
+    const addr = truncateAddress(found.address) || "خادم‌آباد و باغستان";
+    const pageUrl = `${window.location.origin}${window.location.pathname}?code=${targetCode}`;
+    const descText = `${label} کد ${targetCode} — ${addr}. مشاهده جزئیات و تماس با دفتر اطلس املاک خادم‌آباد.`;
     document.title = `${label} کد ${targetCode} | اطلس املاک`;
     const desc = document.querySelector('meta[name="description"]');
-    if (desc) {
-      const addr = truncateAddress(found.address) || "خادم‌آباد و باغستان";
-      desc.setAttribute("content", `${label} کد ${targetCode} — ${addr}. مشاهده جزئیات و تماس با دفتر اطلس املاک.`);
+    if (desc) desc.setAttribute("content", descText);
+
+    // Open Graph / Twitter برای اشتراک لینک
+    const setMeta = (attr, key, val) => {
+      if (!val) return;
+      let el = document.querySelector(`meta[${attr}="${key}"]`);
+      if (!el) {
+        el = document.createElement("meta");
+        el.setAttribute(attr, key);
+        document.head.appendChild(el);
+      }
+      el.setAttribute("content", val);
+    };
+    setMeta("property", "og:title", `${label} کد ${targetCode} | اطلس املاک`);
+    setMeta("property", "og:description", descText);
+    setMeta("property", "og:url", pageUrl);
+    setMeta("property", "og:type", "website");
+    if (found.image) setMeta("property", "og:image", found.image);
+    setMeta("name", "twitter:title", `${label} کد ${targetCode} | اطلس املاک`);
+    setMeta("name", "twitter:description", descText);
+
+    let canonical = document.querySelector('link[rel="canonical"]');
+    if (!canonical) {
+      canonical = document.createElement("link");
+      canonical.rel = "canonical";
+      document.head.appendChild(canonical);
     }
+    canonical.href = pageUrl;
+
+    // JSON-LD آگهی
+    const oldLd = document.getElementById("single-ad-jsonld");
+    if (oldLd) oldLd.remove();
+    const priceForLd = found.deal_type === "فروش"
+      ? formatSaleTotal(found.price_total)
+      : [formatRentPart(found.rahn), formatRentPart(found.ejare)].filter(Boolean).join(" / ");
+    const ld = {
+      "@context": "https://schema.org",
+      "@type": "RealEstateListing",
+      "name": `${label} کد ${targetCode}`,
+      "description": descText,
+      "url": pageUrl,
+      "datePosted": found.registered_at || undefined,
+      "address": {
+        "@type": "PostalAddress",
+        "streetAddress": found.address || addr,
+        "addressLocality": "خادم‌آباد",
+        "addressRegion": "تهران",
+        "addressCountry": "IR"
+      }
+    };
+    if (found.image) ld.image = found.image;
+    if (found.area_m2) ld.floorSize = { "@type": "QuantitativeValue", "value": parseAreaM2(found), "unitCode": "MTK" };
+    if (priceForLd) ld.offers = { "@type": "Offer", "priceCurrency": "IRR", "description": priceForLd };
+    const scriptLd = document.createElement("script");
+    scriptLd.type = "application/ld+json";
+    scriptLd.id = "single-ad-jsonld";
+    scriptLd.textContent = JSON.stringify(ld);
+    document.head.appendChild(scriptLd);
     const clearBtn = document.getElementById("clearDeepLinkBtn");
     if (clearBtn) {
       clearBtn.hidden = false;
@@ -442,6 +543,7 @@ function showEmptyState(msg) {
   document.getElementById("emptyResetBtn")?.addEventListener("click", () => {
     document.querySelectorAll(".filter-chip").forEach((c) => c.classList.remove("active"));
     document.querySelector('.filter-chip[data-deal=""]')?.classList.add("active");
+    document.querySelectorAll('.filter-chip[data-filter-group][data-value=""]').forEach((c) => c.classList.add("active"));
     document.querySelectorAll("#citySearch").forEach((q) => { q.value = ""; });
     currentFiltered = allProperties.slice();
     visibleCount = 6;
@@ -491,33 +593,78 @@ function applyFilters() {
   const keyword = citySearchEl ? citySearchEl.value.trim() : "";
   const dealType = dealTypeEl ? dealTypeEl.value : "";
 
+  const areaVal = (document.querySelector('.filter-chip[data-filter-group="area"].active') || {}).getAttribute?.("data-value") || "";
+  const roomsVal = (document.querySelector('.filter-chip[data-filter-group="rooms"].active') || {}).getAttribute?.("data-value") || "";
+  const priceVal = (document.querySelector('.filter-chip[data-filter-group="price"].active') || {}).getAttribute?.("data-value") || "";
+  const needParking = isAmenityOn("parking");
+  const needElevator = isAmenityOn("elevator");
+  const needStorage = isAmenityOn("storage");
+
   let filtered = allProperties;
   if (dealType) filtered = filtered.filter((p) => p.deal_type === dealType);
+
   if (keyword) {
-    // دسته باغ/باغچه/ویلا — فقط روی نوع ملک، نه آدرس (تا «باغستان» قاطی نشود)
     const isGardenSearch = keyword === "باغ";
     const isGardenType = (t) => {
       t = (t || "").trim();
       if (!t) return false;
-      if (t.includes("باغستان")) return false; // منطقه است، نوع ملک نیست
+      if (t.includes("باغستان")) return false;
       if (t.includes("باغچه")) return true;
       if (t.includes("باغ‌ویلا") || t.includes("باغ ویلا") || t.includes("باغ-ویلا")) return true;
       if (t === "باغ" || t.startsWith("باغ ")) return true;
       if (t.includes("باغ") && !t.includes("آپارتمان")) return true;
       if (t === "ویلا" || t.startsWith("ویلا ")) return true;
-      return false; // «ویلایی» و «خانه ویلایی» نه
+      return false;
     };
     filtered = filtered.filter((p) => {
       const addr = p.address || "";
       const ptype = p.property_type || "";
       const code = String(p.code || "");
-      if (isGardenSearch) {
-        // فقط نوع ملک — آدرس را چک نکن (باغستان داخل آدرس است)
-        return isGardenType(ptype);
-      }
+      if (isGardenSearch) return isGardenType(ptype);
       return addr.includes(keyword) || ptype.includes(keyword) || code.includes(keyword);
     });
   }
+
+  // متراژ
+  if (areaVal) {
+    filtered = filtered.filter((p) => {
+      const a = parseAreaM2(p);
+      if (!a) return false;
+      if (areaVal === "0-70") return a <= 70;
+      if (areaVal === "70-100") return a > 70 && a <= 100;
+      if (areaVal === "100-150") return a > 100 && a <= 150;
+      if (areaVal === "150+") return a > 150;
+      return true;
+    });
+  }
+
+  // خواب
+  if (roomsVal) {
+    filtered = filtered.filter((p) => {
+      const r = parseRooms(p);
+      if (roomsVal === "3+") return r >= 3;
+      return r === parseInt(roomsVal, 10);
+    });
+  }
+
+  // قیمت فروش (میلیارد) — با فعال شدن، فقط فایل‌های فروشیِ داخل بازه می‌مانند
+  if (priceVal && dealType !== "رهن و اجاره") {
+    filtered = filtered.filter((p) => {
+      if (p.deal_type !== "فروش") return false;
+      const bil = parseSalePriceBillion(p);
+      if (bil == null) return false;
+      if (priceVal === "0-5") return bil < 5;
+      if (priceVal === "5-8") return bil >= 5 && bil < 8;
+      if (priceVal === "8-11") return bil >= 8 && bil < 11;
+      if (priceVal === "11+") return bil >= 11;
+      return true;
+    });
+  }
+
+  if (needParking) filtered = filtered.filter((p) => p.parking);
+  if (needElevator) filtered = filtered.filter((p) => p.elevator);
+  if (needStorage) filtered = filtered.filter((p) => p.storage);
+
   currentFiltered = filtered;
   visibleCount = PAGE_SIZE;
   renderProperties();
@@ -957,7 +1104,7 @@ document.querySelectorAll(".quick-card[href='#listings']").forEach((card) => {
 
 
 (function initListingsFilter() {
-  const chips = document.querySelectorAll(".filter-chip");
+  const chips = document.querySelectorAll(".filter-chip[data-deal]");
   const moreBtn = document.getElementById("filterMoreBtn");
   const advanced = document.getElementById("filterAdvanced");
   const dealTypeEl = document.getElementById("dealType");
@@ -995,9 +1142,31 @@ document.querySelectorAll(".quick-card[href='#listings']").forEach((card) => {
     resetBtn.addEventListener("click", () => {
       setActiveChip("");
       if (cityInput) cityInput.value = "";
+      document.querySelectorAll(".filter-chip[data-filter-group], .filter-chip[data-amenity]").forEach((c) => {
+        c.classList.remove("active");
+      });
+      document.querySelectorAll('.filter-chip[data-filter-group][data-value=""]').forEach((c) => c.classList.add("active"));
       if (typeof applyFilters === "function") applyFilters();
     });
   }
+
+  // چیپ‌های متراژ / خواب / قیمت — تک‌انتخابی در هر گروه
+  document.querySelectorAll(".filter-chip[data-filter-group]").forEach((chip) => {
+    chip.addEventListener("click", () => {
+      const group = chip.getAttribute("data-filter-group");
+      document.querySelectorAll(`.filter-chip[data-filter-group="${group}"]`).forEach((c) => c.classList.remove("active"));
+      chip.classList.add("active");
+      if (typeof applyFilters === "function") applyFilters();
+    });
+  });
+
+  // امکانات — چندانتخابی (toggle)
+  document.querySelectorAll(".filter-chip[data-amenity]").forEach((chip) => {
+    chip.addEventListener("click", () => {
+      chip.classList.toggle("active");
+      if (typeof applyFilters === "function") applyFilters();
+    });
+  });
 
   if (searchBtn && !searchBtn.dataset.bound) {
     searchBtn.dataset.bound = "1";

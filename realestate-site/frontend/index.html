@@ -32,7 +32,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,600;1,700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=8">
+<link rel="stylesheet" href="style.css?v=10">
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -208,6 +208,48 @@
         <button type="button" class="filter-chip" data-deal="فروش">فروشی</button>
         <button type="button" class="filter-chip" data-deal="رهن و اجاره">رهن و اجاره</button>
       </div>
+
+      <div class="filter-row">
+        <span class="filter-row-label">متراژ</span>
+        <div class="filter-chips filter-chips-scroll">
+          <button type="button" class="filter-chip active" data-filter-group="area" data-value="">همه</button>
+          <button type="button" class="filter-chip" data-filter-group="area" data-value="0-70">تا ۷۰</button>
+          <button type="button" class="filter-chip" data-filter-group="area" data-value="70-100">۷۰–۱۰۰</button>
+          <button type="button" class="filter-chip" data-filter-group="area" data-value="100-150">۱۰۰–۱۵۰</button>
+          <button type="button" class="filter-chip" data-filter-group="area" data-value="150+">۱۵۰+</button>
+        </div>
+      </div>
+
+      <div class="filter-row">
+        <span class="filter-row-label">خواب</span>
+        <div class="filter-chips filter-chips-scroll">
+          <button type="button" class="filter-chip active" data-filter-group="rooms" data-value="">همه</button>
+          <button type="button" class="filter-chip" data-filter-group="rooms" data-value="1">۱ خواب</button>
+          <button type="button" class="filter-chip" data-filter-group="rooms" data-value="2">۲ خواب</button>
+          <button type="button" class="filter-chip" data-filter-group="rooms" data-value="3+">۳ خواب+</button>
+        </div>
+      </div>
+
+      <div class="filter-row">
+        <span class="filter-row-label">قیمت فروش</span>
+        <div class="filter-chips filter-chips-scroll">
+          <button type="button" class="filter-chip active" data-filter-group="price" data-value="">همه</button>
+          <button type="button" class="filter-chip" data-filter-group="price" data-value="0-5">تا ۵ میلیارد</button>
+          <button type="button" class="filter-chip" data-filter-group="price" data-value="5-8">۵–۸ میلیارد</button>
+          <button type="button" class="filter-chip" data-filter-group="price" data-value="8-11">۸–۱۱ میلیارد</button>
+          <button type="button" class="filter-chip" data-filter-group="price" data-value="11+">۱۱ میلیارد+</button>
+        </div>
+      </div>
+
+      <div class="filter-row">
+        <span class="filter-row-label">امکانات</span>
+        <div class="filter-chips filter-chips-scroll">
+          <button type="button" class="filter-chip" data-amenity="parking">🅿️ پارکینگ</button>
+          <button type="button" class="filter-chip" data-amenity="elevator">🛗 آسانسور</button>
+          <button type="button" class="filter-chip" data-amenity="storage">📦 انباری</button>
+        </div>
+      </div>
+
       <div class="filter-search-bar" id="filterAdvanced">
         <div class="filter-search-inner">
           <span class="filter-search-icon" aria-hidden="true">🔍</span>
@@ -433,6 +475,6 @@
 
 <script src="config.js"></script>
 <script src="common.js"></script>
-<script src="script.js?v=8"></script>
+<script src="script.js?v=10"></script>
 </body>
 </html>

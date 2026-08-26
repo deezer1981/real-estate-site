@@ -526,13 +526,29 @@ a { color: inherit; text-decoration: none; }
   margin-bottom: 0;
   box-shadow: 0 1px 4px rgba(0,0,0,0.15);
 }
-.card-image-overlay .share-btn {
-  width: 34px;
-  height: 34px;
-  min-height: 34px;
-  padding: 0;
-  font-size: 0.95rem;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+.card-image-overlay .share-btn,
+.card-image-overlay .share-btn-card {
+  width: auto;
+  height: auto;
+  min-height: 40px;
+  padding: 8px 12px;
+  font-size: 0.8rem;
+  font-weight: 800;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  line-height: 1.2;
+  background: rgba(32, 28, 21, 0.88);
+  color: #FFFCFA;
+  backdrop-filter: blur(4px);
+}
+.card-image-overlay .share-btn:hover,
+.card-image-overlay .share-btn-card:hover {
+  background: #201C15;
+  color: #fff;
 }
 .card-body { padding: 16px 18px; }
 .card-top-row {
@@ -1659,4 +1675,42 @@ body.single-ad-mode .card {
 }
 body.single-ad-mode .card-image-wrap {
   min-height: 200px;
+}
+
+
+/* ===== فیلتر پیشرفته ===== */
+.filter-row {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 10px 0 4px;
+}
+.filter-row-label {
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: var(--sage, #5C6B5A);
+  padding-inline-start: 2px;
+}
+.filter-chips-scroll {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 8px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 4px;
+  scrollbar-width: thin;
+}
+.filter-chips-scroll .filter-chip {
+  flex: 0 0 auto;
+}
+.filter-chip[data-amenity].active {
+  background: var(--ink, #201C15);
+  color: var(--paper, #FFFCFA);
+  border-color: var(--ink, #201C15);
+}
+@media (min-width: 720px) {
+  .filter-chips-scroll {
+    flex-wrap: wrap;
+    overflow-x: visible;
+  }
 }
