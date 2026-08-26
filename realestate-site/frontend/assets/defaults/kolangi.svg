@@ -1,11 +1,17 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" width="400" height="300">
-  <rect width="400" height="300" fill="#FBF6EE"/>
-  <g fill="#6B5B3A" transform="translate(110,60)" opacity="0.85">
-    <rect x="30" y="40" width="120" height="110" rx="2"/>
-    <polygon points="30,40 90,10 150,40" fill="#5A4A2A"/>
-    <rect x="50" y="70" width="25" height="30" fill="#FBF6EE" opacity="0.6"/>
-    <rect x="105" y="70" width="25" height="30" fill="#FBF6EE" opacity="0.6"/>
-    <rect x="75" y="110" width="30" height="40" fill="#FBF6EE" opacity="0.5"/>
+  <rect width="400" height="300" fill="#FBF8F3"/>
+  <g transform="translate(175,18) scale(0.55)">
+    <path d="M45 5 C20 5 5 25 5 45 C5 75 45 110 45 110 C45 110 85 75 85 45 C85 25 70 5 45 5Z" fill="none" stroke="#A67C52" stroke-width="6"/>
+    <path d="M28 48 L45 32 L62 48 L62 62 L28 62Z" fill="#1E3A3A"/>
+    <rect x="40" y="48" width="10" height="10" fill="#FBF8F3"/>
   </g>
-  <text x="200" y="255" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="700" fill="#1E4550">Old House for Sale</text>
+  <text x="200" y="88" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="700" letter-spacing="2" fill="#1E3A3A">BAGHESTAN</text>
+  <g fill="#6B5B3A" transform="translate(120,100)" opacity="0.9">
+    <rect x="25" y="30" width="110" height="95" rx="2"/>
+    <polygon points="25,30 80,5 135,30" fill="#A67C52"/>
+    <rect x="45" y="55" width="22" height="25" fill="#FBF8F3" opacity="0.7"/>
+    <rect x="95" y="55" width="22" height="25" fill="#FBF8F3" opacity="0.7"/>
+    <rect x="70" y="90" width="25" height="35" fill="#FBF8F3" opacity="0.6"/>
+  </g>
+  <text x="200" y="270" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="17" font-weight="700" fill="#1E3A3A">Old House for Sale</text>
 </svg>

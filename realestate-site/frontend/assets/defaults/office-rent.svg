@@ -1,23 +1,27 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" width="400" height="300">
-  <rect width="400" height="300" fill="#F5F0E8"/>
-  <g fill="#B8894F" transform="translate(120,40)">
-    <rect x="20" y="20" width="120" height="160" rx="2"/>
-    <rect x="20" y="5" width="120" height="18" fill="#8B6914"/>
-    <g fill="#F5F0E8">
-      <rect x="35" y="40" width="25" height="20" rx="1"/>
-      <rect x="70" y="40" width="25" height="20" rx="1"/>
-      <rect x="105" y="40" width="20" height="20" rx="1"/>
-      <rect x="35" y="70" width="25" height="20" rx="1"/>
-      <rect x="70" y="70" width="25" height="20" rx="1"/>
-      <rect x="105" y="70" width="20" height="20" rx="1"/>
-      <rect x="35" y="100" width="25" height="20" rx="1"/>
-      <rect x="70" y="100" width="25" height="20" rx="1"/>
-      <rect x="105" y="100" width="20" height="20" rx="1"/>
-      <rect x="35" y="130" width="25" height="20" rx="1"/>
-      <rect x="70" y="130" width="25" height="20" rx="1"/>
-      <rect x="105" y="130" width="20" height="20" rx="1"/>
-    </g>
-    <rect x="65" y="155" width="30" height="25" fill="#F5F0E8"/>
+  <rect width="400" height="300" fill="#FBF8F3"/>
+  <g transform="translate(175,18) scale(0.55)">
+    <path d="M45 5 C20 5 5 25 5 45 C5 75 45 110 45 110 C45 110 85 75 85 45 C85 25 70 5 45 5Z" fill="none" stroke="#A67C52" stroke-width="6"/>
+    <path d="M28 48 L45 32 L62 48 L62 62 L28 62Z" fill="#1E3A3A"/>
+    <rect x="40" y="48" width="10" height="10" fill="#FBF8F3"/>
   </g>
-  <text x="200" y="255" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="700" fill="#8B6914">Office for Rent</text>
+  <text x="200" y="88" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="700" letter-spacing="2" fill="#1E3A3A">BAGHESTAN</text>
+  <g fill="#A67C52" transform="translate(130,95)">
+    <rect x="15" y="15" width="110" height="130" rx="2"/>
+    <rect x="15" y="5" width="110" height="14" fill="#1E3A3A"/>
+    <g fill="#FBF8F3">
+      <rect x="28" y="30" width="22" height="18" rx="1"/>
+      <rect x="60" y="30" width="22" height="18" rx="1"/>
+      <rect x="92" y="30" width="18" height="18" rx="1"/>
+      <rect x="28" y="58" width="22" height="18" rx="1"/>
+      <rect x="60" y="58" width="22" height="18" rx="1"/>
+      <rect x="92" y="58" width="18" height="18" rx="1"/>
+      <rect x="28" y="86" width="22" height="18" rx="1"/>
+      <rect x="60" y="86" width="22" height="18" rx="1"/>
+      <rect x="92" y="86" width="18" height="18" rx="1"/>
+      <rect x="28" y="114" width="22" height="18" rx="1"/>
+      <rect x="60" y="114" width="22" height="18" rx="1"/>
+    </g>
+  </g>
+  <text x="200" y="270" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="700" fill="#A67C52">Office for Rent</text>
 </svg>
