@@ -506,7 +506,7 @@ async function captureCardScreenshot(p) {
     "color:#57503F",
     "letter-spacing:0.02em",
   ].join(";");
-  foot.textContent = "atlas-amlak.ir  ·  اطلس املاک";
+  foot.textContent = "atlas-amlak.ir";
   card.appendChild(foot);
 
   // کمی صبر تا layout پایدار شود
