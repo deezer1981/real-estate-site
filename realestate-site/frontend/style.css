@@ -1727,7 +1727,7 @@ body.single-ad-mode .card-image-wrap {
   }
 }
 
-/* ===== دکمه/پنل «فیلتر پیشرفته» (جمع‌شونده در موبایل) ===== */
+/* ===== دکمه/پنل «فیلتر پیشرفته» (جمع‌شونده در موبایل و دسکتاپ) ===== */
 .advanced-filter-toggle {
   display: flex;
   align-items: center;
@@ -1756,11 +1756,6 @@ body.single-ad-mode .card-image-wrap {
 }
 .advanced-filter-toggle.open .chevron { transform: rotate(180deg); }
 
-@media (max-width: 720px) {
-  .advanced-filters { display: none; }
-  .advanced-filters.open { display: block; }
-}
-@media (min-width: 721px) {
-  .advanced-filter-toggle { display: none; }
-  .advanced-filters { display: block; }
-}
+/* موبایل و دسکتاپ یکسان: پنل پیش‌فرض بسته، با کلاس open باز می‌شود */
+.advanced-filters { display: none; }
+.advanced-filters.open { display: block; }

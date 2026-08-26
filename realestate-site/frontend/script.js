@@ -1185,6 +1185,16 @@ document.querySelectorAll(".quick-card[href='#listings']").forEach((card) => {
   }
 
   // دکمه/پنل «فیلتر پیشرفته» — روی موبایل جمع‌شده، با کلیک باز می‌شود
+  // با بستن پنل: فیلترهای پیشرفته ریست می‌شوند و لیست به حالت پایه برمی‌گردد
+  function resetAdvancedFiltersOnly() {
+    document.querySelectorAll(".filter-chip[data-filter-group], .filter-chip[data-amenity]").forEach((c) => {
+      c.classList.remove("active");
+    });
+    document.querySelectorAll('.filter-chip[data-filter-group][data-value=""]').forEach((c) => {
+      c.classList.add("active");
+    });
+  }
+
   const advToggle = document.getElementById("advancedFilterToggle");
   const advPanel = document.getElementById("advancedFilterPanel");
   if (advToggle && advPanel) {
@@ -1196,6 +1206,11 @@ document.querySelectorAll(".quick-card[href='#listings']").forEach((card) => {
         label.textContent = open
           ? "بستن فیلتر پیشرفته"
           : "فیلتر پیشرفته (متراژ، خواب، قیمت، امکانات)";
+      }
+      // بسته شدن = ریست متراژ/خواب/قیمت/امکانات + نمایش مجدد آگهی‌ها
+      if (!open) {
+        resetAdvancedFiltersOnly();
+        if (typeof applyFilters === "function") applyFilters();
       }
     });
   }
