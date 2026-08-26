@@ -556,9 +556,49 @@ async function ensureStoryFontsReady() {
   }
 }
 
+/** بارگذاری عکس آگهی (واقعی یا پیش‌فرض) برای کارت اشتراک.
+ *  در صورت خطا null برمی‌گرداند تا کارت بدون عکس هم ساخته شود. */
+function loadPropertyImage(src) {
+  if (!src) return Promise.resolve(null);
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    const timer = setTimeout(() => resolve(null), 8000);
+    img.onload = () => {
+      clearTimeout(timer);
+      resolve(img);
+    };
+    img.onerror = () => {
+      clearTimeout(timer);
+      resolve(null);
+    };
+    img.src = src;
+  });
+}
+
+/** رسم عکس آگهی داخل کادر گرد با object-fit: cover */
+function drawCoverImage(ctx, img, x, y, w, h, radius) {
+  ctx.save();
+  rr(ctx, x, y, w, h, radius);
+  ctx.clip();
+  const scale = Math.max(w / img.width, h / img.height);
+  const dw = img.width * scale;
+  const dh = img.height * scale;
+  const dx = x + (w - dw) / 2;
+  const dy = y + (h - dh) / 2;
+  ctx.drawImage(img, dx, dy, dw, dh);
+  ctx.restore();
+  // حاشیه ظریف دور عکس
+  ctx.strokeStyle = "rgba(32,28,21,0.12)";
+  ctx.lineWidth = 2;
+  rr(ctx, x, y, w, h, radius);
+  ctx.stroke();
+}
+
 async function generateStoryCanvas(p) {
   await ensureStoryFontsReady();
   const logo = await loadStoryLogo();
+  const propImg = await loadPropertyImage(p.image);
 
   const canvas = document.createElement("canvas");
   const W = 1080;
@@ -616,10 +656,13 @@ async function generateStoryCanvas(p) {
   const parts = [];
   function add(h) { parts.push(h); total += h; }
 
+  const PROP_IMG_H = propImg ? 480 : 0;
+
   add(96);  // لوگو
   add(30);
   add(4);   // خط تزئینی
   add(48);
+  if (propImg) { add(PROP_IMG_H); add(36); } // عکس آگهی
   add(64);  // برچسب معامله
   add(48);
   add(100); // عنوان
@@ -658,6 +701,14 @@ async function generateStoryCanvas(p) {
 
   drawOrnamentDivider(ctx, cx, y, contentW - 60);
   y += 4 + 48;
+
+  // عکس آگهی (واقعی یا پیش‌فرض) — وسط کارت
+  if (propImg) {
+    const imgW = contentW;
+    const imgH = PROP_IMG_H;
+    drawCoverImage(ctx, propImg, M, y, imgW, imgH, 24);
+    y += imgH + 36;
+  }
 
   // تگ معامله + کد
   setFont(ctx, 800, 34);
