@@ -608,10 +608,18 @@ def _listing_price_line(p: dict) -> str:
 
 def _abs_image_url(image: str) -> str:
     if not image:
-        return "https://atlas-amlak.ir/assets/logo.png"
+        return "https://atlas-amlak.ir/assets/office.jpg"
     if re.match(r"^https?:\/\/", image, re.I):
         return image
     return "https://atlas-amlak.ir/" + image.lstrip("/")
+
+
+def _og_image_url(p: dict) -> str:
+    """واتساپ SVG را نشان نمی‌دهد — برای پیش‌نمایش فقط JPG/PNG."""
+    raw = (p.get("image") or "").strip()
+    if (not raw) or p.get("image_is_default") or raw.lower().endswith(".svg"):
+        return "https://atlas-amlak.ir/assets/office.jpg"
+    return _abs_image_url(raw)
 
 
 def render_listing_html(p: dict) -> str:
@@ -629,9 +637,9 @@ def render_listing_html(p: dict) -> str:
     reg = escape(str(p.get("registered_at") or "").strip())
     deal = escape(str(p.get("deal_type") or ""))
     page_url = f"https://atlas-amlak.ir/agahi/{code}.html"
-    img = _abs_image_url(p.get("image") or "")
+    img = _og_image_url(p)
     img_rel = escape((p.get("image") or "assets/defaults/generic.svg").lstrip("/"))
-    # مسیر نسبی از پوشه agahi/
+    # مسیر نسبی از پوشه agahi/ (نمایش داخل صفحه)
     if not re.match(r"^https?:\/\/", img_rel, re.I):
         img_src = escape("../" + img_rel)
     else:
@@ -655,16 +663,20 @@ def render_listing_html(p: dict) -> str:
         extras.append("انباری")
     extras_txt = " | ".join(extras)
 
-    desc_parts = [f"{label} کد {code}"]
-    if addr:
-        desc_parts.append(addr)
+    # توضیح کوتاه‌تر برای کارت پیش‌نمایش واتساپ
+    og_bits = []
     if specs_txt:
-        desc_parts.append(specs_txt)
+        og_bits.append(specs_txt)
+    short_addr = (p.get("address") or "").strip()
+    if len(short_addr) > 40:
+        short_addr = short_addr[:40].rstrip() + "…"
+    if short_addr:
+        og_bits.append(short_addr)
     if price:
-        desc_parts.append(price)
-    desc_parts.append("مشاهده جزئیات و تماس با دفتر اطلس املاک خادم‌آباد و باغستان.")
-    desc = escape(" — ".join(desc_parts))
-    title = f"{label} کد {code} | اطلس املاک"
+        og_bits.append(price)
+    og_bits.append("اطلس املاک · خادم‌آباد")
+    desc = escape(" | ".join(og_bits))
+    title = f"{label} · کد {code} | اطلس"
 
     extras_html = f'<p class="card-meta">{escape(extras_txt)}</p>' if extras_txt else ""
     docs_html = f'<p class="card-meta">📄 مدارک: {docs}</p>' if docs else ""
@@ -693,6 +705,8 @@ def render_listing_html(p: dict) -> str:
 <meta property="og:description" content="{desc}">
 <meta property="og:url" content="{page_url}">
 <meta property="og:image" content="{escape(img)}">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="675">
 <meta property="og:locale" content="fa_IR">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="{escape(title)}">
