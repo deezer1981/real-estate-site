@@ -421,7 +421,7 @@ function checkSinglePropertyMode() {
     document.body.classList.add("single-ad-mode");
     const label = labeledPropertyType(found);
     const addr = truncateAddress(found.address) || "خادم‌آباد و باغستان";
-    const pageUrl = `${window.location.origin}${window.location.pathname}?code=${targetCode}`;
+    const pageUrl = `${window.location.origin}/agahi/${encodeURIComponent(targetCode)}.html`;
 
     // عنوان و توضیح مخصوص همین آگهی (سئو + اشتراک لینک)
     const specsBits = [];
@@ -885,7 +885,8 @@ function showShareModal(p, shareBtn) {
   const oldModal = document.getElementById("shareModal");
   if (oldModal) oldModal.remove();
 
-  const shareUrl = `${window.location.origin}${window.location.pathname}?code=${p.code}`;
+  // لینک ثابت صفحه آگهی (پیش‌نمایش پیام‌رسان + سئو) — روی سرعت صفحه اصلی اثر ندارد
+  const shareUrl = `${window.location.origin}/agahi/${encodeURIComponent(p.code)}.html`;
   const extras = buildExtras(p);
   const label = labeledPropertyType(p);
   const priceText = p.deal_type === "فروش"
