@@ -336,15 +336,18 @@ function propertyCard(p) {
   const officePhone = (typeof OFFICE_PHONE !== "undefined") ? OFFICE_PHONE : "09106943220";
   const baleUser = (typeof BALE_USERNAME !== "undefined") ? BALE_USERNAME : "Nobody_Mohsen";
   const baleMsg = encodeURIComponent(`سلام، در مورد آگهی کد ${p.code || ""} از سایت اطلس املاک پیام می‌دم.`);
-  const shareAction = isSingleMode
-    ? `<button class="share-btn single-share-btn" data-code="${p.code || ""}" type="button">🔗 اشتراک / دانلود کارت</button>`
-    : "";
+  /* اشتراک فقط روی عکس کارت (مثل صفحه اصلی) — دکمه جدا پایین حذف شد */
   const agentActions = `
-    <div class="card-actions${isSingleMode ? " card-actions-single" : ""}">
+    <div class="card-actions">
       <a class="agent-call-btn agent-btn-primary" href="tel:${officePhone}">📞 مشاوره / بازدید</a>
       <a class="agent-msg-btn agent-btn-secondary" href="https://ble.ir/${baleUser}?text=${baleMsg}" target="_blank" rel="noopener">💬 پیام</a>
-      ${shareAction}
     </div>`;
+
+  const bottomBack = isSingleMode
+    ? `<div class="single-ad-bottom">
+         <a href="${window.location.pathname}" class="single-ad-back-bottom">← همه آگهی‌ها</a>
+       </div>`
+    : "";
 
   const wrapperStyle = isSingleMode
     ? "grid-column: 1 / -1; max-width: 560px; margin: 0 auto; width: 100%;"
@@ -379,6 +382,7 @@ function propertyCard(p) {
           ${dateLine}
         </div>
       </article>
+      ${bottomBack}
     </div>
   `;
 }

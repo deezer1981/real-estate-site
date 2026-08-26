@@ -1657,28 +1657,30 @@ body.single-ad-mode .section-head h2 {
   opacity: 0.9;
 }
 
-.card-actions-single {
-  flex-wrap: wrap;
+/* دکمه برگشت پایین صفحه تک‌آگهی — جمع‌وجور، نه تمام‌عرض */
+.single-ad-bottom {
+  display: flex;
+  justify-content: center;
+  margin-top: 18px;
+  padding: 0 4px 8px;
 }
-.card-actions-single .single-share-btn {
-  flex: 1 1 100%;
-  width: 100%;
-  margin-top: 4px;
-  height: auto;
-  min-height: 44px;
-  border-radius: 12px;
-  font-size: 0.92rem;
-  font-weight: 700;
-  background: #B4894F;
-  color: #201C15;
-  padding: 12px 16px;
+.single-ad-back-bottom {
+  text-decoration: none;
   display: inline-flex;
   align-items: center;
-  justify-content: center;
   gap: 6px;
+  background: transparent;
+  color: var(--ink, #201C15);
+  border: 1.5px solid var(--brass, #B4894F);
+  font-weight: 700;
+  font-size: 0.88rem;
+  padding: 10px 20px;
+  border-radius: 999px;
+  white-space: nowrap;
+  transition: background 0.15s ease, color 0.15s ease;
 }
-.card-actions-single .single-share-btn:hover {
-  background: #9a7340;
+.single-ad-back-bottom:hover {
+  background: var(--brass, #B4894F);
   color: #fff;
 }
 
@@ -1688,6 +1690,7 @@ body.single-ad-mode .card {
 body.single-ad-mode .card-image-wrap {
   min-height: 200px;
 }
+/* اشتراک تک‌آگهی همان استایل روی عکس صفحه اصلی است */
 
 
 /* ===== فیلتر پیشرفته ===== */
