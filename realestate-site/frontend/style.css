@@ -531,36 +531,67 @@ a { color: inherit; text-decoration: none; }
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+/* اشتراک روی عکس — هم‌سبک با تگ فروش / رهن و اجاره */
 .card-image-overlay .share-btn,
 .card-image-overlay .share-btn-card {
   width: auto;
   height: auto;
-  min-height: 40px;
-  padding: 8px 12px;
-  font-size: 0.8rem;
+  min-height: 0;
+  padding: 6px 16px;
+  font-size: 0.88rem;
   font-weight: 800;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+  letter-spacing: 0.01em;
+  border-radius: 999px;
+  border: none;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.12);
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 4px;
-  line-height: 1.2;
-  background: rgba(32, 28, 21, 0.88);
-  color: #FFFCFA;
-  backdrop-filter: blur(4px);
+  line-height: 1.3;
+  background: rgba(32, 28, 21, 0.12);
+  color: #201C15;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
   white-space: nowrap;
   flex-shrink: 0;
+  transition: background 0.15s ease, color 0.15s ease;
 }
 .card-image-overlay .share-btn:hover,
 .card-image-overlay .share-btn-card:hover {
-  background: #201C15;
-  color: #fff;
+  background: rgba(32, 28, 21, 0.22);
+  color: #201C15;
+}
+/* روی کارت فروشی کمی ته‌رنگ سبز مثل تگ فروش */
+.card-sale .card-image-overlay .share-btn,
+.card-sale .card-image-overlay .share-btn-card {
+  background: rgba(30, 107, 76, 0.14);
+  color: #154F38;
+}
+.card-sale .card-image-overlay .share-btn:hover,
+.card-sale .card-image-overlay .share-btn-card:hover {
+  background: rgba(30, 107, 76, 0.24);
+  color: #154F38;
+}
+/* روی کارت رهن کمی ته‌رنگ برنجی مثل تگ رهن */
+.card-rent .card-image-overlay .share-btn,
+.card-rent .card-image-overlay .share-btn-card {
+  background: rgba(180, 115, 42, 0.16);
+  color: #8C5A20;
+}
+.card-rent .card-image-overlay .share-btn:hover,
+.card-rent .card-image-overlay .share-btn-card:hover {
+  background: rgba(180, 115, 42, 0.26);
+  color: #8C5A20;
 }
 @media (max-width: 380px) {
   .card-image-overlay { gap: 6px; }
-  .card-image-overlay .deal-tag { padding: 6px 10px; font-size: 0.78rem; }
-  .card-image-overlay .share-btn-card { padding: 7px 9px; font-size: 0.74rem; }
+  .card-image-overlay .deal-tag,
+  .card-image-overlay .share-btn,
+  .card-image-overlay .share-btn-card {
+    padding: 5px 12px;
+    font-size: 0.78rem;
+  }
 }
 .card-body { padding: 16px 18px; }
 .card-top-row {
@@ -572,21 +603,31 @@ a { color: inherit; text-decoration: none; }
 }
 .card-top-row .deal-tag { margin-bottom: 0; }
 .share-btn {
-  background: var(--sage);
+  background: rgba(32, 28, 21, 0.12);
   border: none;
-  color: #fff;
+  color: #201C15;
   font-family: inherit;
-  font-size: 0.78rem;
-  font-weight: 700;
-  padding: 7px 12px;
-  min-height: 34px;
+  font-size: 0.88rem;
+  font-weight: 800;
+  padding: 6px 16px;
+  min-height: 0;
   border-radius: 999px;
   cursor: pointer;
   white-space: nowrap;
-  transition: background 0.15s ease;
+  letter-spacing: 0.01em;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+  transition: background 0.15s ease, color 0.15s ease;
 }
-.share-btn:hover { background: #3d5a50; }
+.share-btn:hover { background: rgba(32, 28, 21, 0.22); color: #201C15; }
 .share-btn:disabled { opacity: 0.85; cursor: default; }
+.card-sale .card-top-row .share-btn {
+  background: rgba(30, 107, 76, 0.14);
+  color: #154F38;
+}
+.card-rent .card-top-row .share-btn {
+  background: rgba(180, 115, 42, 0.16);
+  color: #8C5A20;
+}
 
 .share-menu {
   position: fixed;
