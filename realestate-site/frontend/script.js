@@ -252,6 +252,7 @@ function propertyCard(p) {
           ${shortAddress ? `<p class="card-meta card-address">📍 ${shortAddress}</p>` : ""}
           ${specsLine}
           ${extras.length ? `<p class="card-meta card-extras">${extras.join(" | ")}</p>` : ""}
+          ${p.documents ? `<p class="card-meta card-docs">📄 مدارک: ${p.documents}</p>` : ""}
           ${priceLine}
           ${agentLine}
           ${agentActions}
