@@ -422,8 +422,24 @@ function checkSinglePropertyMode() {
     const label = labeledPropertyType(found);
     const addr = truncateAddress(found.address) || "خادم‌آباد و باغستان";
     const pageUrl = `${window.location.origin}${window.location.pathname}?code=${targetCode}`;
-    const descText = `${label} کد ${targetCode} — ${addr}. مشاهده جزئیات و تماس با دفتر اطلس املاک خادم‌آباد.`;
-    document.title = `${label} کد ${targetCode} | اطلس املاک`;
+
+    // عنوان و توضیح مخصوص همین آگهی (سئو + اشتراک لینک)
+    const specsBits = [];
+    if (found.area_m2) specsBits.push(found.area_m2 + " متر");
+    if (found.rooms) specsBits.push(found.rooms + " خواب");
+    if (found.floor) specsBits.push("طبقه " + found.floor);
+    const priceShort = found.deal_type === "فروش"
+      ? (formatSaleTotal(found.price_total) || "توافقی")
+      : ([formatRentPart(found.rahn), formatRentPart(found.ejare)].filter(Boolean).join(" | ") || "توافقی");
+    const titleText = `${label} کد ${targetCode} | اطلس املاک`;
+    const descParts = [`${label} کد ${targetCode}`];
+    if (addr) descParts.push(addr);
+    if (specsBits.length) descParts.push(specsBits.join(" · "));
+    if (priceShort) descParts.push(priceShort);
+    descParts.push("مشاهده جزئیات و تماس با دفتر اطلس املاک خادم‌آباد و باغستان.");
+    const descText = descParts.join(" — ");
+
+    document.title = titleText;
     const desc = document.querySelector('meta[name="description"]');
     if (desc) desc.setAttribute("content", descText);
 
@@ -438,13 +454,23 @@ function checkSinglePropertyMode() {
       }
       el.setAttribute("content", val);
     };
-    setMeta("property", "og:title", `${label} کد ${targetCode} | اطلس املاک`);
+    setMeta("property", "og:title", titleText);
     setMeta("property", "og:description", descText);
     setMeta("property", "og:url", pageUrl);
     setMeta("property", "og:type", "website");
-    if (found.image) setMeta("property", "og:image", found.image);
-    setMeta("name", "twitter:title", `${label} کد ${targetCode} | اطلس املاک`);
+    // آدرس مطلق عکس (مسیر نسبی در اشتراک شبکه‌های اجتماعی کار نمی‌کند)
+    let ogImage = found.image || "https://atlas-amlak.ir/assets/logo.png";
+    if (ogImage && !/^https?:\/\//i.test(ogImage)) {
+      try {
+        ogImage = new URL(ogImage, window.location.origin + window.location.pathname).href;
+      } catch (e) {
+        ogImage = "https://atlas-amlak.ir/assets/logo.png";
+      }
+    }
+    setMeta("property", "og:image", ogImage);
+    setMeta("name", "twitter:title", titleText);
     setMeta("name", "twitter:description", descText);
+    setMeta("name", "twitter:image", ogImage);
 
     let canonical = document.querySelector('link[rel="canonical"]');
     if (!canonical) {
@@ -475,7 +501,7 @@ function checkSinglePropertyMode() {
         "addressCountry": "IR"
       }
     };
-    if (found.image) ld.image = found.image;
+    if (ogImage) ld.image = ogImage;
     if (found.area_m2) ld.floorSize = { "@type": "QuantitativeValue", "value": parseAreaM2(found), "unitCode": "MTK" };
     if (priceForLd) ld.offers = { "@type": "Offer", "priceCurrency": "IRR", "description": priceForLd };
     const scriptLd = document.createElement("script");
