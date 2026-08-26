@@ -1553,3 +1553,110 @@ a { color: inherit; text-decoration: none; }
 .footer-meta a:hover {
   color: var(--brass);
 }
+
+
+/* ===== صفحه تک‌آگهی (?code=) ===== */
+body.single-ad-mode .quick-actions,
+body.single-ad-mode .hero,
+body.single-ad-mode .filter-fab,
+body.single-ad-mode .listings-filter,
+body.single-ad-mode .office-intro .carousel,
+body.single-ad-mode .stats-ribbon {
+  display: none !important;
+}
+body.single-ad-mode .office-intro {
+  padding-bottom: 0;
+}
+body.single-ad-mode .brand-heading {
+  padding: 18px 0 8px;
+}
+body.single-ad-mode .brand-heading h1 {
+  font-size: 1.25rem;
+}
+body.single-ad-mode .brand-heading .carousel-caption {
+  font-size: 0.9rem;
+}
+body.single-ad-mode .listings {
+  padding-top: 12px;
+}
+body.single-ad-mode .section-head h2 {
+  font-size: 1.15rem;
+}
+
+.single-ad-banner {
+  background: #FFFFFF;
+  border: 1px solid var(--brass, #B4894F);
+  border-radius: 16px;
+  padding: 14px 16px;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+}
+.single-ad-banner-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  text-align: right;
+}
+.single-ad-kicker {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--brass, #B4894F);
+  letter-spacing: 0.02em;
+}
+.single-ad-banner-text strong {
+  font-size: 0.95rem;
+  color: var(--ink, #201C15);
+}
+.single-ad-back {
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--ink, #201C15);
+  color: var(--paper, #FFFCFA);
+  font-weight: 700;
+  font-size: 0.85rem;
+  padding: 10px 16px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+.single-ad-back:hover {
+  opacity: 0.9;
+}
+
+.card-actions-single {
+  flex-wrap: wrap;
+}
+.card-actions-single .single-share-btn {
+  flex: 1 1 100%;
+  width: 100%;
+  margin-top: 4px;
+  height: auto;
+  min-height: 44px;
+  border-radius: 12px;
+  font-size: 0.92rem;
+  font-weight: 700;
+  background: #B4894F;
+  color: #201C15;
+  padding: 12px 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+.card-actions-single .single-share-btn:hover {
+  background: #9a7340;
+  color: #fff;
+}
+
+body.single-ad-mode .card {
+  box-shadow: 0 8px 28px rgba(20,33,61,0.12);
+}
+body.single-ad-mode .card-image-wrap {
+  min-height: 200px;
+}

@@ -5,15 +5,82 @@ const resultCount = document.getElementById("resultCount");
 const loadMoreBtn = document.getElementById("loadMoreBtn");
 const statsText = document.getElementById("statsText");
 
-// مبلغ‌های آماده از شیت گاهی صفرهای اضافه دارن (مثلاً «7.000 میلیارد»)
-// این تابع صفرهای بی‌فایده‌ی اعشار رو پاک می‌کنه: «7.000 میلیارد» -> «7 میلیارد»
-// و «4.970 میلیارد» -> «4.97 میلیارد» (خودِ عدد دست نمی‌خوره، فقط نمایشش تمیز میشه)
+// مبلغ‌های آماده از شیت گاهی صفرهای اضافه / واحد ناقص / برچسب اشتباه دارن.
+// مثال‌ها:
+//   «7.000 میلیارد»     -> «7 میلیارد»
+//   «4675.000 میلیارد»  -> «4.675 میلیارد»  (عدد بزرگِ اشتباه‌برچسب‌خورده)
+//   «55» یا «70» برای متری -> «55 میلیون»
+function toEnglishDigits(str) {
+  return String(str || "").replace(/[۰-۹]/g, (d) => "۰۱۲۳۴۵۶۷۸۹".indexOf(d))
+    .replace(/[٠-٩]/g, (d) => "٠١٢٣٤٥٦٧٨٩".indexOf(d));
+}
+
+function trimDecimalZeros(numStr) {
+  if (!numStr.includes(".")) return numStr;
+  return numStr.replace(/(\.\d*?[1-9])0+$/, "$1").replace(/\.0+$/, "");
+}
+
+/** پاکسازی عمومی متن قیمت (اعشار اضافه) */
 function cleanPriceText(text) {
-  if (!text) return text;
-  return String(text).replace(/(\d+)\.(\d+)/g, (match, intPart, decPart) => {
+  if (text == null || text === "") return text;
+  let s = toEnglishDigits(String(text)).trim();
+  if (!s || s === "-") return s;
+  s = s.replace(/(\d+)\.(\d+)/g, (match, intPart, decPart) => {
     const trimmed = decPart.replace(/0+$/, "");
     return trimmed ? `${intPart}.${trimmed}` : intPart;
   });
+  return s;
+}
+
+/**
+ * نرمال‌سازی قیمت کل فروش.
+ * اگر عدد >= 100 و واحد «میلیارد» باشد، معمولاً مقدار به میلیون وارد شده
+ * و برچسب اشتباه است → تقسیم بر ۱۰۰۰ و نمایش به میلیارد.
+ */
+function formatSaleTotal(text) {
+  if (text == null || text === "") return "";
+  let s = cleanPriceText(text);
+  if (!s || s === "-" || /توافقی/.test(s)) return s || "توافقی";
+
+  const m = s.match(/^([\d,]+(?:\.\d+)?)\s*(.*)$/);
+  if (!m) return s;
+  let num = parseFloat(m[1].replace(/,/g, ""));
+  if (!Number.isFinite(num)) return s;
+  let unit = (m[2] || "").trim();
+
+  if (/میلیارد/.test(unit) && num >= 100) {
+    num = num / 1000;
+    unit = "میلیارد";
+  }
+  if (!unit) unit = "میلیارد";
+
+  const numStr = trimDecimalZeros(String(Math.round(num * 1000) / 1000));
+  return `${numStr} ${unit}`.trim();
+}
+
+/** قیمت متری: اگر فقط عدد بود، «میلیون» اضافه می‌شود */
+function formatPricePerM2(text) {
+  if (text == null || text === "") return "";
+  let s = cleanPriceText(text);
+  if (!s || s === "-") return "";
+  // اگر واحدی ندارد
+  if (!/(میلیون|میلیارد|هزار|تومان|ریال)/.test(s)) {
+    const n = s.replace(/[^\d.]/g, "");
+    if (n) return `${trimDecimalZeros(n)} میلیون`;
+  }
+  return s;
+}
+
+/** نمایش یکدست رهن / اجاره */
+function formatRentPart(text) {
+  if (text == null || text === "") return "";
+  let s = cleanPriceText(text);
+  if (!s || s === "-") return "";
+  if (!/(میلیون|میلیارد|هزار|تومان|ریال|توافقی)/.test(s)) {
+    const n = s.replace(/[^\d.]/g, "");
+    if (n) return `${trimDecimalZeros(n)} میلیون`;
+  }
+  return s;
 }
 
 /**
@@ -135,8 +202,14 @@ function cleanAgentName(name) {
 
 function formatRentPrice(p) {
   const parts = [];
-  if (p.rahn && p.rahn !== "-") parts.push(`رهن: ${cleanPriceText(p.rahn)}`);
-  if (p.ejare && p.ejare !== "-") parts.push(`اجاره: ${cleanPriceText(p.ejare)}`);
+  if (p.rahn && p.rahn !== "-") {
+    const r = formatRentPart(p.rahn);
+    if (r) parts.push(`رهن: ${r}`);
+  }
+  if (p.ejare && p.ejare !== "-") {
+    const e = formatRentPart(p.ejare);
+    if (e) parts.push(`اجاره: ${e}`);
+  }
   if (!parts.length) return "💰 توافقی";
   return `💰 ${parts.join(" | ")}`;
 }
@@ -166,11 +239,11 @@ function buildSmsText(p) {
   if (amenities.length) lines.push(amenities.join(" · "));
 
   if (p.deal_type === "فروش") {
-    if (p.price_total) lines.push(`قیمت کل: ${cleanPriceText(p.price_total)}`);
+    if (p.price_total) lines.push(`قیمت کل: ${formatSaleTotal(p.price_total)}`);
   } else {
     const rentBits = [];
-    if (p.rahn && p.rahn !== "-") rentBits.push(`رهن ${cleanPriceText(p.rahn)}`);
-    if (p.ejare && p.ejare !== "-") rentBits.push(`اجاره ${cleanPriceText(p.ejare)}`);
+    if (p.rahn && p.rahn !== "-") rentBits.push(`رهن ${formatRentPart(p.rahn)}`);
+    if (p.ejare && p.ejare !== "-") rentBits.push(`اجاره ${formatRentPart(p.ejare)}`);
     if (rentBits.length) lines.push(rentBits.join(" · "));
   }
 
@@ -193,20 +266,19 @@ function propertyCard(p) {
   const isSingleMode = Boolean(urlParams.get("code"));
 
   const backBanner = isSingleMode ? `
-    <div style="background: #FFFFFF; border: 1px solid var(--brass); border-radius: 16px; padding: 14px 18px; margin-bottom: 18px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; box-shadow: 0 4px 16px rgba(0,0,0,0.06);">
-      <span style="display: inline-flex; align-items: center; gap: 8px; font-weight: 700; font-size: 0.92rem; color: var(--ink);">
-        <span style="font-size: 1.1rem; line-height: 1;">📍</span>
-        <span>مشاهده‌ی آگهی کد ${p.code}</span>
-      </span>
-      <a href="${window.location.pathname}" style="text-decoration: none; display: inline-flex; align-items: center; gap: 8px; background: var(--ink); color: var(--paper); font-weight: 700; font-size: 0.85rem; padding: 10px 18px; border-radius: 999px; white-space: nowrap;">
-        <span style="font-size: 1rem; line-height: 1;">←</span>
-        <span>مشاهده همه آگهی‌ها</span>
-      </a>
+    <div class="single-ad-banner">
+      <div class="single-ad-banner-text">
+        <span class="single-ad-kicker">آگهی اختصاصی</span>
+        <strong>کد ${p.code} · ${labeledPropertyType(p)}</strong>
+      </div>
+      <a href="${window.location.pathname}" class="single-ad-back">← همه آگهی‌ها</a>
     </div>
   ` : "";
 
+  const saleTotal = formatSaleTotal(p.price_total);
+  const saleM2 = formatPricePerM2(p.price_per_m2);
   const priceLine = p.deal_type === "فروش"
-    ? `<p class="card-price">💰 ${cleanPriceText(p.price_total) || "توافقی"}</p>${p.price_per_m2 ? `<p class="card-meta card-price-m2">قیمت متری: ${cleanPriceText(p.price_per_m2)}</p>` : ""}`
+    ? `<p class="card-price">💰 ${saleTotal || "توافقی"}</p>${saleM2 ? `<p class="card-meta card-price-m2">قیمت متری: ${saleM2}</p>` : ""}`
     : `<p class="card-price">${formatRentPrice(p)}</p>`;
 
   const extras = buildExtras(p);
@@ -220,14 +292,18 @@ function propertyCard(p) {
   const officePhone = (typeof OFFICE_PHONE !== "undefined") ? OFFICE_PHONE : "09106943220";
   const baleUser = (typeof BALE_USERNAME !== "undefined") ? BALE_USERNAME : "Nobody_Mohsen";
   const baleMsg = encodeURIComponent(`سلام، در مورد آگهی کد ${p.code || ""} از سایت اطلس املاک پیام می‌دم.`);
+  const shareAction = isSingleMode
+    ? `<button class="share-btn single-share-btn" data-code="${p.code || ""}" type="button">🔗 اشتراک / دانلود کارت</button>`
+    : "";
   const agentActions = `
-    <div class="card-actions">
+    <div class="card-actions${isSingleMode ? " card-actions-single" : ""}">
       <a class="agent-call-btn agent-btn-primary" href="tel:${officePhone}">📞 مشاوره / بازدید</a>
       <a class="agent-msg-btn agent-btn-secondary" href="https://ble.ir/${baleUser}?text=${baleMsg}" target="_blank" rel="noopener">💬 پیام</a>
+      ${shareAction}
     </div>`;
 
   const wrapperStyle = isSingleMode
-    ? "grid-column: 1 / -1; max-width: 540px; margin: 0 auto; width: 100%;"
+    ? "grid-column: 1 / -1; max-width: 560px; margin: 0 auto; width: 100%;"
     : "width: 100%;";
 
   const specsParts = [];
@@ -275,9 +351,29 @@ function checkSinglePropertyMode() {
   if (found) {
     currentFiltered = [found];
     visibleCount = 1;
-    if (resultCount) resultCount.textContent = `نمایش آگهی کد ${targetCode}`;
+    if (resultCount) resultCount.textContent = `آگهی کد ${targetCode}`;
     renderProperties();
     if (loadMoreBtn) loadMoreBtn.hidden = true;
+
+    // حس صفحه جزئیات: عنوان تب، مخفی کردن فیلتر/هیرو اضافه، اسکرول به کارت
+    document.body.classList.add("single-ad-mode");
+    const label = labeledPropertyType(found);
+    document.title = `${label} کد ${targetCode} | اطلس املاک`;
+    const desc = document.querySelector('meta[name="description"]');
+    if (desc) {
+      const addr = truncateAddress(found.address) || "خادم‌آباد و باغستان";
+      desc.setAttribute("content", `${label} کد ${targetCode} — ${addr}. مشاهده جزئیات و تماس با دفتر اطلس املاک.`);
+    }
+    const clearBtn = document.getElementById("clearDeepLinkBtn");
+    if (clearBtn) {
+      clearBtn.hidden = false;
+      clearBtn.onclick = () => { window.location.href = window.location.pathname; };
+    }
+    // بعد از رندر، نرم برو سر کارت
+    requestAnimationFrame(() => {
+      const card = document.getElementById("card-" + targetCode);
+      if (card) card.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
     return true;
   }
   return false;
@@ -587,7 +683,7 @@ function showShareModal(p, shareBtn) {
   const extras = buildExtras(p);
   const label = labeledPropertyType(p);
   const priceText = p.deal_type === "فروش"
-    ? `💰 قیمت: ${cleanPriceText(p.price_total) || "توافقی"}`
+    ? `💰 قیمت: ${formatSaleTotal(p.price_total) || "توافقی"}`
     : formatRentPrice(p);
 
   const specsParts = [
@@ -595,7 +691,8 @@ function showShareModal(p, shareBtn) {
     p.rooms ? p.rooms + " خواب" : "",
     p.floor ? "طبقه " + p.floor : ""
   ].filter(Boolean);
-  const priceExtra = (p.deal_type === "فروش" && p.price_per_m2) ? `\n📏 قیمت متری: ${cleanPriceText(p.price_per_m2)}` : "";
+  const m2Share = formatPricePerM2(p.price_per_m2);
+  const priceExtra = (p.deal_type === "فروش" && m2Share) ? `\n📏 قیمت متری: ${m2Share}` : "";
   const shortAddr = truncateAddress(p.address) || "خادم‌آباد";
   const shareText =
 `🏠 ${label} · کد ${p.code}
