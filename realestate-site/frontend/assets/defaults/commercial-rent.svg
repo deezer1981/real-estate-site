@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" width="400" height="300">
+  <rect width="400" height="300" fill="#F5F0E8"/>
+  <g fill="#B8894F" transform="translate(95,50)">
+    <rect x="20" y="30" width="170" height="140" rx="3"/>
+    <rect x="20" y="10" width="170" height="25" rx="2" fill="#8B6914"/>
+    <rect x="40" y="100" width="50" height="70" rx="2" fill="#F5F0E8"/>
+    <rect x="120" y="100" width="50" height="70" rx="2" fill="#F5F0E8"/>
+    <rect x="40" y="50" width="30" height="30" rx="1" fill="#F5F0E8"/>
+    <rect x="85" y="50" width="30" height="30" rx="1" fill="#F5F0E8"/>
+    <rect x="130" y="50" width="30" height="30" rx="1" fill="#F5F0E8"/>
+    <ellipse cx="105" cy="175" rx="100" ry="10" fill="#B8894F" opacity="0.2"/>
+  </g>
+  <text x="200" y="255" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="700" fill="#8B6914">Commercial for Rent</text>
+</svg>

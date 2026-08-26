@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" width="400" height="300">
+  <rect width="400" height="300" fill="#FBF6EE"/>
+  <ellipse cx="200" cy="170" rx="140" ry="50" fill="#C4A574" opacity="0.5"/>
+  <path d="M60 170 Q200 100 340 170 L340 200 Q200 240 60 200 Z" fill="#8B9A5B" opacity="0.7"/>
+  <rect x="180" y="130" width="8" height="50" fill="#6B5B3A"/>
+  <ellipse cx="184" cy="120" rx="30" ry="25" fill="#5A7A3A"/>
+  <text x="200" y="255" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="700" fill="#1E4550">Land for Sale</text>
+</svg>
