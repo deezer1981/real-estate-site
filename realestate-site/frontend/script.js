@@ -894,25 +894,28 @@ ${shareUrl}
   const modalHtml = `
     <div id="shareModal" style="position:fixed;inset:0;z-index:9999;background:rgba(32,28,21,0.55);backdrop-filter:blur(5px);display:flex;align-items:center;justify-content:center;padding:16px;">
       <div style="background:#FFFCFA;border:1px solid #E8DFD0;border-radius:20px;width:100%;max-width:380px;padding:24px;text-align:center;box-shadow:0 16px 40px rgba(32,28,21,0.2);">
-        <h3 style="margin:0 0 6px;color:#201C15;font-size:1.15rem;font-weight:800;">اشتراک‌گذاری آگهی</h3>
-        <p style="margin:0 0 18px;color:#6B6358;font-size:0.85rem;">کد ${p.code || "—"} · ${label}</p>
+        <h3 style="margin:0 0 6px;color:#201C15;font-size:1.2rem;font-weight:800;">اشتراک‌گذاری آگهی</h3>
+        <p style="margin:0 0 18px;color:#6B6358;font-size:0.9rem;">کد ${p.code || "—"} · ${label}</p>
 
-        <div style="display:flex;flex-direction:column;gap:10px;">
-          <button id="modalNativeShareBtn" type="button" style="background:#201C15;color:#FFFCFA;border:none;padding:13px;border-radius:12px;font-weight:700;font-size:0.92rem;cursor:pointer;">
-            📤 اشتراک از طریق برنامه‌ها
+        <div style="display:flex;flex-direction:column;gap:11px;">
+          <button id="modalNativeShareBtn" type="button" style="background:#201C15;color:#FFFCFA;border:none;padding:15px 14px;border-radius:12px;font-weight:700;font-size:1.02rem;cursor:pointer;line-height:1.35;">
+            📤 اشتراک عکس آگهی (روبیکا / بله / استوری و ...)
           </button>
-          <button id="modalLinkBtn" type="button" style="background:#B4894F;color:#201C15;border:none;padding:13px;border-radius:12px;font-weight:700;font-size:0.92rem;cursor:pointer;">
+          <button id="modalStoryBtn" type="button" style="background:#B4894F;color:#201C15;border:none;padding:14px;border-radius:12px;font-weight:700;font-size:0.98rem;cursor:pointer;">
+            🖼️ فقط دانلود عکس کارت
+          </button>
+          <button id="modalLinkBtn" type="button" style="background:#FFFCFA;color:#201C15;border:1px solid #D4C4A8;padding:14px;border-radius:12px;font-weight:700;font-size:0.98rem;cursor:pointer;">
             🔗 کپی لینک آگهی
           </button>
-          <button id="modalTextBtn" type="button" style="background:#FFFCFA;color:#201C15;border:1px solid #D4C4A8;padding:13px;border-radius:12px;font-weight:700;font-size:0.92rem;cursor:pointer;">
+          <button id="modalTextBtn" type="button" style="background:#FFFCFA;color:#201C15;border:1px solid #D4C4A8;padding:14px;border-radius:12px;font-weight:700;font-size:0.98rem;cursor:pointer;">
             📋 کپی متن آگهی
           </button>
-          <button id="modalSmsBtn" type="button" style="background:#EFF6FF;color:#1E3A8A;border:1px solid #93C5FD;padding:13px;border-radius:12px;font-weight:700;font-size:0.92rem;cursor:pointer;">
+          <button id="modalSmsBtn" type="button" style="background:#EFF6FF;color:#1E3A8A;border:1px solid #93C5FD;padding:14px;border-radius:12px;font-weight:700;font-size:0.98rem;cursor:pointer;">
             📱 کپی متن پیامک
           </button>
         </div>
 
-        <button id="modalCloseBtn" type="button" style="background:transparent;border:none;color:#9A9080;font-size:0.85rem;margin-top:16px;cursor:pointer;">
+        <button id="modalCloseBtn" type="button" style="background:transparent;border:none;color:#9A9080;font-size:0.9rem;margin-top:16px;cursor:pointer;">
           بستن
         </button>
       </div>
@@ -930,22 +933,69 @@ ${shareUrl}
   document.getElementById("modalNativeShareBtn").addEventListener("click", async () => {
     const btn = document.getElementById("modalNativeShareBtn");
     const originalLabel = btn.innerHTML;
-    btn.innerHTML = "⏳ در حال آماده‌سازی...";
+    btn.innerHTML = "⏳ در حال آماده‌سازی عکس...";
     btn.disabled = true;
     try {
-      const shareData = {
-        title: `${label} · کد ${p.code} | اطلس املاک`,
-        text: shareText,
-        url: shareUrl,
-      };
-      if (navigator.share) {
-        await navigator.share(shareData);
-        showCopySuccess(shareBtn, "✅ اشتراک‌گذاری شد");
-        closeModal();
-        return;
+      // اسکرین‌شات کارت (بدون دکمه‌های تماس/پیام + ریبون atlas-amlak.ir)
+      const canvas = await captureCardScreenshot(p);
+      const blob = await canvasToBlob(canvas);
+      if (!blob) throw new Error("blob empty");
+
+      const file = new File([blob], "card-" + (p.code || "property") + ".jpg", {
+        type: "image/jpeg",
+        lastModified: Date.now(),
+      });
+
+      // ۱) فقط فایل — سازگارتر با روبیکا / بله / اندروید
+      const filesOnly = { files: [file] };
+      if (navigator.canShare && navigator.canShare(filesOnly)) {
+        try {
+          await navigator.share(filesOnly);
+          forceCopyText(shareText);
+          showCopySuccess(shareBtn, "✅ عکس اشتراک شد · متن کپی شد");
+          closeModal();
+          return;
+        } catch (e) {
+          if (e && e.name === "AbortError") {
+            btn.innerHTML = originalLabel;
+            btn.disabled = false;
+            return;
+          }
+        }
       }
+
+      // ۲) عکس + متن با هم
+      const withText = {
+        title: label + " · کد " + p.code + " | اطلس املاک",
+        text: shareText,
+        files: [file],
+      };
+      if (navigator.canShare && navigator.canShare(withText)) {
+        try {
+          await navigator.share(withText);
+          showCopySuccess(shareBtn, "✅ اشتراک‌گذاری شد");
+          closeModal();
+          return;
+        } catch (e) {
+          if (e && e.name === "AbortError") {
+            btn.innerHTML = originalLabel;
+            btn.disabled = false;
+            return;
+          }
+        }
+      }
+
+      // ۳) اگر اشتراک فایل پشتیبانی نشد: دانلود عکس + کپی متن
       forceCopyText(shareText);
-      showCopySuccess(shareBtn, "📋 متن کپی شد (اشتراک مستقیم پشتیبانی نمی‌شود)");
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "card-" + (p.code || "property") + ".jpg";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(url), 4000);
+      showCopySuccess(shareBtn, "🖼️ عکس دانلود شد · متن کپی شد");
       closeModal();
     } catch (err) {
       if (err && err.name === "AbortError") {
@@ -953,9 +1003,45 @@ ${shareUrl}
         btn.disabled = false;
         return;
       }
+      console.error("اشتراک عکس ناموفق:", err);
+      // آخرین fallback: فقط متن (یا شیت متنی مرورگر)
+      try {
+        if (navigator.share) {
+          await navigator.share({
+            title: label + " · کد " + p.code + " | اطلس املاک",
+            text: shareText,
+            url: shareUrl,
+          });
+          showCopySuccess(shareBtn, "✅ متن اشتراک شد");
+          closeModal();
+          return;
+        }
+      } catch (e2) {
+        if (e2 && e2.name === "AbortError") {
+          btn.innerHTML = originalLabel;
+          btn.disabled = false;
+          return;
+        }
+      }
       forceCopyText(shareText);
       showCopySuccess(shareBtn, "📋 متن کپی شد");
       closeModal();
+    }
+  });
+
+  document.getElementById("modalStoryBtn").addEventListener("click", async () => {
+    const btn = document.getElementById("modalStoryBtn");
+    const originalLabel = btn.innerHTML;
+    btn.innerHTML = "⏳ در حال ساخت...";
+    btn.disabled = true;
+    try {
+      await generateStoryImage(p);
+      showCopySuccess(shareBtn, "🖼️ عکس کارت دانلود شد");
+      closeModal();
+    } catch (err) {
+      console.error(err);
+      btn.innerHTML = originalLabel;
+      btn.disabled = false;
     }
   });
 
