@@ -173,7 +173,7 @@ function buildCardImage(p, isSale) {
   const overlay = `
     <div class="card-image-overlay">
       <span class="deal-tag ${isSale ? "sale" : "rent"}">${p.deal_type || "آگهی"}</span>
-      <button class="share-btn share-btn-card" data-code="${p.code || ""}" type="button" aria-label="اشتراک‌گذاری آگهی">🔗 اشتراک‌گذاری</button>
+      <button class="share-btn share-btn-card" data-code="${p.code || ""}" type="button" aria-label="اشتراک‌گذاری آگهی">🔗 اشتراک</button>
     </div>`;
   if (p.image) {
     return `
@@ -1180,6 +1180,22 @@ document.querySelectorAll(".quick-card[href='#listings']").forEach((card) => {
       if (e.key === "Enter") {
         e.preventDefault();
         if (typeof applyFilters === "function") applyFilters();
+      }
+    });
+  }
+
+  // دکمه/پنل «فیلتر پیشرفته» — روی موبایل جمع‌شده، با کلیک باز می‌شود
+  const advToggle = document.getElementById("advancedFilterToggle");
+  const advPanel = document.getElementById("advancedFilterPanel");
+  if (advToggle && advPanel) {
+    advToggle.addEventListener("click", () => {
+      const open = advPanel.classList.toggle("open");
+      advToggle.classList.toggle("open", open);
+      const label = advToggle.querySelector(".toggle-label");
+      if (label) {
+        label.textContent = open
+          ? "بستن فیلتر پیشرفته"
+          : "فیلتر پیشرفته (متراژ، خواب، قیمت، امکانات)";
       }
     });
   }
