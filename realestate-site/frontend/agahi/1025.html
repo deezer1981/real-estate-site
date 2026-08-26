@@ -32,51 +32,58 @@
 <link rel="icon" type="image/png" href="../assets/logo.png">
 <link rel="stylesheet" href="../style.css">
 <style>
-  body { background:#F7F3EA; margin:0; font-family: Vazirmatn, Tahoma, sans-serif; }
-  .agahi-wrap { max-width:560px; margin:0 auto; padding:16px 14px 110px; }
-  .agahi-card { background:#FFFCFA; border-radius:18px; overflow:hidden; box-shadow:0 6px 24px rgba(32,28,21,0.1); border:1px solid #E8DFD0; }
-  .agahi-img { width:100%; height:auto; max-height:320px; object-fit:cover; display:block; background:#F0EBE0; }
-  .agahi-body { padding:18px 16px 20px; }
-  .agahi-actions { display:flex; gap:10px; margin-top:16px; }
-  .agahi-actions a { flex:1; text-align:center; text-decoration:none; font-weight:800; font-size:1rem; padding:14px 10px; border-radius:12px; }
-  .agahi-call { background:#1E6B4C; color:#fff; }
-  .agahi-msg { background:#201C15; color:#FFFCFA; }
-  .agahi-bar { position:fixed; bottom:0; left:0; right:0; background:#FFFCFA; border-top:1px solid #E8DFD0; padding:10px 12px calc(10px + env(safe-area-inset-bottom)); display:flex; gap:10px; z-index:50; box-shadow:0 -4px 16px rgba(0,0,0,0.08); }
-  .agahi-bar a { flex:1; text-align:center; text-decoration:none; font-weight:800; font-size:0.98rem; padding:13px 8px; border-radius:12px; }
-  .agahi-back { display:inline-block; margin-bottom:12px; color:#201C15; font-weight:700; text-decoration:none; }
+  body { background: var(--paper, #F7F3EA); margin: 0; padding-bottom: 24px; }
+  .agahi-page { max-width: 560px; margin: 0 auto; padding: 16px 14px 32px; }
+  .agahi-back {
+    display: inline-flex; align-items: center; gap: 6px;
+    margin-bottom: 14px; padding: 8px 14px;
+    background: #fff; border: 1px solid #E8DFD0; border-radius: 999px;
+    color: #201C15; font-weight: 700; font-size: 0.9rem; text-decoration: none;
+  }
+  .agahi-footer {
+    margin-top: 28px; padding: 18px 16px; text-align: center;
+    border-top: 1px solid #E8DFD0; color: #6B6358; font-size: 0.88rem; line-height: 1.7;
+  }
+  .agahi-footer strong { color: #201C15; display: block; margin-bottom: 4px; }
+  .agahi-footer a { color: #201C15; font-weight: 700; text-decoration: none; }
+  .agahi-footer .phone { direction: ltr; unicode-bidi: embed; }
 </style>
 <script type="application/ld+json">
 {"@context":"https://schema.org","@type":"RealEstateListing","name":"زمین فروشی کد 1025","description":"زمین فروشی کد 1025 — باغستان - خادم‌آباد - بلوار ولیعصر - لاله ۱۶ اصلی — ۸۵ متر — 4675 میلیارد","url":"https://atlas-amlak.ir/agahi/1025.html","image":"https://atlas-amlak.ir/assets/office.jpg","address":{"@type":"PostalAddress","streetAddress":"باغستان - خادم‌آباد - بلوار ولیعصر - لاله ۱۶ اصلی","addressLocality":"خادم‌آباد","addressRegion":"تهران","addressCountry":"IR"}}
 </script>
 </head>
 <body>
-<main class="agahi-wrap">
-  <a class="agahi-back" href="../">← همه آگهی‌ها</a>
-  <article class="agahi-card">
-    <img class="agahi-img" src="../assets/defaults/land.svg" alt="زمین فروشی کد 1025" width="560" height="320" loading="eager">
-    <div class="agahi-body">
-      <p style="margin:0 0 6px;"><span style="display:inline-block;background:#E8F5EF;color:#154F38;font-weight:800;font-size:0.85rem;padding:4px 12px;border-radius:999px;">فروش</span></p>
-      <h1 style="margin:8px 0 4px;font-size:1.25rem;color:#201C15;">زمین فروشی <span style="color:#6B6358;font-size:0.95rem;">کد 1025</span></h1>
-      <p style="margin:8px 0;color:#201C15;font-size:0.98rem;">📍 باغستان - خادم‌آباد - بلوار ولیعصر - لاله ۱۶ اصلی</p>
-      <p style="margin:6px 0;color:#201C15;font-size:1rem;font-weight:600;">۸۵ متر</p>
-      
-      <p style="margin:6px 0;color:#57503F;font-size:0.95rem;">📄 مدارک: قولنامه وکالت</p>
-      <p style="margin:14px 0 0;font-size:1.35rem;font-weight:800;color:#1E6B4C;">💰 4675 میلیارد</p>
-      <p style="margin:4px 0;color:#6B6358;font-size:0.9rem;">قیمت متری: 55</p>
-      <p style="margin:10px 0 4px;color:#57503F;font-size:0.92rem;">👤 ثبت‌شده توسط: <strong>دفتر اطلس</strong></p>
-      <p style="margin:4px 0;color:#9A9080;font-size:0.85rem;">📅 ثبت: 1405/06/03</p>
-      <div class="agahi-actions">
-        <a class="agahi-call" href="tel:09106943220">📞 تماس</a>
-        <a class="agahi-msg" href="https://ble.ir/Nobody_Mohsen?text=سلام، در مورد آگهی کد 1025 از سایت اطلس املاک پیام می‌دم." target="_blank" rel="noopener">💬 پیام</a>
+<main class="agahi-page">
+  <a class="agahi-back" href="../">← بازگشت به همه آگهی‌ها</a>
+  <article class="card card-sale">
+    <div class="card-image-wrap">
+      <img class="card-image" src="../assets/defaults/land.svg" alt="زمین فروشی کد 1025" width="400" height="280" loading="eager">
+      <div class="card-image-overlay">
+        <span class="deal-tag sale">فروش</span>
       </div>
-      <p style="margin:16px 0 0;text-align:center;"><a href="https://atlas-amlak.ir/?code=1025" style="color:#B4894F;font-weight:700;text-decoration:none;">مشاهده در سایت اطلس ←</a></p>
-      <p style="margin:8px 0 0;text-align:center;color:#9A9080;font-size:0.85rem;" dir="ltr">0910 694 3220</p>
+    </div>
+    <div class="card-body">
+      <h1 class="card-title">زمین فروشی <span class="card-code">کد 1025</span></h1>
+      <p class="card-meta card-address">📍 باغستان - خادم‌آباد - بلوار ولیعصر - لاله ۱۶ اصلی</p>
+      <p class="card-meta">۸۵ متر</p>
+      
+      <p class="card-meta card-docs">📄 مدارک: قولنامه وکالت</p>
+      <p class="card-price">💰 4675 میلیارد</p>
+      <p class="card-meta card-price-m2">قیمت متری: 55</p>
+      <p class="card-agent">👤 ثبت‌شده توسط: <strong>دفتر اطلس</strong></p>
+      <div class="card-actions">
+        <a class="agent-call-btn agent-btn-primary" href="tel:09106943220">📞 مشاوره / بازدید</a>
+        <a class="agent-msg-btn agent-btn-secondary" href="https://ble.ir/Nobody_Mohsen?text=سلام، در مورد آگهی کد 1025 از سایت اطلس املاک پیام می‌دم." target="_blank" rel="noopener">💬 پیام</a>
+      </div>
+      <p class="card-date">📅 ثبت: 1405/06/03</p>
     </div>
   </article>
+  <footer class="agahi-footer">
+    <strong>گروه مشاورین املاک اطلس</strong>
+    خرید، فروش، رهن و اجاره در خادم‌آباد، باغستان و شهریار<br>
+    📞 <a class="phone" href="tel:+989106943220" dir="ltr">0910 694 3220</a><br>
+    <a href="../">atlas-amlak.ir</a>
+  </footer>
 </main>
-<nav class="agahi-bar">
-  <a class="agahi-call" href="tel:09106943220">📞 تماس</a>
-  <a class="agahi-msg" href="https://ble.ir/Nobody_Mohsen?text=سلام، در مورد آگهی کد 1025 از سایت اطلس املاک پیام می‌دم." target="_blank" rel="noopener">💬 پیام</a>
-</nav>
 </body>
 </html>
