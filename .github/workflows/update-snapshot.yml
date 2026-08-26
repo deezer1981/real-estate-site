@@ -44,7 +44,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add realestate-site/frontend/index.html realestate-site/frontend/bagh-villa.html
+          git add realestate-site/frontend/index.html realestate-site/frontend/bagh-villa.html realestate-site/frontend/agahi realestate-site/frontend/sitemap.xml
           git diff --cached --quiet || git commit -m "Auto-update property snapshot"
           git push
 
