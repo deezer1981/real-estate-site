@@ -309,13 +309,13 @@ function propertyCard(p) {
   const urlParams = new URLSearchParams(window.location.search);
   const isSingleMode = Boolean(urlParams.get("code"));
 
+  /* بنر بالای کارت فقط راهنما — دکمه برگشت اینجاست حذف شد تا با «بازگشت به همه آگهی‌ها» تکراری نباشد */
   const backBanner = isSingleMode ? `
-    <div class="single-ad-banner">
+    <div class="single-ad-banner single-ad-banner-info">
       <div class="single-ad-banner-text">
         <span class="single-ad-kicker">آگهی اختصاصی</span>
         <strong>کد ${p.code} · ${labeledPropertyType(p)}</strong>
       </div>
-      <a href="${window.location.pathname}" class="single-ad-back">← همه آگهی‌ها</a>
     </div>
   ` : "";
 

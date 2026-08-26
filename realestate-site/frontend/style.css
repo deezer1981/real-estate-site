@@ -1640,6 +1640,9 @@ body.single-ad-mode .section-head h2 {
   font-size: 0.95rem;
   color: var(--ink, #201C15);
 }
+.single-ad-banner-info {
+  justify-content: flex-start;
+}
 .single-ad-back {
   text-decoration: none;
   display: inline-flex;
