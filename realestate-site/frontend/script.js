@@ -899,10 +899,7 @@ ${shareUrl}
 
         <div style="display:flex;flex-direction:column;gap:11px;">
           <button id="modalNativeShareBtn" type="button" style="background:#201C15;color:#FFFCFA;border:none;padding:15px 14px;border-radius:12px;font-weight:700;font-size:1.02rem;cursor:pointer;line-height:1.35;">
-            📤 اشتراک عکس آگهی (روبیکا / بله / استوری و ...)
-          </button>
-          <button id="modalStoryBtn" type="button" style="background:#B4894F;color:#201C15;border:none;padding:14px;border-radius:12px;font-weight:700;font-size:0.98rem;cursor:pointer;">
-            🖼️ فقط دانلود عکس کارت
+            📤 اشتراک آگهی از طریق برنامه‌ها
           </button>
           <button id="modalLinkBtn" type="button" style="background:#FFFCFA;color:#201C15;border:1px solid #D4C4A8;padding:14px;border-radius:12px;font-weight:700;font-size:0.98rem;cursor:pointer;">
             🔗 کپی لینک آگهی
@@ -933,7 +930,7 @@ ${shareUrl}
   document.getElementById("modalNativeShareBtn").addEventListener("click", async () => {
     const btn = document.getElementById("modalNativeShareBtn");
     const originalLabel = btn.innerHTML;
-    btn.innerHTML = "⏳ در حال آماده‌سازی عکس...";
+    btn.innerHTML = "⏳ در حال آماده‌سازی عکس و متن...";
     btn.disabled = true;
     try {
       // اسکرین‌شات کارت (بدون دکمه‌های تماس/پیام + ریبون atlas-amlak.ir)
@@ -946,13 +943,16 @@ ${shareUrl}
         lastModified: Date.now(),
       });
 
-      // ۱) فقط فایل — سازگارتر با روبیکا / بله / اندروید
-      const filesOnly = { files: [file] };
-      if (navigator.canShare && navigator.canShare(filesOnly)) {
+      // ۱) اولویت: عکس + متن با هم
+      const withText = {
+        title: label + " · کد " + p.code + " | اطلس املاک",
+        text: shareText,
+        files: [file],
+      };
+      if (navigator.canShare && navigator.canShare(withText)) {
         try {
-          await navigator.share(filesOnly);
-          forceCopyText(shareText);
-          showCopySuccess(shareBtn, "✅ عکس اشتراک شد · متن کپی شد");
+          await navigator.share(withText);
+          showCopySuccess(shareBtn, "✅ عکس و متن اشتراک شد");
           closeModal();
           return;
         } catch (e) {
@@ -964,16 +964,13 @@ ${shareUrl}
         }
       }
 
-      // ۲) عکس + متن با هم
-      const withText = {
-        title: label + " · کد " + p.code + " | اطلس املاک",
-        text: shareText,
-        files: [file],
-      };
-      if (navigator.canShare && navigator.canShare(withText)) {
+      // ۲) بعضی اپ‌ها فقط فایل را قبول می‌کنند — عکس share + متن کپی
+      const filesOnly = { files: [file] };
+      if (navigator.canShare && navigator.canShare(filesOnly)) {
         try {
-          await navigator.share(withText);
-          showCopySuccess(shareBtn, "✅ اشتراک‌گذاری شد");
+          await navigator.share(filesOnly);
+          forceCopyText(shareText);
+          showCopySuccess(shareBtn, "✅ عکس اشتراک شد · متن کپی شد");
           closeModal();
           return;
         } catch (e) {
@@ -1004,7 +1001,7 @@ ${shareUrl}
         return;
       }
       console.error("اشتراک عکس ناموفق:", err);
-      // آخرین fallback: فقط متن (یا شیت متنی مرورگر)
+      // آخرین fallback: فقط متن
       try {
         if (navigator.share) {
           await navigator.share({
@@ -1026,22 +1023,6 @@ ${shareUrl}
       forceCopyText(shareText);
       showCopySuccess(shareBtn, "📋 متن کپی شد");
       closeModal();
-    }
-  });
-
-  document.getElementById("modalStoryBtn").addEventListener("click", async () => {
-    const btn = document.getElementById("modalStoryBtn");
-    const originalLabel = btn.innerHTML;
-    btn.innerHTML = "⏳ در حال ساخت...";
-    btn.disabled = true;
-    try {
-      await generateStoryImage(p);
-      showCopySuccess(shareBtn, "🖼️ عکس کارت دانلود شد");
-      closeModal();
-    } catch (err) {
-      console.error(err);
-      btn.innerHTML = originalLabel;
-      btn.disabled = false;
     }
   });
 
