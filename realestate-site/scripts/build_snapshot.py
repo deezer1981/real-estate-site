@@ -663,32 +663,37 @@ def render_listing_html(p: dict) -> str:
         extras.append("انباری")
     extras_txt = " | ".join(extras)
 
-    # توضیح کوتاه‌تر برای کارت پیش‌نمایش واتساپ
+    # توضیح غنی‌تر برای واتساپ (قیمت اول — مهم‌ترین)
     og_bits = []
+    if price:
+        og_bits.append("💰 " + price)
     if specs_txt:
         og_bits.append(specs_txt)
+    if extras_txt:
+        og_bits.append(extras_txt)
     short_addr = (p.get("address") or "").strip()
-    if len(short_addr) > 40:
-        short_addr = short_addr[:40].rstrip() + "…"
+    if len(short_addr) > 48:
+        short_addr = short_addr[:48].rstrip() + "…"
     if short_addr:
-        og_bits.append(short_addr)
-    if price:
-        og_bits.append(price)
-    og_bits.append("اطلس املاک · خادم‌آباد")
-    desc = escape(" | ".join(og_bits))
+        og_bits.append("📍 " + short_addr)
+    if docs:
+        og_bits.append("📄 " + (p.get("documents") or "").strip()[:30])
+    og_bits.append("📞 0910 694 3220 · اطلس املاک")
+    desc = escape(" · ".join(og_bits))
     title = f"{label} · کد {code} | اطلس"
 
-    extras_html = f'<p class="card-meta">{escape(extras_txt)}</p>' if extras_txt else ""
-    docs_html = f'<p class="card-meta">📄 مدارک: {docs}</p>' if docs else ""
-    m2_html = f'<p class="card-meta">قیمت متری: {m2}</p>' if m2 and p.get("deal_type") == "فروش" else ""
-    agent_html = f'<p class="card-agent">👤 ثبت‌شده توسط: <strong>{agent}</strong></p>' if agent else ""
-    date_html = f'<p class="card-date">📅 ثبت: {reg}</p>' if reg else ""
-    specs_html = f'<p class="card-meta">{escape(specs_txt)}</p>' if specs_txt else ""
-    addr_html = f'<p class="card-meta card-address">📍 {addr}</p>' if addr else ""
+    extras_html = f'<p style="margin:6px 0;color:#57503F;font-size:0.95rem;">{escape(extras_txt)}</p>' if extras_txt else ""
+    docs_html = f'<p style="margin:6px 0;color:#57503F;font-size:0.95rem;">📄 مدارک: {docs}</p>' if docs else ""
+    m2_html = f'<p style="margin:4px 0;color:#6B6358;font-size:0.9rem;">قیمت متری: {m2}</p>' if m2 and p.get("deal_type") == "فروش" else ""
+    agent_html = f'<p style="margin:10px 0 4px;color:#57503F;font-size:0.92rem;">👤 ثبت‌شده توسط: <strong>{agent}</strong></p>' if agent else ""
+    date_html = f'<p style="margin:4px 0;color:#9A9080;font-size:0.85rem;">📅 ثبت: {reg}</p>' if reg else ""
+    specs_html = f'<p style="margin:6px 0;color:#201C15;font-size:1rem;font-weight:600;">{escape(specs_txt)}</p>' if specs_txt else ""
+    addr_html = f'<p style="margin:8px 0;color:#201C15;font-size:0.98rem;">📍 {addr}</p>' if addr else ""
 
     bale_msg = escape(
         f"سلام، در مورد آگهی کد {code} از سایت اطلس املاک پیام می‌دم."
     )
+    main_site = f"https://atlas-amlak.ir/?code={code}"
 
     return f"""<!DOCTYPE html>
 <html lang="fa" dir="rtl">
@@ -714,37 +719,53 @@ def render_listing_html(p: dict) -> str:
 <meta name="twitter:image" content="{escape(img)}">
 <link rel="icon" type="image/png" href="../assets/logo.png">
 <link rel="stylesheet" href="../style.css">
+<style>
+  body {{ background:#F7F3EA; margin:0; font-family: Vazirmatn, Tahoma, sans-serif; }}
+  .agahi-wrap {{ max-width:560px; margin:0 auto; padding:16px 14px 110px; }}
+  .agahi-card {{ background:#FFFCFA; border-radius:18px; overflow:hidden; box-shadow:0 6px 24px rgba(32,28,21,0.1); border:1px solid #E8DFD0; }}
+  .agahi-img {{ width:100%; height:auto; max-height:320px; object-fit:cover; display:block; background:#F0EBE0; }}
+  .agahi-body {{ padding:18px 16px 20px; }}
+  .agahi-actions {{ display:flex; gap:10px; margin-top:16px; }}
+  .agahi-actions a {{ flex:1; text-align:center; text-decoration:none; font-weight:800; font-size:1rem; padding:14px 10px; border-radius:12px; }}
+  .agahi-call {{ background:#1E6B4C; color:#fff; }}
+  .agahi-msg {{ background:#201C15; color:#FFFCFA; }}
+  .agahi-bar {{ position:fixed; bottom:0; left:0; right:0; background:#FFFCFA; border-top:1px solid #E8DFD0; padding:10px 12px calc(10px + env(safe-area-inset-bottom)); display:flex; gap:10px; z-index:50; box-shadow:0 -4px 16px rgba(0,0,0,0.08); }}
+  .agahi-bar a {{ flex:1; text-align:center; text-decoration:none; font-weight:800; font-size:0.98rem; padding:13px 8px; border-radius:12px; }}
+  .agahi-back {{ display:inline-block; margin-bottom:12px; color:#201C15; font-weight:700; text-decoration:none; }}
+</style>
 <script type="application/ld+json">
 {{"@context":"https://schema.org","@type":"RealEstateListing","name":{json.dumps(label + " کد " + code, ensure_ascii=False)},"description":{json.dumps(" — ".join([_listing_label(p) + f" کد {code}", (p.get("address") or ""), specs_txt, _listing_price_line(p)]), ensure_ascii=False)},"url":{json.dumps(page_url)},"image":{json.dumps(img)},"address":{{"@type":"PostalAddress","streetAddress":{json.dumps(p.get("address") or "", ensure_ascii=False)},"addressLocality":"خادم‌آباد","addressRegion":"تهران","addressCountry":"IR"}}}}
 </script>
 </head>
 <body>
-<main class="wrap" style="padding:20px 16px 80px;max-width:560px;margin:0 auto;">
-  <p style="margin:0 0 14px;"><a href="../" style="color:inherit;font-weight:700;">← همه آگهی‌ها</a></p>
-  <article class="card {'card-sale' if p.get('deal_type') == 'فروش' else 'card-rent'}">
-    <div class="card-image-wrap">
-      <img class="card-image" src="{img_src}" alt="{label} کد {code}" width="400" height="280" loading="eager">
-      <div class="card-image-overlay">
-        <span class="deal-tag {'sale' if p.get('deal_type') == 'فروش' else 'rent'}">{deal}</span>
-      </div>
-    </div>
-    <div class="card-body">
-      <h1 class="card-title" style="font-size:1.15rem;">{label} <span class="card-code">کد {code}</span></h1>
+<main class="agahi-wrap">
+  <a class="agahi-back" href="../">← همه آگهی‌ها</a>
+  <article class="agahi-card">
+    <img class="agahi-img" src="{img_src}" alt="{label} کد {code}" width="560" height="320" loading="eager">
+    <div class="agahi-body">
+      <p style="margin:0 0 6px;"><span style="display:inline-block;background:#E8F5EF;color:#154F38;font-weight:800;font-size:0.85rem;padding:4px 12px;border-radius:999px;">{deal}</span></p>
+      <h1 style="margin:8px 0 4px;font-size:1.25rem;color:#201C15;">{label} <span style="color:#6B6358;font-size:0.95rem;">کد {code}</span></h1>
       {addr_html}
       {specs_html}
       {extras_html}
       {docs_html}
-      <p class="card-price">💰 {price}</p>
+      <p style="margin:14px 0 0;font-size:1.35rem;font-weight:800;color:#1E6B4C;">💰 {price}</p>
       {m2_html}
       {agent_html}
-      <div class="card-actions">
-        <a class="agent-call-btn agent-btn-primary" href="tel:09106943220">📞 مشاوره / بازدید</a>
-        <a class="agent-msg-btn agent-btn-secondary" href="https://ble.ir/Nobody_Mohsen?text={bale_msg}" target="_blank" rel="noopener">💬 پیام</a>
-      </div>
       {date_html}
+      <div class="agahi-actions">
+        <a class="agahi-call" href="tel:09106943220">📞 تماس</a>
+        <a class="agahi-msg" href="https://ble.ir/Nobody_Mohsen?text={bale_msg}" target="_blank" rel="noopener">💬 پیام</a>
+      </div>
+      <p style="margin:16px 0 0;text-align:center;"><a href="{main_site}" style="color:#B4894F;font-weight:700;text-decoration:none;">مشاهده در سایت اطلس ←</a></p>
+      <p style="margin:8px 0 0;text-align:center;color:#9A9080;font-size:0.85rem;" dir="ltr">0910 694 3220</p>
     </div>
   </article>
 </main>
+<nav class="agahi-bar">
+  <a class="agahi-call" href="tel:09106943220">📞 تماس</a>
+  <a class="agahi-msg" href="https://ble.ir/Nobody_Mohsen?text={bale_msg}" target="_blank" rel="noopener">💬 پیام</a>
+</nav>
 </body>
 </html>
 """
