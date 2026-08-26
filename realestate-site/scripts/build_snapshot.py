@@ -570,6 +570,222 @@ def update_snapshot():
 
     print("✅ اسنپ‌شات با موفقیت به‌روز شد")
 
+    # صفحات سبک هر آگهی (سئو + پیش‌نمایش لینک) — روی سرعت صفحه اصلی اثر ندارد
+    frontend_dir = index_path.parent
+    n_pages = write_listing_pages(frontend_dir, all_props)
+    print(f"✅ صفحات آگهی: {n_pages} فایل در agahi/")
+    write_sitemap(frontend_dir, all_props)
+    print("✅ sitemap.xml به‌روز شد")
+
+
+def _clean_price_text(text: str) -> str:
+    if not text:
+        return ""
+    def repl(m):
+        a, b = m.group(1), m.group(2)
+        trimmed = b.rstrip("0")
+        return f"{a}.{trimmed}" if trimmed else a
+    return re.sub(r"(\d+)\.(\d+)", repl, str(text))
+
+
+def _listing_label(p: dict) -> str:
+    t = (p.get("property_type") or "ملک").strip()
+    if p.get("deal_type") == "فروش":
+        return f"{t} فروشی"
+    return f"رهن و اجاره {t}"
+
+
+def _listing_price_line(p: dict) -> str:
+    if p.get("deal_type") == "فروش":
+        return _clean_price_text(p.get("price_total") or "") or "توافقی"
+    bits = []
+    if p.get("rahn") and p.get("rahn") != "-":
+        bits.append(f"رهن {_clean_price_text(p.get('rahn'))}")
+    if p.get("ejare") and p.get("ejare") != "-":
+        bits.append(f"اجاره {_clean_price_text(p.get('ejare'))}")
+    return " | ".join(bits) if bits else "توافقی"
+
+
+def _abs_image_url(image: str) -> str:
+    if not image:
+        return "https://atlas-amlak.ir/assets/logo.png"
+    if re.match(r"^https?:\/\/", image, re.I):
+        return image
+    return "https://atlas-amlak.ir/" + image.lstrip("/")
+
+
+def render_listing_html(p: dict) -> str:
+    """صفحه HTML سبک و ایستا برای یک آگهی — بدون JS سنگین."""
+    code = escape(str(p.get("code") or ""))
+    label = escape(_listing_label(p))
+    addr = escape((p.get("address") or "").strip())
+    area = escape(str(p.get("area_m2") or "").strip())
+    rooms = escape(str(p.get("rooms") or "").strip())
+    floor = escape(str(p.get("floor") or "").strip())
+    price = escape(_listing_price_line(p))
+    m2 = escape(_clean_price_text(p.get("price_per_m2") or ""))
+    docs = escape(str(p.get("documents") or "").strip())
+    agent = escape(str(p.get("agent_name") or "").strip())
+    reg = escape(str(p.get("registered_at") or "").strip())
+    deal = escape(str(p.get("deal_type") or ""))
+    page_url = f"https://atlas-amlak.ir/agahi/{code}.html"
+    img = _abs_image_url(p.get("image") or "")
+    img_rel = escape((p.get("image") or "assets/defaults/generic.svg").lstrip("/"))
+    # مسیر نسبی از پوشه agahi/
+    if not re.match(r"^https?:\/\/", img_rel, re.I):
+        img_src = escape("../" + img_rel)
+    else:
+        img_src = escape(img_rel)
+
+    specs = []
+    if area:
+        specs.append(f"{area} متر")
+    if rooms:
+        specs.append(f"{rooms} خواب")
+    if floor:
+        specs.append(f"طبقه {floor}")
+    specs_txt = " · ".join(specs)
+
+    extras = []
+    if p.get("parking"):
+        extras.append("پارکینگ")
+    if p.get("elevator"):
+        extras.append("آسانسور")
+    if p.get("storage"):
+        extras.append("انباری")
+    extras_txt = " | ".join(extras)
+
+    desc_parts = [f"{label} کد {code}"]
+    if addr:
+        desc_parts.append(addr)
+    if specs_txt:
+        desc_parts.append(specs_txt)
+    if price:
+        desc_parts.append(price)
+    desc_parts.append("مشاهده جزئیات و تماس با دفتر اطلس املاک خادم‌آباد و باغستان.")
+    desc = escape(" — ".join(desc_parts))
+    title = f"{label} کد {code} | اطلس املاک"
+
+    extras_html = f'<p class="card-meta">{escape(extras_txt)}</p>' if extras_txt else ""
+    docs_html = f'<p class="card-meta">📄 مدارک: {docs}</p>' if docs else ""
+    m2_html = f'<p class="card-meta">قیمت متری: {m2}</p>' if m2 and p.get("deal_type") == "فروش" else ""
+    agent_html = f'<p class="card-agent">👤 ثبت‌شده توسط: <strong>{agent}</strong></p>' if agent else ""
+    date_html = f'<p class="card-date">📅 ثبت: {reg}</p>' if reg else ""
+    specs_html = f'<p class="card-meta">{escape(specs_txt)}</p>' if specs_txt else ""
+    addr_html = f'<p class="card-meta card-address">📍 {addr}</p>' if addr else ""
+
+    bale_msg = escape(
+        f"سلام، در مورد آگهی کد {code} از سایت اطلس املاک پیام می‌دم."
+    )
+
+    return f"""<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{escape(title)}</title>
+<meta name="description" content="{desc}">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="{page_url}">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="اطلس املاک">
+<meta property="og:title" content="{escape(title)}">
+<meta property="og:description" content="{desc}">
+<meta property="og:url" content="{page_url}">
+<meta property="og:image" content="{escape(img)}">
+<meta property="og:locale" content="fa_IR">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="{escape(title)}">
+<meta name="twitter:description" content="{desc}">
+<meta name="twitter:image" content="{escape(img)}">
+<link rel="icon" type="image/png" href="../assets/logo.png">
+<link rel="stylesheet" href="../style.css">
+<script type="application/ld+json">
+{{"@context":"https://schema.org","@type":"RealEstateListing","name":{json.dumps(label + " کد " + code, ensure_ascii=False)},"description":{json.dumps(" — ".join([_listing_label(p) + f" کد {code}", (p.get("address") or ""), specs_txt, _listing_price_line(p)]), ensure_ascii=False)},"url":{json.dumps(page_url)},"image":{json.dumps(img)},"address":{{"@type":"PostalAddress","streetAddress":{json.dumps(p.get("address") or "", ensure_ascii=False)},"addressLocality":"خادم‌آباد","addressRegion":"تهران","addressCountry":"IR"}}}}
+</script>
+</head>
+<body>
+<main class="wrap" style="padding:20px 16px 80px;max-width:560px;margin:0 auto;">
+  <p style="margin:0 0 14px;"><a href="../" style="color:inherit;font-weight:700;">← همه آگهی‌ها</a></p>
+  <article class="card {'card-sale' if p.get('deal_type') == 'فروش' else 'card-rent'}">
+    <div class="card-image-wrap">
+      <img class="card-image" src="{img_src}" alt="{label} کد {code}" width="400" height="280" loading="eager">
+      <div class="card-image-overlay">
+        <span class="deal-tag {'sale' if p.get('deal_type') == 'فروش' else 'rent'}">{deal}</span>
+      </div>
+    </div>
+    <div class="card-body">
+      <h1 class="card-title" style="font-size:1.15rem;">{label} <span class="card-code">کد {code}</span></h1>
+      {addr_html}
+      {specs_html}
+      {extras_html}
+      {docs_html}
+      <p class="card-price">💰 {price}</p>
+      {m2_html}
+      {agent_html}
+      <div class="card-actions">
+        <a class="agent-call-btn agent-btn-primary" href="tel:09106943220">📞 مشاوره / بازدید</a>
+        <a class="agent-msg-btn agent-btn-secondary" href="https://ble.ir/Nobody_Mohsen?text={bale_msg}" target="_blank" rel="noopener">💬 پیام</a>
+      </div>
+      {date_html}
+    </div>
+  </article>
+</main>
+</body>
+</html>
+"""
+
+
+def write_listing_pages(frontend_dir: Path, props: list[dict]) -> int:
+    """ساخت/به‌روزرسانی agahi/{code}.html و حذف کدهای غیرفعال."""
+    agahi = frontend_dir / "agahi"
+    agahi.mkdir(exist_ok=True)
+    active_codes = set()
+    for p in props:
+        code = str(p.get("code") or "").strip()
+        if not code:
+            continue
+        # فقط ارقام و حروف ساده در نام فایل
+        safe = re.sub(r"[^\w\-]", "", code)
+        if not safe:
+            continue
+        active_codes.add(safe)
+        (agahi / f"{safe}.html").write_text(render_listing_html(p), encoding="utf-8")
+    # پاک کردن صفحات قدیمی که دیگر در شیت نیستند
+    for old in agahi.glob("*.html"):
+        if old.stem not in active_codes:
+            old.unlink()
+    return len(active_codes)
+
+
+def write_sitemap(frontend_dir: Path, props: list[dict]) -> None:
+    urls = [
+        ("https://atlas-amlak.ir/", "hourly", "1.0"),
+        ("https://atlas-amlak.ir/about.html", "monthly", "0.6"),
+        ("https://atlas-amlak.ir/baghestan.html", "monthly", "0.6"),
+        ("https://atlas-amlak.ir/bagh-villa.html", "weekly", "0.7"),
+        ("https://atlas-amlak.ir/investment.html", "monthly", "0.5"),
+        ("https://atlas-amlak.ir/reviews.html", "monthly", "0.5"),
+    ]
+    for p in props:
+        code = re.sub(r"[^\w\-]", "", str(p.get("code") or "").strip())
+        if code:
+            urls.append((f"https://atlas-amlak.ir/agahi/{code}.html", "daily", "0.8"))
+    lines = [
+        '<?xml version="1.0" encoding="UTF-8"?>',
+        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
+    ]
+    for loc, freq, pri in urls:
+        lines.append("  <url>")
+        lines.append(f"    <loc>{loc}</loc>")
+        lines.append(f"    <changefreq>{freq}</changefreq>")
+        lines.append(f"    <priority>{pri}</priority>")
+        lines.append("  </url>")
+    lines.append("</urlset>")
+    lines.append("")
+    (frontend_dir / "sitemap.xml").write_text("\n".join(lines), encoding="utf-8")
+
 
 if __name__ == "__main__":
     update_snapshot()
+
