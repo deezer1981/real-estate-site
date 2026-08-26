@@ -50,7 +50,7 @@ INACTIVE_STATUSES = {
 # کلیدها را دقیقاً مطابق مقدار ستون «نوع ملک» در شیت تنظیم کن.
 # ---------------------------------------------------------------
 DEFAULT_IMAGES = {
-    "آپارتمان": "assets/defaults/apartment.svg",
+    "آپارتمان": "assets/defaults/apartment.jpg",
     "ویلا": "assets/defaults/villa.svg",
     "باغ ویلا": "assets/defaults/bagh-villa.svg",
     "باغ": "assets/defaults/bagh.svg",
