@@ -68,7 +68,7 @@
 }
 </script>
 <style>
-  /* --- دکمه ربات تلگرام توی نوار دسکتاپ --- */
+  /* --- دکمه ربات تلگرام توی نوار دسکتاپ (فقط دسکتاپ، چون main-nav در موبایل مخفیه) --- */
   .bot-cta-small.telegram {
     background: #229ED9;
     color: #fff;
@@ -81,58 +81,55 @@
   }
   .bot-cta-small.telegram svg { width: 15px; height: 15px; flex: none; }
 
-  /* --- آیکون تلگرام کوچک بالای هدر، فقط روی موبایل (همان‌جایی که برند هست، کنارش) --- */
-  .header-telegram-fab {
-    display: none;
-    align-items: center;
-    justify-content: center;
-    width: 32px;
-    height: 32px;
-    min-width: 32px;
-    border-radius: 50%;
-    background: #229ED9;
-    flex: none;
-  }
-  .header-telegram-fab svg { width: 16px; height: 16px; }
-  @media (max-width: 720px) {
-    /* هم‌راستا با بقیه هدر موبایل که در همین breakpoint تعریف شده */
-    .header-telegram-fab { display: flex; }
-  }
-
-  /* --- ردیف آیکون‌های فوتر: بزرگ، با برچسب روشن و خواناى زیر هرکدام --- */
-  .footer-socials {
-    display: flex;
-    justify-content: center;
-    gap: 30px;
-    margin: 16px 0 8px;
-  }
-  .footer-social-item {
+  /* --- ردیف آیکون‌های فوتر: تلگرام + اینستاگرام + ایمیل، فقط روی موبایل ---
+       نکته مهم: استایل قبلی سایت روی «.footer-socials a» یه باکس ثابت
+       34x34 می‌ذاره که با آیکون+برچسب ما تداخل می‌کرد و باعث رو‌هم‌افتادن
+       متن‌ها می‌شد؛ این‌جا مشخصاً همون رو خنثی می‌کنیم. */
+  .footer-socials a.footer-social-item {
+    width: auto;
+    height: auto;
+    background: transparent;
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 10px;
     text-decoration: none;
   }
+  .footer-socials a.footer-social-item:hover { background: transparent; }
+  .footer-socials {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    row-gap: 18px;
+    column-gap: 30px;
+    margin: 16px 0 8px;
+  }
   .footer-social-icon {
-    width: 48px;
-    height: 48px;
+    width: 46px;
+    height: 46px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+    flex-shrink: 0;
   }
-  .footer-social-icon svg { width: 22px; height: 22px; }
+  .footer-social-icon svg { width: 21px; height: 21px; }
   .footer-social-icon.telegram { background: #229ED9; }
   .footer-social-icon.instagram {
     background: radial-gradient(circle at 30% 110%, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285AEB 90%);
   }
   .footer-social-icon.email { background: #57503F; }
   .footer-social-label {
-    font-size: 0.82rem;
+    font-size: 0.8rem;
     font-weight: 700;
     color: #F3EDE0;
     white-space: nowrap;
+  }
+  /* آیکون تلگرام فقط روی موبایل توی فوتر — روی دسکتاپ همون بالا توی هدر کافیه */
+  @media (min-width: 721px) {
+    .footer-telegram-item { display: none; }
+  }
   }
 </style>
 </head>
@@ -159,11 +156,6 @@
       <a class="bot-cta-small whatsapp" id="whatsappLinkNav" href="#" target="_blank" rel="noopener">واتساپ</a>
       <a class="bot-cta-small bale" id="baleLinkNav" href="#" target="_blank" rel="noopener">بله</a>
     </nav>
-    <a class="header-telegram-fab" href="https://t.me/KhademAbad_RealEstate_bot" target="_blank" rel="noopener" aria-label="ربات هوشمند اطلس در تلگرام" title="ربات هوشمند اطلس">
-      <svg viewBox="0 0 448 512" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-        <path fill="#fff" d="M446.7 98.6 379.1 417.4c-5.1 22.5-18.4 28.1-37.3 17.5l-103-75.9-49.7 47.8c-5.5 5.5-10.1 10.1-20.7 10.1l7.4-104.9 190.9-172.5c8.3-7.4-1.8-11.5-12.9-4.1L117.8 284 15.3 252.1c-22.3-6.9-22.7-22.3 4.6-33L418.2 65.4c18.6-6.9 34.9 4.1 28.5 33.2z"/>
-      </svg>
-    </a>
     <button id="menuToggle" class="menu-toggle" aria-label="باز کردن منو" aria-expanded="false">
       <span></span><span></span><span></span>
     </button>
@@ -468,7 +460,7 @@
       <p class="phone-row">📞 <a class="phone-ltr" href="tel:+989106943220" dir="ltr">0910 694 3220</a></p>
       <p class="footer-hours">ساعات پاسخگویی: همه‌روزه ۱۰ صبح تا ۹ شب</p>
       <div class="footer-socials">
-        <a href="https://t.me/KhademAbad_RealEstate_bot" target="_blank" rel="noopener" class="footer-social-item">
+        <a href="https://t.me/KhademAbad_RealEstate_bot" target="_blank" rel="noopener" class="footer-social-item footer-telegram-item">
           <span class="footer-social-icon telegram">
             <svg viewBox="0 0 448 512" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
               <path fill="#fff" d="M446.7 98.6 379.1 417.4c-5.1 22.5-18.4 28.1-37.3 17.5l-103-75.9-49.7 47.8c-5.5 5.5-10.1 10.1-20.7 10.1l7.4-104.9 190.9-172.5c8.3-7.4-1.8-11.5-12.9-4.1L117.8 284 15.3 252.1c-22.3-6.9-22.7-22.3 4.6-33L418.2 65.4c18.6-6.9 34.9 4.1 28.5 33.2z"/>
