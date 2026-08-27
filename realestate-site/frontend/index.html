@@ -18,6 +18,14 @@
 <link rel="apple-touch-icon" sizes="180x180" href="https://atlas-amlak.ir/assets/favicon-180.png">
 <link rel="shortcut icon" href="https://atlas-amlak.ir/assets/favicon-32.png">
 
+<!-- PWA: نصب سایت به‌عنوان اپلیکیشن -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0B1B33">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="اطلس املاک">
+<link rel="apple-touch-icon" href="https://atlas-amlak.ir/assets/favicon-180.png">
+
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="اطلس املاک">
 <meta property="og:title" content="اطلس">
@@ -62,8 +70,16 @@
     {"@type": "Place", "name": "باغستان"},
     {"@type": "Place", "name": "شهریار"}
   ],
+  "openingHoursSpecification": {
+    "@type": "OpeningHoursSpecification",
+    "dayOfWeek": ["Saturday", "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+    "opens": "10:00",
+    "closes": "21:00"
+  },
   "sameAs": [
-    "https://ble.ir/Nobody_Mohsen"
+    "https://ble.ir/Nobody_Mohsen",
+    "https://t.me/KhademAbad_RealEstate_bot",
+    "https://www.instagram.com/shahryar.estate.guide"
   ]
 }
 </script>
@@ -150,6 +166,15 @@
     font-size: 1.2rem;
   }
 
+  /* --- دکمه نصب اپلیکیشن (PWA) --- */
+  .install-app-btn {
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+    background: #2E7D32;
+  }
+  .install-app-btn:hover { filter: brightness(1.08); }
+
   @media (max-width: 480px) {
     .footer-socials { gap: 22px; }
   }
@@ -176,6 +201,7 @@
       <a href="#contact">تماس با ما</a>
       <a class="bot-cta-small whatsapp" id="whatsappLinkNav" href="#" target="_blank" rel="noopener">واتساپ</a>
       <a class="bot-cta-small bale" id="baleLinkNav" href="#" target="_blank" rel="noopener">بله</a>
+      <button type="button" class="bot-cta-small install-app-btn" id="installBtnNav" hidden>📲 نصب اپلیکیشن</button>
     </nav>
     <button id="menuToggle" class="menu-toggle" aria-label="باز کردن منو" aria-expanded="false">
       <span></span><span></span><span></span>
@@ -204,6 +230,7 @@
     </a>
     <a class="bot-cta-small whatsapp" id="drawerWhatsapp" href="#" target="_blank" rel="noopener">واتساپ</a>
     <a class="bot-cta-small bale" id="drawerBale" href="#" target="_blank" rel="noopener">بله</a>
+    <button type="button" class="bot-cta-small install-app-btn" id="installBtnDrawer" hidden>📲 نصب اپلیکیشن</button>
   </div>
 </aside>
 
@@ -521,7 +548,7 @@
     <span class="tab-icon">📋</span>
     <span>آگهی‌ها</span>
   </a>
-  <a href="#contact" class="tab-item">
+  <a href="tel:+989106943220" class="tab-item">
     <span class="tab-icon">📞</span>
     <span>تماس</span>
   </a>
@@ -542,5 +569,39 @@
 <script src="config.js"></script>
 <script src="common.js"></script>
 <script src="script.js?v=21"></script>
+<script>
+  // --- PWA: ثبت Service Worker و مدیریت دکمه‌ی نصب اپلیکیشن ---
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('sw.js').catch(() => {});
+    });
+  }
+
+  (function () {
+    var installButtons = document.querySelectorAll('.install-app-btn');
+    var deferredPrompt = null;
+
+    window.addEventListener('beforeinstallprompt', function (e) {
+      e.preventDefault();
+      deferredPrompt = e;
+      installButtons.forEach(function (btn) { btn.hidden = false; });
+    });
+
+    installButtons.forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        if (!deferredPrompt) return;
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.finally(function () {
+          deferredPrompt = null;
+          installButtons.forEach(function (b) { b.hidden = true; });
+        });
+      });
+    });
+
+    window.addEventListener('appinstalled', function () {
+      installButtons.forEach(function (btn) { btn.hidden = true; });
+    });
+  })();
+</script>
 </body>
 </html>
