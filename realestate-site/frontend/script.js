@@ -1115,204 +1115,8 @@ function showCopySuccess(btnElement, text) {
 // اشتراک صفحه اول سایت — بنر عمودی استوری (۱۰۸۰×۱۹۲۰)
 // کیفیت بصری بهتر از اسکرین خام صفحه وب برای بله/روبیکا/اینستا
 // --------------------------------------------------------------------- //
-const SITE_STORY_THEME = {
-  paper: "#FBF6EC",
-  paperDeep: "#F0E6D2",
-  white: "#FFFFFF",
-  ink: "#201C15",
-  inkSoft: "#57503F",
-  muted: "#8A8172",
-  brass: "#B4894F",
-  brassLight: "#E7D6AF",
-  brassDark: "#8A6836",
-};
-
-function loadSiteLogoImage() {
-  return new Promise((resolve) => {
-    const img = new Image();
-    img.crossOrigin = "anonymous";
-    img.onload = () => resolve(img);
-    img.onerror = () => resolve(null);
-    img.src = "assets/logo.png";
-  });
-}
-
-function siteRoundRect(ctx, x, y, w, h, r) {
-  const radius = Math.min(r, w / 2, h / 2);
-  ctx.beginPath();
-  if (ctx.roundRect) {
-    ctx.roundRect(x, y, w, h, radius);
-  } else {
-    ctx.moveTo(x + radius, y);
-    ctx.arcTo(x + w, y, x + w, y + h, radius);
-    ctx.arcTo(x + w, y + h, x, y + h, radius);
-    ctx.arcTo(x, y + h, x, y, radius);
-    ctx.arcTo(x, y, x + w, y, radius);
-    ctx.closePath();
-  }
-}
-
-async function generateSiteStoryCanvas() {
-  if (document.fonts && document.fonts.load) {
-    try {
-      await Promise.all([
-        document.fonts.load('700 40px "Vazirmatn"'),
-        document.fonts.load('800 56px "Vazirmatn"'),
-        document.fonts.load('600 28px "Vazirmatn"'),
-      ]);
-      if (document.fonts.ready) await document.fonts.ready;
-    } catch (e) { /* fallback system font */ }
-  }
-
-  const logo = await loadSiteLogoImage();
-  const W = 1080;
-  const H = 1920;
-  const canvas = document.createElement("canvas");
-  canvas.width = W;
-  canvas.height = H;
-  const ctx = canvas.getContext("2d");
-  if ("direction" in ctx) ctx.direction = "rtl";
-  ctx.textBaseline = "middle";
-  ctx.textAlign = "center";
-
-  const C = SITE_STORY_THEME;
-  const cx = W / 2;
-  const M = 72;
-
-  // پس‌زمینه گرم
-  const bg = ctx.createLinearGradient(0, 0, 0, H);
-  bg.addColorStop(0, C.white);
-  bg.addColorStop(0.55, C.paper);
-  bg.addColorStop(1, C.paperDeep);
-  ctx.fillStyle = bg;
-  ctx.fillRect(0, 0, W, H);
-
-  // قاب برنجی ظریف
-  ctx.strokeStyle = C.brassLight;
-  ctx.lineWidth = 8;
-  siteRoundRect(ctx, 28, 28, W - 56, H - 56, 36);
-  ctx.stroke();
-
-  // لوگو
-  let y = 160;
-  if (logo) {
-    const maxLogo = 160;
-    const scale = Math.min(maxLogo / logo.width, maxLogo / logo.height);
-    const lw = logo.width * scale;
-    const lh = logo.height * scale;
-    ctx.drawImage(logo, cx - lw / 2, y, lw, lh);
-    y += lh + 48;
-  } else {
-    y += 40;
-  }
-
-  // نام برند
-  ctx.fillStyle = C.ink;
-  ctx.font = '800 52px Vazirmatn, Tahoma, sans-serif';
-  ctx.fillText("گروه مشاورین املاک اطلس", cx, y);
-  y += 56;
-
-  ctx.fillStyle = C.brassDark;
-  ctx.font = '600 30px Vazirmatn, Tahoma, sans-serif';
-  ctx.fillText("Atlas Estate  ·  Baghestan Guide", cx, y);
-  y += 70;
-
-  // خط تزئینی
-  ctx.strokeStyle = C.brass;
-  ctx.lineWidth = 2;
-  ctx.beginPath();
-  ctx.moveTo(cx - 160, y);
-  ctx.lineTo(cx - 20, y);
-  ctx.moveTo(cx + 20, y);
-  ctx.lineTo(cx + 160, y);
-  ctx.stroke();
-  ctx.save();
-  ctx.translate(cx, y);
-  ctx.rotate(Math.PI / 4);
-  ctx.fillStyle = C.brass;
-  ctx.fillRect(-7, -7, 14, 14);
-  ctx.restore();
-  y += 70;
-
-  // شعار
-  ctx.fillStyle = C.inkSoft;
-  ctx.font = '700 36px Vazirmatn, Tahoma, sans-serif';
-  ctx.fillText("خرید، فروش، رهن و اجاره", cx, y);
-  y += 52;
-  ctx.font = '600 32px Vazirmatn, Tahoma, sans-serif';
-  ctx.fillText("در خادم‌آباد، باغستان و شهریار", cx, y);
-  y += 80;
-
-  // کارت آمار
-  const statsEl = document.getElementById("statsText");
-  const statsLine = (statsEl && statsEl.textContent.trim())
-    || (typeof allProperties !== "undefined" && allProperties.length
-      ? `🏠 ${allProperties.length} فایل فعال`
-      : "🏠 فایل‌های به‌روز دفتر اطلس");
-
-  const boxH = 120;
-  ctx.fillStyle = C.white;
-  siteRoundRect(ctx, M, y, W - M * 2, boxH, 24);
-  ctx.fill();
-  ctx.strokeStyle = C.brass;
-  ctx.lineWidth = 2.5;
-  siteRoundRect(ctx, M, y, W - M * 2, boxH, 24);
-  ctx.stroke();
-  ctx.fillStyle = C.ink;
-  ctx.font = '700 34px Vazirmatn, Tahoma, sans-serif';
-  ctx.fillText(statsLine.replace(/\s+/g, " ").trim(), cx, y + boxH / 2);
-  y += boxH + 70;
-
-  // خدمات کوتاه
-  const pills = ["آپارتمان", "زمین", "رهن و اجاره", "باغ و ویلا"];
-  const pillW = 200;
-  const gap = 16;
-  const totalW = pills.length * pillW + (pills.length - 1) * gap;
-  let px = cx - totalW / 2;
-  // two rows of 2 if too wide — actually 4*200+3*16=848 fits
-  pills.forEach((label) => {
-    ctx.fillStyle = C.paperDeep;
-    siteRoundRect(ctx, px, y, pillW, 64, 16);
-    ctx.fill();
-    ctx.fillStyle = C.inkSoft;
-    ctx.font = '700 26px Vazirmatn, Tahoma, sans-serif';
-    ctx.fillText(label, px + pillW / 2, y + 32);
-    px += pillW + gap;
-  });
-  y += 64 + 90;
-
-  // تماس
-  ctx.fillStyle = C.muted;
-  ctx.font = '600 28px Vazirmatn, Tahoma, sans-serif';
-  ctx.fillText("تماس با دفتر اطلس", cx, y);
-  y += 56;
-  ctx.fillStyle = C.brassDark;
-  ctx.font = '800 56px Vazirmatn, Tahoma, sans-serif';
-  ctx.direction = "ltr";
-  ctx.fillText("0910 694 3220", cx, y);
-  ctx.direction = "rtl";
-  y += 90;
-
-  // دکمه دامنه
-  const btnW = 480;
-  const btnH = 78;
-  ctx.fillStyle = C.brass;
-  siteRoundRect(ctx, cx - btnW / 2, y, btnW, btnH, 18);
-  ctx.fill();
-  ctx.fillStyle = C.white;
-  ctx.font = '800 36px Vazirmatn, Tahoma, sans-serif';
-  ctx.direction = "ltr";
-  ctx.fillText("atlas-amlak.ir", cx, y + btnH / 2);
-  ctx.direction = "rtl";
-  y += btnH + 70;
-
-  ctx.fillStyle = C.muted;
-  ctx.font = '600 26px Vazirmatn, Tahoma, sans-serif';
-  ctx.fillText("فایل‌های واقعی و به‌روز  ·  مشاوره تخصصی منطقه", cx, y);
-
-  return canvas;
-}
-
+// اشتراک صفحه اول — اسکرین واقعی: هدر + متن‌ها + ۹ دکمه میان‌بر
+// --------------------------------------------------------------------- //
 function buildSiteShareText() {
   const statsEl = document.getElementById("statsText");
   const statsLine = (statsEl && statsEl.textContent.trim()) || "";
@@ -1330,6 +1134,73 @@ ${statsLine ? "\n" + statsLine + "\n" : ""}
   );
 }
 
+/**
+ * اسکرین‌شات از بخش بالای صفحه اول:
+ * هدر + نوار آمار + تیتر + ۹ دکمه میان‌بر (بدون عکس کاروسل و بدون بقیه صفحه)
+ */
+async function captureHomeShareScreenshot() {
+  const h2c = await loadHtml2Canvas();
+
+  const selectors = [".site-header", ".stats-ribbon", ".brand-heading", ".quick-actions"];
+  const sources = selectors.map((s) => document.querySelector(s)).filter(Boolean);
+  if (!sources.length) throw new Error("بخش‌های صفحه اول پیدا نشد");
+
+  const holder = document.createElement("div");
+  holder.setAttribute("data-home-share-capture", "1");
+  holder.style.cssText = [
+    "position:fixed",
+    "left:-10000px",
+    "top:0",
+    "width:390px",
+    "background:#FFFCFA",
+    "z-index:-1",
+    "pointer-events:none",
+    "overflow:hidden",
+  ].join(";");
+
+  sources.forEach((el) => {
+    const clone = el.cloneNode(true);
+    // هدر در کلون نباید fixed/sticky باشد
+    if (clone.classList.contains("site-header")) {
+      clone.style.position = "relative";
+      clone.style.top = "auto";
+      clone.style.left = "auto";
+      clone.style.right = "auto";
+      clone.style.width = "100%";
+      clone.style.zIndex = "1";
+    }
+    // منوی همبرگری در اسکرین لازم نیست
+    clone.querySelectorAll(".menu-toggle, .main-nav").forEach((n) => n.remove());
+    holder.appendChild(clone);
+  });
+
+  // فوتر کوچک دامنه
+  const foot = document.createElement("div");
+  foot.style.cssText =
+    "padding:12px 16px 16px;text-align:center;font-family:Vazirmatn,Tahoma,sans-serif;font-weight:700;font-size:0.85rem;color:#57503F;background:#FBF6EC;border-top:1px solid rgba(32,28,21,0.08);";
+  foot.textContent = "atlas-amlak.ir";
+  holder.appendChild(foot);
+
+  document.body.appendChild(holder);
+  await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+
+  try {
+    const canvas = await h2c(holder, {
+      scale: 2,
+      useCORS: true,
+      allowTaint: false,
+      backgroundColor: "#FFFCFA",
+      logging: false,
+      imageTimeout: 8000,
+      width: holder.offsetWidth,
+      windowWidth: 390,
+    });
+    return canvas;
+  } finally {
+    holder.remove();
+  }
+}
+
 function showSiteShareModal(triggerBtn) {
   const oldModal = document.getElementById("shareModal");
   if (oldModal) oldModal.remove();
@@ -1341,13 +1212,13 @@ function showSiteShareModal(triggerBtn) {
     <div id="shareModal" style="position:fixed;inset:0;z-index:9999;background:rgba(32,28,21,0.55);backdrop-filter:blur(5px);display:flex;align-items:center;justify-content:center;padding:16px;">
       <div style="background:#FFFCFA;border:1px solid #E8DFD0;border-radius:20px;width:100%;max-width:380px;padding:24px;text-align:center;box-shadow:0 16px 40px rgba(32,28,21,0.2);">
         <h3 style="margin:0 0 6px;color:#201C15;font-size:1.15rem;font-weight:800;">اشتراک صفحه اول سایت</h3>
-        <p style="margin:0 0 18px;color:#6B6358;font-size:0.85rem;">بنر استوری اطلس املاک</p>
+        <p style="margin:0 0 18px;color:#6B6358;font-size:0.85rem;">اسکرین هدر + میان‌برها</p>
         <div style="display:flex;flex-direction:column;gap:10px;">
           <button id="siteShareNativeBtn" type="button" style="background:#201C15;color:#FFFCFA;border:none;padding:13px;border-radius:12px;font-weight:700;font-size:0.92rem;cursor:pointer;">
-            📤 اشتراک بنر استوری (بله / روبیکا / اینستا)
+            📤 اشتراک عکس (بله / روبیکا / استوری)
           </button>
           <button id="siteShareDownloadBtn" type="button" style="background:#B4894F;color:#201C15;border:none;padding:13px;border-radius:12px;font-weight:700;font-size:0.92rem;cursor:pointer;">
-            🖼️ دانلود بنر استوری
+            🖼️ دانلود اسکرین صفحه اول
           </button>
           <button id="siteShareCopyBtn" type="button" style="background:#FFFCFA;color:#201C15;border:1px solid #D4C4A8;padding:13px;border-radius:12px;font-weight:700;font-size:0.92rem;cursor:pointer;">
             📋 کپی متن معرفی سایت
@@ -1376,21 +1247,21 @@ function showSiteShareModal(triggerBtn) {
     btn.innerHTML = "⏳ در حال آماده‌سازی...";
     btn.disabled = true;
     try {
-      const canvas = await generateSiteStoryCanvas();
+      const canvas = await captureHomeShareScreenshot();
       const blob = await canvasToBlob(canvas);
-      const file = new File([blob], "atlas-amlak-story.jpg", { type: "image/jpeg" });
+      const file = new File([blob], "atlas-amlak-home.jpg", { type: "image/jpeg" });
       const withText = { title: "اطلس املاک", text: shareText, files: [file] };
       const filesOnly = { files: [file] };
       if (navigator.canShare && navigator.canShare(withText)) {
         await navigator.share(withText);
-        feedback("✅ بنر اشتراک شد");
+        feedback("✅ اشتراک شد");
         closeModal();
         return;
       }
       if (navigator.canShare && navigator.canShare(filesOnly)) {
         await navigator.share(filesOnly);
         forceCopyText(shareText);
-        feedback("✅ بنر اشتراک شد · متن کپی شد");
+        feedback("✅ عکس اشتراک شد · متن کپی شد");
         closeModal();
         return;
       }
@@ -1400,17 +1271,16 @@ function showSiteShareModal(triggerBtn) {
         closeModal();
         return;
       }
-      // fallback download
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = "atlas-amlak-story.jpg";
+      a.download = "atlas-amlak-home.jpg";
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
       setTimeout(() => URL.revokeObjectURL(url), 4000);
       forceCopyText(shareText);
-      feedback("🖼️ بنر دانلود شد · متن کپی شد");
+      feedback("🖼️ دانلود شد · متن کپی شد");
       closeModal();
     } catch (err) {
       if (err && err.name === "AbortError") {
@@ -1430,22 +1300,22 @@ function showSiteShareModal(triggerBtn) {
     btn.innerHTML = "⏳ در حال ساخت...";
     btn.disabled = true;
     try {
-      const canvas = await generateSiteStoryCanvas();
+      const canvas = await captureHomeShareScreenshot();
       const blob = await canvasToBlob(canvas);
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = "atlas-amlak-story.jpg";
+      a.download = "atlas-amlak-home.jpg";
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
       setTimeout(() => URL.revokeObjectURL(url), 4000);
-      feedback("🖼️ بنر دانلود شد");
+      feedback("🖼️ دانلود شد");
       closeModal();
     } catch (err) {
       console.error(err);
-      alert("ساخت بنر ناموفق بود. دوباره تلاش کنید.");
-      btn.innerHTML = "🖼️ دانلود بنر استوری";
+      alert("ساخت تصویر ناموفق بود. دوباره تلاش کنید.");
+      btn.innerHTML = "🖼️ دانلود اسکرین صفحه اول";
       btn.disabled = false;
     }
   });
@@ -1469,6 +1339,7 @@ document.addEventListener("click", (e) => {
   e.preventDefault();
   showSiteShareModal(siteBtn);
 });
+
 
 
 // --------------------------------------------------------------------- //

@@ -1808,32 +1808,29 @@ body.single-ad-mode .card-image-wrap {
 .advanced-filters.open { display: block; }
 
 
-/* ===== اشتراک صفحه اول / استوری سایت ===== */
+
+
+
+/* دکمه اشتراک سایت — هم‌استایل آیکون‌های فوتر */
+.footer-socials .share-site-btn,
 .share-site-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  width: 100%;
-  max-width: 280px;
-  margin: 10px 0 12px;
-  padding: 12px 16px;
-  min-height: 46px;
+  width: 34px;
+  height: 34px;
+  padding: 0;
   border: none;
-  border-radius: 12px;
-  background: #B4894F;
-  color: #201C15;
-  font-family: inherit;
-  font-size: 0.92rem;
-  font-weight: 800;
+  background: rgba(255,255,255,0.06);
+  border-radius: 50%;
+  font-size: 1rem;
+  color: inherit;
   cursor: pointer;
-  box-shadow: 0 2px 10px rgba(32,28,21,0.12);
-  transition: background 0.15s ease, transform 0.15s ease;
+  transition: background 0.2s;
+  font-family: inherit;
+  line-height: 1;
 }
+.footer-socials .share-site-btn:hover,
 .share-site-btn:hover {
-  background: #9a7340;
-  color: #fff;
-}
-.share-site-btn:active {
-  transform: scale(0.98);
+  background: rgba(255,255,255,0.14);
 }
