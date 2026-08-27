@@ -762,27 +762,93 @@ def render_listing_html(p: dict) -> str:
 <link rel="icon" type="image/png" href="../assets/logo.png">
 <link rel="stylesheet" href="../style.css">
 <style>
-  body {{ background: var(--paper, #F7F3EA); margin: 0; padding-bottom: 24px; }}
-  .agahi-page {{ max-width: 560px; margin: 0 auto; padding: 16px 14px 32px; }}
+  body {{
+    background: linear-gradient(180deg, #F7F3EA 0%, #EFE6D3 100%);
+    margin: 0; padding-bottom: 28px;
+  }}
+  .agahi-page {{ max-width: 560px; margin: 0 auto; padding: 18px 14px 36px; }}
+
+  /* ناوبری بالای صفحه: دکمه بازگشت + برچسب برند */
+  .agahi-nav {{
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 10px; margin-bottom: 16px;
+  }}
   .agahi-back {{
     display: inline-flex; align-items: center; gap: 6px;
-    margin-bottom: 14px; padding: 8px 14px;
+    padding: 9px 16px; margin: 0;
     background: #fff; border: 1px solid #E8DFD0; border-radius: 999px;
-    color: #201C15; font-weight: 700; font-size: 0.9rem; text-decoration: none;
+    color: #201C15; font-weight: 700; font-size: 0.86rem; text-decoration: none;
+    box-shadow: 0 2px 8px rgba(32,28,21,0.05);
+    transition: background 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease;
   }}
+  .agahi-back:hover {{ background: #FBF6EC; box-shadow: 0 4px 14px rgba(32,28,21,0.09); }}
+  .agahi-back:active {{ transform: scale(0.97); }}
+  .agahi-back-icon {{ font-size: 0.78rem; }}
+  .agahi-brand-chip {{
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 0.78rem; font-weight: 700; color: #B8894F;
+    background: rgba(184,137,79,0.12); padding: 8px 13px; border-radius: 999px;
+    white-space: nowrap; flex-shrink: 0;
+  }}
+
+  .agahi-card-wrap {{ margin: 4px 0 22px; }}
+
+  /* دکمه بازگشت پایین کارت */
+  .agahi-bottom-back {{ display: flex; justify-content: center; margin: 0 0 24px; }}
+  .agahi-bottom-back a {{
+    display: inline-flex; align-items: center; gap: 6px;
+    background: transparent; border: 1.5px solid #B8894F; color: #201C15;
+    font-weight: 700; font-size: 0.86rem; padding: 10px 22px; border-radius: 999px;
+    text-decoration: none; transition: background 0.15s ease, color 0.15s ease;
+  }}
+  .agahi-bottom-back a:hover {{ background: #B8894F; color: #fff; }}
+
+  /* فوتر برند — نوار رنگی بالا + لوگوی دایره‌ای + لینک‌های پیلی */
   .agahi-footer {{
-    margin-top: 24px; padding: 0; text-align: center;
+    margin-top: 0; padding: 0; text-align: center;
     background: linear-gradient(180deg, #FFFCFA 0%, #F3EDE3 100%);
-    border: 1px solid #E0D5C4; border-radius: 18px;
+    border: 1px solid #E0D5C4; border-radius: 20px;
     color: #57503F; font-size: 0.9rem; line-height: 1.75;
-    box-shadow: 0 4px 18px rgba(32,28,21,0.06); overflow: hidden;
+    box-shadow: 0 8px 26px rgba(32,28,21,0.08); overflow: hidden;
   }}
-  .agahi-footer-inner {{ padding: 22px 18px 20px; }}
-  .agahi-footer strong {{ color: #201C15; display: block; margin-bottom: 6px; font-size: 1.08rem; }}
+  .agahi-footer::before {{
+    content: ""; display: block; height: 4px;
+    background: linear-gradient(90deg, #B8894F 0%, #4A6B5F 100%);
+  }}
+  .agahi-footer-inner {{ padding: 24px 20px 22px; }}
+  .agahi-footer-logo {{
+    width: 50px; height: 50px; border-radius: 50%;
+    background: #fff; border: 1px solid #E8DFD0;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 12px; font-size: 1.4rem;
+    box-shadow: 0 4px 12px rgba(32,28,21,0.06);
+  }}
+  .agahi-footer strong {{ color: #201C15; display: block; margin-bottom: 6px; font-size: 1.1rem; }}
+  .agahi-footer .footer-tagline {{ margin: 0 0 14px; color: #6B6358; }}
+  .agahi-footer .phone-row {{
+    display: inline-flex; align-items: center; gap: 8px;
+    background: rgba(74,107,95,0.10); padding: 8px 16px; border-radius: 999px; margin: 0 0 6px;
+  }}
   .agahi-footer a {{ color: #201C15; font-weight: 700; text-decoration: none; }}
-  .agahi-footer .phone {{ direction: ltr; unicode-bidi: embed; font-weight: 800; font-size: 1.05rem; }}
-  .agahi-footer-links {{ display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 14px; margin-top: 12px; padding-top: 12px; border-top: 1px solid #E8DFD0; }}
-  .agahi-footer-links a {{ font-size: 0.88rem; color: #6B6358; }}
+  .agahi-footer .phone {{ direction: ltr; unicode-bidi: embed; font-weight: 800; font-size: 1.03rem; }}
+  .agahi-footer .hours {{ margin: 0 0 16px; color: #8A8070; font-size: 0.82rem; }}
+  .agahi-footer-links {{
+    display: flex; flex-wrap: wrap; justify-content: center; gap: 8px;
+    margin-top: 6px; padding-top: 16px; border-top: 1px dashed #E0D5C4;
+  }}
+  .agahi-footer-links a {{
+    font-size: 0.84rem; color: #6B6358; font-weight: 600;
+    padding: 6px 13px; border-radius: 999px; background: #fff; border: 1px solid #EDE4D3;
+    transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+  }}
+  .agahi-footer-links a:hover {{ background: #FBF6EC; color: #B8894F; border-color: #D9CDB4; }}
+  .agahi-footer-site {{ margin: 16px 0 0; font-size: 0.84rem; }}
+  .agahi-footer-site a {{ color: #B8894F; }}
+
+  /* دکمه‌های تماس/پیام داخل کارت کمی نرم‌تر روی این صفحه */
+  .agahi-page .card-actions {{ gap: 10px; }}
+  .agahi-page .agent-call-btn,
+  .agahi-page .agent-msg-btn {{ box-shadow: 0 3px 10px rgba(20,33,61,0.10); }}
 </style>
 <script type="application/ld+json">
 {{"@context":"https://schema.org","@type":"RealEstateListing","name":{json.dumps(label + " کد " + code, ensure_ascii=False)},"description":{json.dumps(" — ".join([_listing_label(p) + f" کد {code}", (p.get("address") or ""), specs_txt, _listing_price_line(p)]), ensure_ascii=False)},"url":{json.dumps(page_url)},"image":{json.dumps(img)},"address":{{"@type":"PostalAddress","streetAddress":{json.dumps(p.get("address") or "", ensure_ascii=False)},"addressLocality":"خادم‌آباد","addressRegion":"تهران","addressCountry":"IR"}}}}
@@ -790,46 +856,55 @@ def render_listing_html(p: dict) -> str:
 </head>
 <body>
 <main class="agahi-page">
-  <a class="agahi-back" href="../">← بازگشت به همه آگهی‌ها</a>
-  <article class="card {'card-sale' if p.get('deal_type') == 'فروش' else 'card-rent'}">
-    <div class="card-image-wrap">
-      <img class="card-image" src="{img_src}" alt="{label} کد {code}" width="400" height="280" loading="eager">
-      <div class="card-image-overlay">
-        <span class="deal-tag {'sale' if p.get('deal_type') == 'فروش' else 'rent'}">{deal}</span>
+  <div class="agahi-nav">
+    <a class="agahi-back" href="../"><span class="agahi-back-icon">←</span> همه آگهی‌ها</a>
+    <span class="agahi-brand-chip">🏠 اطلس املاک</span>
+  </div>
+
+  <div class="agahi-card-wrap">
+    <article class="card {'card-sale' if p.get('deal_type') == 'فروش' else 'card-rent'}">
+      <div class="card-image-wrap">
+        <img class="card-image" src="{img_src}" alt="{label} کد {code}" width="400" height="280" loading="eager">
+        <div class="card-image-overlay">
+          <span class="deal-tag {'sale' if p.get('deal_type') == 'فروش' else 'rent'}">{deal}</span>
+        </div>
       </div>
-    </div>
-    <div class="card-body">
-      <h1 class="card-title">{label} <span class="card-code">کد {code}</span></h1>
-      {addr_html}
-      {specs_html}
-      {extras_html}
-      {docs_html}
-      <p class="card-price">💰 {price}</p>
-      {m2_html}
-      {agent_html}
-      <div class="card-actions">
-        <a class="agent-call-btn agent-btn-primary" href="tel:09106943220">📞 مشاوره / بازدید</a>
-        <a class="agent-msg-btn agent-btn-secondary" href="https://ble.ir/Nobody_Mohsen?text={bale_msg}" target="_blank" rel="noopener">💬 پیام</a>
+      <div class="card-body">
+        <h1 class="card-title">{label} <span class="card-code">کد {code}</span></h1>
+        {addr_html}
+        {specs_html}
+        {extras_html}
+        {docs_html}
+        <p class="card-price">💰 {price}</p>
+        {m2_html}
+        {agent_html}
+        <div class="card-actions">
+          <a class="agent-call-btn agent-btn-primary" href="tel:09106943220">📞 مشاوره / بازدید</a>
+          <a class="agent-msg-btn agent-btn-secondary" href="https://ble.ir/Nobody_Mohsen?text={bale_msg}" target="_blank" rel="noopener">💬 پیام</a>
+        </div>
+        {date_html}
       </div>
-      {date_html}
-    </div>
-  </article>
-  <p style="margin:18px 0 0;text-align:center;">
-    <a class="agahi-back" href="../" style="margin:0;">← بازگشت به صفحه اصلی سایت</a>
-  </p>
+    </article>
+  </div>
+
+  <div class="agahi-bottom-back">
+    <a href="../"><span class="agahi-back-icon">←</span> بازگشت به صفحه اصلی سایت</a>
+  </div>
+
   <footer class="agahi-footer">
     <div class="agahi-footer-inner">
+      <div class="agahi-footer-logo">🏠</div>
       <strong>گروه مشاورین املاک اطلس</strong>
-      <p style="margin:4px 0 12px;">خرید، فروش، رهن و اجاره در خادم‌آباد، باغستان و شهریار</p>
-      <p style="margin:0 0 4px;">📞 <a class="phone" href="tel:+989106943220" dir="ltr">0910 694 3220</a></p>
-      <p style="margin:0 0 4px;color:#8A8070;font-size:0.84rem;">ساعات پاسخگویی: همه‌روزه ۱۰ صبح تا ۹ شب</p>
+      <p class="footer-tagline">خرید، فروش، رهن و اجاره در خادم‌آباد، باغستان و شهریار</p>
+      <div class="phone-row">📞 <a class="phone" href="tel:+989106943220" dir="ltr">0910 694 3220</a></div>
+      <p class="hours">ساعات پاسخگویی: همه‌روزه ۱۰ صبح تا ۹ شب</p>
       <div class="agahi-footer-links">
         <a href="../">صفحه اصلی</a>
         <a href="../about.html">درباره دفتر</a>
         <a href="../baghestan.html">معرفی باغستان</a>
         <a href="../bagh-villa.html">باغ و ویلا</a>
       </div>
-      <p style="margin:14px 0 0;font-size:0.85rem;"><a href="../">atlas-amlak.ir</a></p>
+      <p class="agahi-footer-site"><a href="../">atlas-amlak.ir</a></p>
     </div>
   </footer>
 </main>
@@ -891,4 +966,3 @@ def write_sitemap(frontend_dir: Path, props: list[dict]) -> None:
 
 if __name__ == "__main__":
     update_snapshot()
-
