@@ -1136,12 +1136,19 @@ ${statsLine ? "\n" + statsLine + "\n" : ""}
 
 /**
  * اسکرین‌شات از بخش بالای صفحه اول:
- * هدر + نوار آمار + تیتر + ۹ دکمه میان‌بر (بدون عکس کاروسل و بدون بقیه صفحه)
+ * هدر (لوگو) + عکس هیرو دفتر + آمار + تیتر + ۹ دکمه میان‌بر
  */
 async function captureHomeShareScreenshot() {
   const h2c = await loadHtml2Canvas();
 
-  const selectors = [".site-header", ".stats-ribbon", ".brand-heading", ".quick-actions"];
+  // عکس کاروسل (office.jpg) هم باید در اسکرین باشد
+  const selectors = [
+    ".site-header",
+    ".office-intro .carousel",
+    ".stats-ribbon",
+    ".brand-heading",
+    ".quick-actions",
+  ];
   const sources = selectors.map((s) => document.querySelector(s)).filter(Boolean);
   if (!sources.length) throw new Error("بخش‌های صفحه اول پیدا نشد");
 
@@ -1158,9 +1165,13 @@ async function captureHomeShareScreenshot() {
     "overflow:hidden",
   ].join(";");
 
+  const absUrl = (src) => {
+    if (!src) return src;
+    try { return new URL(src, window.location.href).href; } catch (e) { return src; }
+  };
+
   sources.forEach((el) => {
     const clone = el.cloneNode(true);
-    // هدر در کلون نباید fixed/sticky باشد
     if (clone.classList.contains("site-header")) {
       clone.style.position = "relative";
       clone.style.top = "auto";
@@ -1169,12 +1180,37 @@ async function captureHomeShareScreenshot() {
       clone.style.width = "100%";
       clone.style.zIndex = "1";
     }
-    // منوی همبرگری در اسکرین لازم نیست
+    // منوی همبرگری و دکمه‌های واتساپ/بله در اسکرین لازم نیست
     clone.querySelectorAll(".menu-toggle, .main-nav").forEach((n) => n.remove());
+    // نقاط کاروسل را بردار
+    clone.querySelectorAll(".carousel-dots").forEach((n) => n.remove());
+
+    // مسیر مطلق عکس‌ها + crossOrigin تا html2canvas لوگو و عکس دفتر را بکشد
+    clone.querySelectorAll("img").forEach((img) => {
+      const resolved = absUrl(img.getAttribute("src") || img.src);
+      img.setAttribute("crossorigin", "anonymous");
+      img.crossOrigin = "anonymous";
+      img.src = resolved;
+      img.style.width = "100%";
+      img.style.display = "block";
+      img.style.objectFit = "cover";
+    });
+
+    // ارتفاع معقول برای عکس هیرو در اسکرین
+    if (clone.classList.contains("carousel") || clone.querySelector(".carousel-slide")) {
+      clone.style.width = "100%";
+      clone.style.maxHeight = "200px";
+      clone.style.overflow = "hidden";
+      const slideImg = clone.querySelector("img");
+      if (slideImg) {
+        slideImg.style.height = "200px";
+        slideImg.style.objectFit = "cover";
+      }
+    }
+
     holder.appendChild(clone);
   });
 
-  // فوتر کوچک دامنه
   const foot = document.createElement("div");
   foot.style.cssText =
     "padding:12px 16px 16px;text-align:center;font-family:Vazirmatn,Tahoma,sans-serif;font-weight:700;font-size:0.85rem;color:#57503F;background:#FBF6EC;border-top:1px solid rgba(32,28,21,0.08);";
@@ -1182,6 +1218,20 @@ async function captureHomeShareScreenshot() {
   holder.appendChild(foot);
 
   document.body.appendChild(holder);
+
+  // صبر تا عکس‌های کلون لود شوند
+  const imgs = Array.from(holder.querySelectorAll("img"));
+  await Promise.all(
+    imgs.map(
+      (img) =>
+        new Promise((resolve) => {
+          if (img.complete && img.naturalWidth) return resolve();
+          img.onload = () => resolve();
+          img.onerror = () => resolve();
+          setTimeout(resolve, 2500);
+        })
+    )
+  );
   await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
 
   try {
@@ -1191,7 +1241,7 @@ async function captureHomeShareScreenshot() {
       allowTaint: false,
       backgroundColor: "#FFFCFA",
       logging: false,
-      imageTimeout: 8000,
+      imageTimeout: 10000,
       width: holder.offsetWidth,
       windowWidth: 390,
     });
