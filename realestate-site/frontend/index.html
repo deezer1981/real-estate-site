@@ -79,42 +79,39 @@
   .bot-cta-small.telegram:hover {
     background: #1b8cc4;
   }
-  .bot-cta-small.telegram svg { width: 16px; height: 16px; flex: none; }
+  .bot-cta-small.telegram svg { width: 15px; height: 15px; flex: none; }
 
-  /* --- آیکون تلگرام همیشه‌نمایان بالای صفحه (حتی روی موبایل، کنار همبرگر) --- */
+  /* --- آیکون تلگرام کوچک بالای هدر، فقط روی موبایل (همان‌جایی که برند هست، کنارش) --- */
   .header-telegram-fab {
-    display: flex;
+    display: none;
     align-items: center;
     justify-content: center;
-    width: 38px;
-    height: 38px;
-    min-width: 38px;
+    width: 32px;
+    height: 32px;
+    min-width: 32px;
     border-radius: 50%;
     background: #229ED9;
-    margin-inline-start: auto;
-    margin-inline-end: 8px;
     flex: none;
   }
-  .header-telegram-fab svg { width: 20px; height: 20px; }
-  @media (min-width: 900px) {
-    /* روی دسکتاپ که main-nav دیده می‌شود، از تکرار آیکون جلوگیری می‌کنیم */
-    .header-telegram-fab { display: none; }
+  .header-telegram-fab svg { width: 16px; height: 16px; }
+  @media (max-width: 720px) {
+    /* هم‌راستا با بقیه هدر موبایل که در همین breakpoint تعریف شده */
+    .header-telegram-fab { display: flex; }
   }
 
-  /* --- ردیف آیکون‌های فوتر: بزرگ، با برچسب زیر هرکدام --- */
+  /* --- ردیف آیکون‌های فوتر: بزرگ، با برچسب روشن و خواناى زیر هرکدام --- */
   .footer-socials {
     display: flex;
     justify-content: center;
-    gap: 28px;
-    margin: 14px 0 6px;
+    gap: 30px;
+    margin: 16px 0 8px;
   }
   .footer-social-item {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 7px;
+    gap: 10px;
     text-decoration: none;
-    color: inherit;
   }
   .footer-social-icon {
     width: 48px;
@@ -123,18 +120,18 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.25);
   }
-  .footer-social-icon svg { width: 24px; height: 24px; }
+  .footer-social-icon svg { width: 22px; height: 22px; }
   .footer-social-icon.telegram { background: #229ED9; }
   .footer-social-icon.instagram {
     background: radial-gradient(circle at 30% 110%, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285AEB 90%);
   }
   .footer-social-icon.email { background: #57503F; }
   .footer-social-label {
-    font-size: 0.78rem;
+    font-size: 0.82rem;
     font-weight: 700;
-    color: #57503F;
+    color: #F3EDE0;
     white-space: nowrap;
   }
 </style>
@@ -154,8 +151,8 @@
       <a href="#listings">آگهی‌ها</a>
       <a href="#contact">تماس با ما</a>
       <a class="bot-cta-small telegram" id="telegramLinkNav" href="https://t.me/KhademAbad_RealEstate_bot" target="_blank" rel="noopener">
-        <svg viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-          <path fill="#fff" d="M170.6 67.7 145 187.3c-1.9 8.6-7 10.7-14.2 6.7l-39.3-29-19 18.3c-2.1 2.1-3.9 3.9-8 3.9l2.9-40.4L140 76.6c3.2-2.9-0.7-4.5-4.9-1.6L74.5 114 36 102c-8.4-2.6-8.5-8.4 1.7-12.4l153.9-59.4c7-2.6 13.1 1.6 10.9 12.4Z"/>
+        <svg viewBox="0 0 448 512" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path fill="#fff" d="M446.7 98.6 379.1 417.4c-5.1 22.5-18.4 28.1-37.3 17.5l-103-75.9-49.7 47.8c-5.5 5.5-10.1 10.1-20.7 10.1l7.4-104.9 190.9-172.5c8.3-7.4-1.8-11.5-12.9-4.1L117.8 284 15.3 252.1c-22.3-6.9-22.7-22.3 4.6-33L418.2 65.4c18.6-6.9 34.9 4.1 28.5 33.2z"/>
         </svg>
         ربات هوشمند اطلس
       </a>
@@ -163,8 +160,8 @@
       <a class="bot-cta-small bale" id="baleLinkNav" href="#" target="_blank" rel="noopener">بله</a>
     </nav>
     <a class="header-telegram-fab" href="https://t.me/KhademAbad_RealEstate_bot" target="_blank" rel="noopener" aria-label="ربات هوشمند اطلس در تلگرام" title="ربات هوشمند اطلس">
-      <svg viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-        <path fill="#fff" d="M170.6 67.7 145 187.3c-1.9 8.6-7 10.7-14.2 6.7l-39.3-29-19 18.3c-2.1 2.1-3.9 3.9-8 3.9l2.9-40.4L140 76.6c3.2-2.9-0.7-4.5-4.9-1.6L74.5 114 36 102c-8.4-2.6-8.5-8.4 1.7-12.4l153.9-59.4c7-2.6 13.1 1.6 10.9 12.4Z"/>
+      <svg viewBox="0 0 448 512" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <path fill="#fff" d="M446.7 98.6 379.1 417.4c-5.1 22.5-18.4 28.1-37.3 17.5l-103-75.9-49.7 47.8c-5.5 5.5-10.1 10.1-20.7 10.1l7.4-104.9 190.9-172.5c8.3-7.4-1.8-11.5-12.9-4.1L117.8 284 15.3 252.1c-22.3-6.9-22.7-22.3 4.6-33L418.2 65.4c18.6-6.9 34.9 4.1 28.5 33.2z"/>
       </svg>
     </a>
     <button id="menuToggle" class="menu-toggle" aria-label="باز کردن منو" aria-expanded="false">
@@ -187,8 +184,8 @@
   <div class="drawer-socials">
     <a class="bot-cta-small phone" id="drawerPhone" href="#">تماس تلفنی</a>
     <a class="bot-cta-small telegram" id="drawerTelegram" href="https://t.me/KhademAbad_RealEstate_bot" target="_blank" rel="noopener">
-      <svg viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-        <path fill="#fff" d="M170.6 67.7 145 187.3c-1.9 8.6-7 10.7-14.2 6.7l-39.3-29-19 18.3c-2.1 2.1-3.9 3.9-8 3.9l2.9-40.4L140 76.6c3.2-2.9-0.7-4.5-4.9-1.6L74.5 114 36 102c-8.4-2.6-8.5-8.4 1.7-12.4l153.9-59.4c7-2.6 13.1 1.6 10.9 12.4Z"/>
+      <svg viewBox="0 0 448 512" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <path fill="#fff" d="M446.7 98.6 379.1 417.4c-5.1 22.5-18.4 28.1-37.3 17.5l-103-75.9-49.7 47.8c-5.5 5.5-10.1 10.1-20.7 10.1l7.4-104.9 190.9-172.5c8.3-7.4-1.8-11.5-12.9-4.1L117.8 284 15.3 252.1c-22.3-6.9-22.7-22.3 4.6-33L418.2 65.4c18.6-6.9 34.9 4.1 28.5 33.2z"/>
       </svg>
       ربات هوشمند اطلس
     </a>
@@ -473,8 +470,8 @@
       <div class="footer-socials">
         <a href="https://t.me/KhademAbad_RealEstate_bot" target="_blank" rel="noopener" class="footer-social-item">
           <span class="footer-social-icon telegram">
-            <svg viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-              <path fill="#fff" d="M170.6 67.7 145 187.3c-1.9 8.6-7 10.7-14.2 6.7l-39.3-29-19 18.3c-2.1 2.1-3.9 3.9-8 3.9l2.9-40.4L140 76.6c3.2-2.9-0.7-4.5-4.9-1.6L74.5 114 36 102c-8.4-2.6-8.5-8.4 1.7-12.4l153.9-59.4c7-2.6 13.1 1.6 10.9 12.4Z"/>
+            <svg viewBox="0 0 448 512" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              <path fill="#fff" d="M446.7 98.6 379.1 417.4c-5.1 22.5-18.4 28.1-37.3 17.5l-103-75.9-49.7 47.8c-5.5 5.5-10.1 10.1-20.7 10.1l7.4-104.9 190.9-172.5c8.3-7.4-1.8-11.5-12.9-4.1L117.8 284 15.3 252.1c-22.3-6.9-22.7-22.3 4.6-33L418.2 65.4c18.6-6.9 34.9 4.1 28.5 33.2z"/>
             </svg>
           </span>
           <span class="footer-social-label">ربات هوشمند اطلس</span>
