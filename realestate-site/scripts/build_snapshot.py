@@ -588,6 +588,43 @@ def _clean_price_text(text: str) -> str:
     return re.sub(r"(\d+)\.(\d+)", repl, str(text))
 
 
+def _format_sale_total(text: str) -> str:
+    """مثل formatSaleTotal در script.js — اگر عدد >= 100 و واحد میلیارد باشد ÷1000."""
+    if not text:
+        return ""
+    s = _clean_price_text(text).strip()
+    if not s or s == "-" or "توافقی" in s:
+        return s or "توافقی"
+    m = re.match(r"^([\d,]+(?:\.\d+)?)\s*(.*)$", s)
+    if not m:
+        return s
+    try:
+        num = float(m.group(1).replace(",", ""))
+    except ValueError:
+        return s
+    unit = (m.group(2) or "").strip()
+    if "میلیارد" in unit and num >= 100:
+        num = num / 1000.0
+        unit = "میلیارد"
+    if not unit:
+        unit = "میلیارد"
+    num_str = f"{num:.3f}".rstrip("0").rstrip(".")
+    return f"{num_str} {unit}".strip()
+
+
+def _format_price_per_m2(text: str) -> str:
+    if not text:
+        return ""
+    s = _clean_price_text(text).strip()
+    if not s or s == "-":
+        return ""
+    if not re.search(r"میلیون|میلیارد|هزار|تومان|ریال", s):
+        n = re.sub(r"[^\d.]", "", s)
+        if n:
+            return f"{n} میلیون"
+    return s
+
+
 def _listing_label(p: dict) -> str:
     t = (p.get("property_type") or "ملک").strip()
     if p.get("deal_type") == "فروش":
@@ -597,7 +634,7 @@ def _listing_label(p: dict) -> str:
 
 def _listing_price_line(p: dict) -> str:
     if p.get("deal_type") == "فروش":
-        return _clean_price_text(p.get("price_total") or "") or "توافقی"
+        return _format_sale_total(p.get("price_total") or "") or "توافقی"
     bits = []
     if p.get("rahn") and p.get("rahn") != "-":
         bits.append(f"رهن {_clean_price_text(p.get('rahn'))}")
@@ -631,7 +668,7 @@ def render_listing_html(p: dict) -> str:
     rooms = escape(str(p.get("rooms") or "").strip())
     floor = escape(str(p.get("floor") or "").strip())
     price = escape(_listing_price_line(p))
-    m2 = escape(_clean_price_text(p.get("price_per_m2") or ""))
+    m2 = escape(_format_price_per_m2(p.get("price_per_m2") or ""))
     docs = escape(str(p.get("documents") or "").strip())
     agent = escape(str(p.get("agent_name") or "").strip())
     reg = escape(str(p.get("registered_at") or "").strip())
@@ -734,14 +771,18 @@ def render_listing_html(p: dict) -> str:
     color: #201C15; font-weight: 700; font-size: 0.9rem; text-decoration: none;
   }}
   .agahi-footer {{
-    margin-top: 22px; padding: 22px 16px 28px; text-align: center;
-    background: #fff; border: 1px solid #E8DFD0; border-radius: 16px;
-    color: #6B6358; font-size: 0.9rem; line-height: 1.75;
-    box-shadow: 0 2px 10px rgba(32,28,21,0.04);
+    margin-top: 24px; padding: 0; text-align: center;
+    background: linear-gradient(180deg, #FFFCFA 0%, #F3EDE3 100%);
+    border: 1px solid #E0D5C4; border-radius: 18px;
+    color: #57503F; font-size: 0.9rem; line-height: 1.75;
+    box-shadow: 0 4px 18px rgba(32,28,21,0.06); overflow: hidden;
   }}
-  .agahi-footer strong {{ color: #201C15; display: block; margin-bottom: 4px; font-size: 1.05rem; }}
+  .agahi-footer-inner {{ padding: 22px 18px 20px; }}
+  .agahi-footer strong {{ color: #201C15; display: block; margin-bottom: 6px; font-size: 1.08rem; }}
   .agahi-footer a {{ color: #201C15; font-weight: 700; text-decoration: none; }}
-  .agahi-footer .phone {{ direction: ltr; unicode-bidi: embed; font-weight: 800; }}
+  .agahi-footer .phone {{ direction: ltr; unicode-bidi: embed; font-weight: 800; font-size: 1.05rem; }}
+  .agahi-footer-links {{ display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 14px; margin-top: 12px; padding-top: 12px; border-top: 1px solid #E8DFD0; }}
+  .agahi-footer-links a {{ font-size: 0.88rem; color: #6B6358; }}
 </style>
 <script type="application/ld+json">
 {{"@context":"https://schema.org","@type":"RealEstateListing","name":{json.dumps(label + " کد " + code, ensure_ascii=False)},"description":{json.dumps(" — ".join([_listing_label(p) + f" کد {code}", (p.get("address") or ""), specs_txt, _listing_price_line(p)]), ensure_ascii=False)},"url":{json.dumps(page_url)},"image":{json.dumps(img)},"address":{{"@type":"PostalAddress","streetAddress":{json.dumps(p.get("address") or "", ensure_ascii=False)},"addressLocality":"خادم‌آباد","addressRegion":"تهران","addressCountry":"IR"}}}}
@@ -777,16 +818,19 @@ def render_listing_html(p: dict) -> str:
     <a class="agahi-back" href="../" style="margin:0;">← بازگشت به صفحه اصلی سایت</a>
   </p>
   <footer class="agahi-footer">
-    <strong>گروه مشاورین املاک اطلس</strong>
-    <p style="margin:6px 0 10px;">خرید، فروش، رهن و اجاره در خادم‌آباد، باغستان و شهریار</p>
-    <p style="margin:0 0 6px;">📞 <a class="phone" href="tel:+989106943220" dir="ltr">0910 694 3220</a></p>
-    <p style="margin:0 0 10px;color:#9A9080;font-size:0.82rem;">ساعات پاسخگویی: همه‌روزه ۱۰ صبح تا ۹ شب</p>
-    <p style="margin:0;">
-      <a href="../">صفحه اصلی</a>
-      · <a href="../about.html">درباره دفتر</a>
-      · <a href="../baghestan.html">معرفی باغستان</a>
-    </p>
-    <p style="margin:10px 0 0;"><a href="../">atlas-amlak.ir</a></p>
+    <div class="agahi-footer-inner">
+      <strong>گروه مشاورین املاک اطلس</strong>
+      <p style="margin:4px 0 12px;">خرید، فروش، رهن و اجاره در خادم‌آباد، باغستان و شهریار</p>
+      <p style="margin:0 0 4px;">📞 <a class="phone" href="tel:+989106943220" dir="ltr">0910 694 3220</a></p>
+      <p style="margin:0 0 4px;color:#8A8070;font-size:0.84rem;">ساعات پاسخگویی: همه‌روزه ۱۰ صبح تا ۹ شب</p>
+      <div class="agahi-footer-links">
+        <a href="../">صفحه اصلی</a>
+        <a href="../about.html">درباره دفتر</a>
+        <a href="../baghestan.html">معرفی باغستان</a>
+        <a href="../bagh-villa.html">باغ و ویلا</a>
+      </div>
+      <p style="margin:14px 0 0;font-size:0.85rem;"><a href="../">atlas-amlak.ir</a></p>
+    </div>
   </footer>
 </main>
 </body>
