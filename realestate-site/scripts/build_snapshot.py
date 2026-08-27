@@ -663,22 +663,23 @@ def render_listing_html(p: dict) -> str:
         extras.append("انباری")
     extras_txt = " | ".join(extras)
 
-    # توضیح چندخطی برای پیش‌نمایش — هر خط یک بخش (خواناتر در واتساپ/تلگرام)
+    # پیش‌نمایش لینک: عنوان کوتاه + ۲–۳ خط مشخصات (قیمت / متراژ / آدرس)
     price_plain = _listing_price_line(p)
     short_addr = (p.get("address") or "").strip()
-    if len(short_addr) > 45:
-        short_addr = short_addr[:45].rstrip() + "…"
+    # کوتاه‌کردن آدرس برای پیش‌نمایش
+    short_addr = re.sub(r"^باغستان\s*-\s*خادم[\u200c\s]*آباد\s*-\s*", "", short_addr)
+    if len(short_addr) > 36:
+        short_addr = short_addr[:36].rstrip() + "…"
+    # عنوان: نوع + کد (کوتاه تا در کارت واتساپ نشکند)
+    title = f"{label} کد {code}"
+    # خطوط توضیح — اول قیمت و متراژ (مهم‌ترین)
     lines = []
+    if price_plain:
+        lines.append(f"قیمت: {price_plain}")
     if specs_txt:
         lines.append(specs_txt)
-    if price_plain:
-        lines.append("قیمت: " + price_plain)
     if short_addr:
         lines.append(short_addr)
-    if extras_txt:
-        lines.append(extras_txt)
-    lines.append("تماس: 0910 694 3220")
-    # فقط کاراکترهای خطرناک HTML را escape کن؛ خط جدید بماند
     desc_raw = "\n".join(lines)
     desc = (
         desc_raw.replace("&", "&amp;")
@@ -686,7 +687,6 @@ def render_listing_html(p: dict) -> str:
         .replace("<", "&lt;")
         .replace(">", "&gt;")
     )
-    title = f"{label} · کد {code} | اطلس"
 
     extras_html = f'<p class="card-meta card-extras">{escape(extras_txt)}</p>' if extras_txt else ""
     docs_html = f'<p class="card-meta card-docs">📄 مدارک: {docs}</p>' if docs else ""
@@ -734,12 +734,14 @@ def render_listing_html(p: dict) -> str:
     color: #201C15; font-weight: 700; font-size: 0.9rem; text-decoration: none;
   }}
   .agahi-footer {{
-    margin-top: 28px; padding: 18px 16px; text-align: center;
-    border-top: 1px solid #E8DFD0; color: #6B6358; font-size: 0.88rem; line-height: 1.7;
+    margin-top: 22px; padding: 22px 16px 28px; text-align: center;
+    background: #fff; border: 1px solid #E8DFD0; border-radius: 16px;
+    color: #6B6358; font-size: 0.9rem; line-height: 1.75;
+    box-shadow: 0 2px 10px rgba(32,28,21,0.04);
   }}
-  .agahi-footer strong {{ color: #201C15; display: block; margin-bottom: 4px; }}
+  .agahi-footer strong {{ color: #201C15; display: block; margin-bottom: 4px; font-size: 1.05rem; }}
   .agahi-footer a {{ color: #201C15; font-weight: 700; text-decoration: none; }}
-  .agahi-footer .phone {{ direction: ltr; unicode-bidi: embed; }}
+  .agahi-footer .phone {{ direction: ltr; unicode-bidi: embed; font-weight: 800; }}
 </style>
 <script type="application/ld+json">
 {{"@context":"https://schema.org","@type":"RealEstateListing","name":{json.dumps(label + " کد " + code, ensure_ascii=False)},"description":{json.dumps(" — ".join([_listing_label(p) + f" کد {code}", (p.get("address") or ""), specs_txt, _listing_price_line(p)]), ensure_ascii=False)},"url":{json.dumps(page_url)},"image":{json.dumps(img)},"address":{{"@type":"PostalAddress","streetAddress":{json.dumps(p.get("address") or "", ensure_ascii=False)},"addressLocality":"خادم‌آباد","addressRegion":"تهران","addressCountry":"IR"}}}}
@@ -771,11 +773,20 @@ def render_listing_html(p: dict) -> str:
       {date_html}
     </div>
   </article>
+  <p style="margin:18px 0 0;text-align:center;">
+    <a class="agahi-back" href="../" style="margin:0;">← بازگشت به صفحه اصلی سایت</a>
+  </p>
   <footer class="agahi-footer">
     <strong>گروه مشاورین املاک اطلس</strong>
-    خرید، فروش، رهن و اجاره در خادم‌آباد، باغستان و شهریار<br>
-    📞 <a class="phone" href="tel:+989106943220" dir="ltr">0910 694 3220</a><br>
-    <a href="../">atlas-amlak.ir</a>
+    <p style="margin:6px 0 10px;">خرید، فروش، رهن و اجاره در خادم‌آباد، باغستان و شهریار</p>
+    <p style="margin:0 0 6px;">📞 <a class="phone" href="tel:+989106943220" dir="ltr">0910 694 3220</a></p>
+    <p style="margin:0 0 10px;color:#9A9080;font-size:0.82rem;">ساعات پاسخگویی: همه‌روزه ۱۰ صبح تا ۹ شب</p>
+    <p style="margin:0;">
+      <a href="../">صفحه اصلی</a>
+      · <a href="../about.html">درباره دفتر</a>
+      · <a href="../baghestan.html">معرفی باغستان</a>
+    </p>
+    <p style="margin:10px 0 0;"><a href="../">atlas-amlak.ir</a></p>
   </footer>
 </main>
 </body>
