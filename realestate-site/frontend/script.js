@@ -1102,7 +1102,6 @@ function forceCopyText(text) {
   document.body.removeChild(textArea);
 }
 
-
 function showCopySuccess(btnElement, text) {
   const originalText = btnElement.innerHTML;
   btnElement.innerHTML = text;
@@ -1328,6 +1327,43 @@ document.querySelectorAll(".quick-card[href='#listings']").forEach((card) => {
       }
     });
   }
+})();
+
+// --- آکاردئون هر ردیف فیلتر پیشرفته (متراژ / خواب / قیمت / رهن / امکانات) ---
+(function initFilterRowAccordion() {
+  const rows = document.querySelectorAll("#advancedFilterPanel .filter-row");
+
+  function updateSelectedLabel(row) {
+    let span = row.querySelector(".row-selected");
+    if (!span) {
+      span = document.createElement("span");
+      span.className = "row-selected";
+      row.querySelector(".filter-row-label").appendChild(span);
+    }
+    const activeGroupChip = row.querySelector('.filter-chip[data-filter-group].active:not([data-value=""])');
+    const activeAmenities = row.querySelectorAll(".filter-chip[data-amenity].active");
+    if (activeGroupChip) {
+      span.textContent = activeGroupChip.textContent.trim();
+    } else if (activeAmenities.length) {
+      span.textContent = Array.from(activeAmenities).map((c) => c.textContent.trim()).join(" · ");
+    } else {
+      span.textContent = "";
+    }
+  }
+
+  rows.forEach((row) => {
+    const label = row.querySelector(".filter-row-label");
+    if (!label) return;
+    label.addEventListener("click", () => {
+      const willOpen = !row.classList.contains("open");
+      rows.forEach((r) => r.classList.remove("open"));
+      if (willOpen) row.classList.add("open");
+    });
+    row.querySelectorAll(".filter-chip").forEach((chip) => {
+      chip.addEventListener("click", () => updateSelectedLabel(row));
+    });
+    updateSelectedLabel(row);
+  });
 })();
 
 applyMenuOverrides();

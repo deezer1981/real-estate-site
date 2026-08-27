@@ -1806,3 +1806,56 @@ body.single-ad-mode .card-image-wrap {
 /* موبایل و دسکتاپ یکسان: پنل پیش‌فرض بسته، با کلاس open باز می‌شود */
 .advanced-filters { display: none; }
 .advanced-filters.open { display: block; }
+
+/* --- فیلتر پیشرفته: هر ردیف آکاردئونی (فقط یکی هم‌زمان باز) --- */
+.advanced-filters .filter-row {
+  border-bottom: 1px solid rgba(20,33,61,0.08);
+  margin: 0;
+  padding: 0;
+  gap: 0;
+}
+.advanced-filters .filter-row:last-child { border-bottom: none; }
+
+.advanced-filters .filter-row-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  padding: 13px 2px;
+  font-size: 0.85rem;
+  user-select: none;
+}
+.advanced-filters .filter-row-label::after {
+  content: "▾";
+  font-size: 0.72rem;
+  color: var(--brass);
+  transition: transform 0.2s ease;
+  margin-inline-start: 8px;
+}
+.advanced-filters .filter-row.open .filter-row-label::after {
+  transform: rotate(180deg);
+}
+.advanced-filters .filter-row-label .row-selected {
+  font-weight: 500;
+  color: var(--brass);
+  font-size: 0.82rem;
+  margin-inline-start: auto;
+  margin-inline-end: 8px;
+}
+
+.advanced-filters .filter-chips-scroll {
+  max-height: 0;
+  overflow: hidden;
+  padding-bottom: 0;
+  transition: max-height 0.25s ease, padding-bottom 0.25s ease;
+}
+.advanced-filters .filter-row.open .filter-chips-scroll {
+  max-height: 120px;
+  padding-bottom: 12px;
+  overflow-x: auto;
+}
+@media (min-width: 720px) {
+  .advanced-filters .filter-row.open .filter-chips-scroll {
+    max-height: 400px;
+  }
+}
