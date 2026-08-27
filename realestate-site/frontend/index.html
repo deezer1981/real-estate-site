@@ -123,6 +123,7 @@
   <div class="stats-ribbon">
     <div class="wrap">
       <span id="statsText">🏠 ۱۷ فایل فعال — ۱۵ فروشی، ۲ رهن و اجاره</span>
+      <span id="dailyVisits">👁 بازدید امروز: <b id="visitCount">...</b></span>
     </div>
   </div>
   <div class="brand-heading">
@@ -414,5 +415,23 @@
 <script src="config.js"></script>
 <script src="common.js"></script>
 <script src="script.js?v=21"></script>
+<script>
+// ===== شمارنده بازدید روزانه (بدون بک‌اند، با سرویس CountAPI) =====
+(function () {
+  var today = new Date().toISOString().slice(0, 10); // مثل 2026-08-27
+  var namespace = "atlas-amlak-ir"; // نام یکتای سایت — در صورت تغییر دامنه بهتره این رو هم عوض کنید
+  var key = "visits-" + today;
+  var el = document.getElementById("visitCount");
+
+  fetch("https://api.countapi.xyz/hit/" + namespace + "/" + key)
+    .then(function (res) { return res.json(); })
+    .then(function (data) {
+      if (el) el.textContent = Number(data.value).toLocaleString("fa-IR");
+    })
+    .catch(function () {
+      if (el) el.textContent = "—";
+    });
+})();
+</script>
 </body>
 </html>
