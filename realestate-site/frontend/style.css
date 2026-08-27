@@ -1806,31 +1806,3 @@ body.single-ad-mode .card-image-wrap {
 /* موبایل و دسکتاپ یکسان: پنل پیش‌فرض بسته، با کلاس open باز می‌شود */
 .advanced-filters { display: none; }
 .advanced-filters.open { display: block; }
-
-
-
-
-
-/* دکمه اشتراک سایت — هم‌استایل آیکون‌های فوتر */
-.footer-socials .share-site-btn,
-.share-site-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 34px;
-  height: 34px;
-  padding: 0;
-  border: none;
-  background: rgba(255,255,255,0.06);
-  border-radius: 50%;
-  font-size: 1rem;
-  color: inherit;
-  cursor: pointer;
-  transition: background 0.2s;
-  font-family: inherit;
-  line-height: 1;
-}
-.footer-socials .share-site-btn:hover,
-.share-site-btn:hover {
-  background: rgba(255,255,255,0.14);
-}
