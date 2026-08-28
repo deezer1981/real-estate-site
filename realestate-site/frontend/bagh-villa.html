@@ -17,6 +17,15 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,600;1,700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
+
+<!-- PWA: نصب سایت به‌عنوان اپلیکیشن -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#14213D">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="اطلس املاک">
+<link rel="apple-touch-icon" href="https://atlas-amlak.ir/assets/favicon-180.png">
+
 <style>
   .page-gallery {
     display: grid;
@@ -188,6 +197,8 @@
     <div class="footer-brand">
       <strong>گروه مشاورین املاک اطلس</strong>
       <p>خرید، فروش، رهن و اجاره در خادم‌آباد، باغستان و شهریار</p>
+      <p class="phone-row footer-brand-phone">📞 <a class="phone-ltr" href="tel:+989106943220" dir="ltr">0910 694 3220</a></p>
+      <p class="footer-hours footer-brand-hours">ساعات پاسخگویی: همه‌روزه ۱۰ صبح تا ۹ شب</p>
     </div>
     <div class="footer-links">
       <a href="index.html#listings">آگهی‌ها</a>
@@ -197,33 +208,74 @@
       <a href="bagh-villa.html">باغ و ویلا</a>
     </div>
     <div class="footer-meta">
-      <p class="phone-row">📞 <a class="phone-ltr" href="tel:+989106943220" dir="ltr">0910 694 3220</a></p>
-      <p class="footer-hours">ساعات پاسخگویی: همه‌روزه ۱۰ صبح تا ۹ شب</p>
       <p>© <span id="year"></span> اطلس املاک</p>
     </div>
   </div>
 </footer>
 
 <nav class="mobile-tabbar">
+  <a href="tel:+989106943220" class="tab-item">
+    <span class="tab-icon">📞</span>
+    <span>تماس</span>
+  </a>
+  <a id="tabWhatsapp" href="#" class="tab-item">
+    <span class="tab-icon">💬</span>
+    <span>پیام</span>
+  </a>
+  <a href="index.html#contact" class="tab-item">
+    <span class="tab-icon">📝</span>
+    <span>ثبت آگهی</span>
+  </a>
+  <span class="tabbar-divider" aria-hidden="true"></span>
+  <a href="index.html#top" class="tab-item">
+    <span class="tab-icon">🏠</span>
+    <span>خانه</span>
+  </a>
   <a href="index.html#listings" class="tab-item">
     <span class="tab-icon">📋</span>
     <span>آگهی‌ها</span>
   </a>
-  <a href="index.html#contact" class="tab-item tab-item-cta">
-    <span class="tab-icon">🏠</span>
-    <span>سپردن ملک</span>
-  </a>
-  <a href="index.html#contact" class="tab-item">
-    <span class="tab-icon">📞</span>
-    <span>تماس</span>
-  </a>
-  <a id="tabWhatsapp" href="#" target="_blank" rel="noopener" class="tab-item">
-    <span class="tab-icon">💬</span>
-    <span>پیام</span>
-  </a>
+  <button type="button" class="tab-item install-app-btn" id="installBtnTabbar" hidden>
+    <span class="tab-icon">📲</span>
+    <span>نصب اپ</span>
+  </button>
 </nav>
 
 <script src="config.js"></script>
 <script src="common.js"></script>
+<script>
+  // --- PWA: ثبت Service Worker و مدیریت دکمه‌ی نصب اپلیکیشن ---
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('sw.js').catch(() => {});
+    });
+  }
+
+  (function () {
+    var installButtons = document.querySelectorAll('.install-app-btn');
+    var deferredPrompt = null;
+
+    window.addEventListener('beforeinstallprompt', function (e) {
+      e.preventDefault();
+      deferredPrompt = e;
+      installButtons.forEach(function (btn) { btn.hidden = false; });
+    });
+
+    installButtons.forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        if (!deferredPrompt) return;
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.finally(function () {
+          deferredPrompt = null;
+          installButtons.forEach(function (b) { b.hidden = true; });
+        });
+      });
+    });
+
+    window.addEventListener('appinstalled', function () {
+      installButtons.forEach(function (btn) { btn.hidden = true; });
+    });
+  })();
+</script>
 </body>
 </html>
