@@ -1888,42 +1888,63 @@ body.single-ad-mode .card-image-wrap {
 }
 
 
-/* ===== کارت جمع‌وجور موبایل: اطلاعات بیشتر ===== */
+/* ===== اطلاعات بیشتر ===== */
 .card-more-btn {
   display: none;
-  margin: 8px 0 4px;
-  padding: 8px 14px;
+  width: auto;
+  margin: 6px 0 2px;
+  padding: 5px 12px;
   border-radius: 999px;
-  border: 1.5px solid var(--brass, #B4894F);
+  border: 1px solid rgba(180, 137, 79, 0.55);
   background: transparent;
-  color: var(--ink, #201C15);
+  color: #6B6358;
   font-family: inherit;
-  font-size: 0.86rem;
-  font-weight: 700;
+  font-size: 0.78rem;
+  font-weight: 600;
   cursor: pointer;
   align-items: center;
   justify-content: center;
   gap: 4px;
-  transition: background 0.15s ease, color 0.15s ease;
+  line-height: 1.3;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
 }
-.card-more-btn:hover {
-  background: rgba(180, 137, 79, 0.14);
+.card-more-btn:hover,
+.card-more-btn:active {
+  background: rgba(180, 137, 79, 0.12);
   color: #8C6530;
+  border-color: var(--brass, #B4894F);
 }
-.card-details-extra {
+.card-details-mid { display: block; }
+.card-details-notes { display: none; }
+.card-details-tail { display: block; }
+
+/* باز شدن توضیحات */
+body:not(.single-ad-mode) .card.is-expanded .card-details-notes {
   display: block;
 }
 
+/* دسکتاپ: فقط توضیحات جمع؛ بقیه باز — دکمه فقط اگر توضیحات باشد */
+@media (min-width: 721px) {
+  body:not(.single-ad-mode) .card:has(.card-details-notes) .card-more-btn {
+    display: inline-flex;
+  }
+  body:not(.single-ad-mode) .card.is-expanded .card-more-btn {
+    background: rgba(180, 137, 79, 0.12);
+    color: #8C6530;
+  }
+}
+
+/* موبایل: mid + notes + tail جمع تا لمس بیشتر */
 @media (max-width: 720px) {
-  /* در لیست اصلی موبایل جزئیات اضافه جمع می‌شود؛ صفحه تک‌آگهی باز می‌ماند */
-  body:not(.single-ad-mode) .card:not(.is-expanded) .card-details-extra {
+  body:not(.single-ad-mode) .card:not(.is-expanded) .card-details-mid,
+  body:not(.single-ad-mode) .card:not(.is-expanded) .card-details-tail {
     display: none;
   }
   body:not(.single-ad-mode) .card-more-btn {
     display: inline-flex;
   }
   body:not(.single-ad-mode) .card.is-expanded .card-more-btn {
-    background: rgba(180, 137, 79, 0.16);
+    background: rgba(180, 137, 79, 0.12);
     color: #8C6530;
   }
   body:not(.single-ad-mode) .card-body {
@@ -1934,17 +1955,21 @@ body.single-ad-mode .card-image-wrap {
   }
 }
 
+/* صفحه تک‌آگهی */
+body.single-ad-mode .card-details-notes { display: block; }
+body.single-ad-mode .card-more-btn { display: none !important; }
 
-/* توضیحات آگهی (از ستون شیت) */
+/* توضیحات آگهی (از ستون شیت) — بالای ثبت‌شده توسط */
 .card-notes {
-  margin-top: 10px;
-  padding: 10px 12px;
-  border-radius: 12px;
+  margin-top: 8px;
+  margin-bottom: 6px;
+  padding: 8px 10px;
+  border-radius: 10px;
   background: rgba(32, 28, 21, 0.04);
   border: 1px solid rgba(232, 223, 208, 0.9);
   color: #3A3228;
-  font-size: 0.9rem;
-  line-height: 1.7;
+  font-size: 0.88rem;
+  line-height: 1.65;
   white-space: pre-wrap;
   word-break: break-word;
 }

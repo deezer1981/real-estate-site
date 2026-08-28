@@ -394,22 +394,31 @@ function propertyCard(p) {
     ? `<p class="card-meta card-notes">📝 ${escapeHtml(p.description)}</p>`
     : "";
 
-  const extraBits = [
+  // جزئیات میانی (موبایل جمع می‌شود؛ دسکتاپ باز)
+  const midBits = [
     specsLine,
     extras.length ? `<p class="card-meta card-extras">${extras.join(" | ")}</p>` : "",
     p.documents ? `<p class="card-meta card-docs">📄 مدارک: ${escapeHtml(p.documents)}</p>` : "",
     priceM2Line,
-    agentLine,
-    dateLine,
-    notesLine,
   ].filter(Boolean).join("\n          ");
 
-  const hasExtra = Boolean(extraBits);
-  const moreBtn = hasExtra
-    ? `<button type="button" class="card-more-btn" aria-expanded="false">اطلاعات بیشتر</button>`
+  // توضیحات → بعد «ثبت‌شده توسط» و تاریخ
+  const tailBits = [
+    notesLine,
+    agentLine,
+    dateLine,
+  ].filter(Boolean).join("\n          ");
+
+  const midBlock = midBits ? `<div class="card-details-mid">${midBits}</div>` : "";
+  const notesBlock = notesLine ? `<div class="card-details-notes">${notesLine}</div>` : "";
+  const tailBlock = (agentLine || dateLine)
+    ? `<div class="card-details-tail">${[agentLine, dateLine].filter(Boolean).join("\n          ")}</div>`
     : "";
-  const detailsBlock = hasExtra
-    ? `<div class="card-details-extra">${extraBits}</div>`
+
+  // ترتیب نمایش: mid → more → notes (توضیحات) → tail (مشاور/تاریخ)
+  const needsMore = Boolean(midBits || notesLine);
+  const moreBtn = needsMore
+    ? `<button type="button" class="card-more-btn" aria-expanded="false">اطلاعات بیشتر</button>`
     : "";
   const expandedClass = isSingleMode ? " is-expanded" : "";
 
@@ -422,8 +431,10 @@ function propertyCard(p) {
           <h3 class="card-title">${titleType} ${titleCode}</h3>
           ${shortAddress ? `<p class="card-meta card-address">📍 ${shortAddress}</p>` : ""}
           ${priceMain}
+          ${midBlock}
           ${moreBtn}
-          ${detailsBlock}
+          ${notesBlock}
+          ${tailBlock}
           ${agentActions}
         </div>
       </article>
