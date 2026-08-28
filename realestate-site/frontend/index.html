@@ -165,6 +165,19 @@
   .mobile-tabbar .tab-icon {
     font-size: 1.2rem;
   }
+  .tabbar-divider {
+    width: 1px;
+    align-self: stretch;
+    margin: 8px 2px;
+    background: rgba(20,33,61,0.15);
+    flex: 0 0 auto;
+  }
+
+  /* --- متن دکمه‌های تماس/پیام هدر دسکتاپ: کمی بزرگ‌تر و خواناتر --- */
+  @media (min-width: 721px) {
+    .bot-cta-small { font-size: 1rem; padding: 10px 20px; }
+    .main-nav a:not(.bot-cta-small) { font-size: 1rem; }
+  }
 
   /* --- دکمه نصب اپلیکیشن (PWA) --- */
   .install-app-btn {
@@ -177,9 +190,8 @@
   .install-app-btn:hover { filter: brightness(1.08); }
   .mobile-tabbar .install-app-btn {
     background: transparent;
-    color: inherit;
+    color: #2B2B2B !important;
     padding: 0;
-    width: auto;
   }
 
   @media (max-width: 480px) {
@@ -551,25 +563,26 @@
 
 
 <nav class="mobile-tabbar">
-  <a href="#listings" class="tab-item">
-    <span class="tab-icon">📋</span>
-    <span>آگهی‌ها</span>
-  </a>
   <a href="tel:+989106943220" class="tab-item">
     <span class="tab-icon">📞</span>
     <span>تماس</span>
   </a>
-  <a href="#top" class="tab-item tab-item-cta">
-    <span class="tab-icon">🏠</span>
-    <span>خانه</span>
+  <a id="tabWhatsapp" href="#" class="tab-item">
+    <span class="tab-icon">💬</span>
+    <span>پیام</span>
   </a>
   <a href="#contact" class="tab-item">
     <span class="tab-icon">📝</span>
     <span>ثبت آگهی</span>
   </a>
-  <a id="tabWhatsapp" href="#" class="tab-item">
-    <span class="tab-icon">💬</span>
-    <span>پیام</span>
+  <span class="tabbar-divider" aria-hidden="true"></span>
+  <a href="#top" class="tab-item">
+    <span class="tab-icon">🏠</span>
+    <span>خانه</span>
+  </a>
+  <a href="#listings" class="tab-item">
+    <span class="tab-icon">📋</span>
+    <span>آگهی‌ها</span>
   </a>
   <button type="button" class="tab-item install-app-btn" id="installBtnTabbar" hidden>
     <span class="tab-icon">📲</span>
