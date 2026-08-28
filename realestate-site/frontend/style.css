@@ -114,8 +114,8 @@ a { color: inherit; text-decoration: none; }
 .bot-cta-small.bale,
 .bot-cta-small.rubika,
 .bot-cta-small.telegram {
-  background: var(--ink);
-  color: var(--paper) !important;
+  background: var(--paper);
+  color: var(--ink) !important;
 }
 .bot-cta-small.phone {
   background: var(--brass);
@@ -339,6 +339,10 @@ a { color: inherit; text-decoration: none; }
   justify-content: center;
   flex-shrink: 0;
   line-height: 1;
+}
+@media (min-width: 721px) {
+  .quick-card { font-size: 1.08rem; }
+  .quick-icon { width: 62px; height: 62px; font-size: 1.8rem; }
 }
 
 /* ===================== Hero / search ===================== */
