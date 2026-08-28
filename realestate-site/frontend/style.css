@@ -2,7 +2,7 @@
   --ink: #14213D;
   --brass: #B8894F;
   --paper: #F5F1EA;
-  --sage: #4A6B5F;
+  --sage: #55617A;
   --text: #2B2B2B;
   --card-bg: #FFFFFF;
   --radius: 8px;
@@ -110,10 +110,17 @@ a { color: inherit; text-decoration: none; }
   transition: opacity 0.2s;
 }
 .bot-cta-small:hover { opacity: 0.9; }
-.bot-cta-small.whatsapp { background: #25D366; color: #fff !important; }
-.bot-cta-small.bale { background: #00A3E0; color: #fff !important; }
-.bot-cta-small.rubika { background: #4CA5DF; color: #fff !important; }
-.bot-cta-small.phone { background: var(--sage); color: var(--paper) !important; }
+.bot-cta-small.whatsapp,
+.bot-cta-small.bale,
+.bot-cta-small.rubika,
+.bot-cta-small.telegram {
+  background: var(--ink);
+  color: var(--paper) !important;
+}
+.bot-cta-small.phone {
+  background: var(--brass);
+  color: var(--ink) !important;
+}
 
 /* Hamburger button */
 .menu-toggle {
@@ -562,27 +569,27 @@ a { color: inherit; text-decoration: none; }
   background: rgba(32, 28, 21, 0.22);
   color: #201C15;
 }
-/* روی کارت فروشی کمی ته‌رنگ سبز مثل تگ فروش */
+/* روی کارت فروشی: ته‌رنگ برنز (خانواده‌ی --brass) */
 .card-sale .card-image-overlay .share-btn,
 .card-sale .card-image-overlay .share-btn-card {
-  background: rgba(30, 107, 76, 0.14);
-  color: #154F38;
+  background: rgba(184, 137, 79, 0.18);
+  color: #8C6530;
 }
 .card-sale .card-image-overlay .share-btn:hover,
 .card-sale .card-image-overlay .share-btn-card:hover {
-  background: rgba(30, 107, 76, 0.24);
-  color: #154F38;
+  background: rgba(184, 137, 79, 0.28);
+  color: #8C6530;
 }
-/* روی کارت رهن کمی ته‌رنگ برنجی مثل تگ رهن */
+/* روی کارت رهن: ته‌رنگ سرمه‌ای (خانواده‌ی --ink) */
 .card-rent .card-image-overlay .share-btn,
 .card-rent .card-image-overlay .share-btn-card {
-  background: rgba(180, 115, 42, 0.16);
-  color: #8C5A20;
+  background: rgba(20, 33, 61, 0.10);
+  color: var(--ink);
 }
 .card-rent .card-image-overlay .share-btn:hover,
 .card-rent .card-image-overlay .share-btn-card:hover {
-  background: rgba(180, 115, 42, 0.26);
-  color: #8C5A20;
+  background: rgba(20, 33, 61, 0.18);
+  color: var(--ink);
 }
 @media (max-width: 380px) {
   .card-image-overlay { gap: 6px; }
@@ -621,12 +628,12 @@ a { color: inherit; text-decoration: none; }
 .share-btn:hover { background: rgba(32, 28, 21, 0.22); color: #201C15; }
 .share-btn:disabled { opacity: 0.85; cursor: default; }
 .card-sale .card-top-row .share-btn {
-  background: rgba(30, 107, 76, 0.14);
-  color: #154F38;
+  background: rgba(184, 137, 79, 0.18);
+  color: #8C6530;
 }
 .card-rent .card-top-row .share-btn {
-  background: rgba(180, 115, 42, 0.16);
-  color: #8C5A20;
+  background: rgba(20, 33, 61, 0.10);
+  color: var(--ink);
 }
 
 .share-menu {
@@ -664,16 +671,16 @@ a { color: inherit; text-decoration: none; }
   border-radius: 999px;
   margin-bottom: 12px;
   letter-spacing: 0.01em;
-  background: rgba(30, 107, 76, 0.14);
-  color: #1E6B4C;
+  background: rgba(184, 137, 79, 0.16);
+  color: #8C6530;
 }
 .deal-tag.sale {
-  background: rgba(30, 107, 76, 0.16);
-  color: #154F38;
+  background: rgba(184, 137, 79, 0.18);
+  color: #8C6530;
 }
 .deal-tag.rent {
-  background: rgba(180, 115, 42, 0.18);
-  color: #8C5A20;
+  background: rgba(20, 33, 61, 0.10);
+  color: var(--ink);
 }
 .card-body h3,
 .card-title {
@@ -770,8 +777,8 @@ a { color: inherit; text-decoration: none; }
 .agent-btn-secondary {
   flex: 1 1 0;
 }
-.agent-call-btn { background: var(--sage); color: #fff; }
-.agent-call-btn:hover { background: #3d5a50; }
+.agent-call-btn { background: var(--brass); color: var(--ink); }
+.agent-call-btn:hover { filter: brightness(1.06); }
 .agent-msg-btn { background: var(--ink); color: var(--paper); }
 .agent-msg-btn:hover { opacity: 0.88; }
 
@@ -825,14 +832,23 @@ a { color: inherit; text-decoration: none; }
   white-space: nowrap;
 }
 .bot-cta-big:hover { background: #1c2c50; }
-.bot-cta-big.whatsapp { background: #25D366; }
-.bot-cta-big.whatsapp:hover { background: #1fb857; }
-.bot-cta-big.bale { background: #00A3E0; }
-.bot-cta-big.bale:hover { background: #008fc4; }
-.bot-cta-big.rubika { background: #4CA5DF; }
-.bot-cta-big.rubika:hover { background: #3b8fc9; }
-.bot-cta-big.phone { background: var(--sage); }
-.bot-cta-big.phone:hover { background: #3d5a50; }
+.bot-cta-big.whatsapp,
+.bot-cta-big.bale,
+.bot-cta-big.rubika,
+.bot-cta-big.telegram {
+  background: var(--ink);
+}
+.bot-cta-big.whatsapp:hover,
+.bot-cta-big.bale:hover,
+.bot-cta-big.rubika:hover,
+.bot-cta-big.telegram:hover {
+  background: #1c2c50;
+}
+.bot-cta-big.phone {
+  background: var(--brass);
+  color: var(--ink) !important;
+}
+.bot-cta-big.phone:hover { filter: brightness(1.06); }
 .contact-buttons { display: flex; flex-wrap: nowrap; gap: 8px; align-items: stretch; }
 
 .lead-form {
@@ -1435,7 +1451,7 @@ a { color: inherit; text-decoration: none; }
   font-weight: 600;
   min-height: 24px;
 }
-#submitFormStatus.success { color: var(--sage); }
+#submitFormStatus.success { color: #2F7D4F; }
 #submitFormStatus.error { color: #c0392b; }
 
 @media (max-width: 600px) {
@@ -1589,13 +1605,13 @@ a { color: inherit; text-decoration: none; }
   border-right: 4px solid var(--brass);
 }
 .card-sale .card-price {
-  color: #154F38;
+  color: #8C6530;
 }
 .card-rent {
-  border-right: 4px solid #2A6FDB;
+  border-right: 4px solid var(--ink);
 }
 .card-rent .card-price {
-  color: #1a4a8a;
+  color: var(--ink);
   font-size: 1.2rem;
 }
 

@@ -20,7 +20,7 @@
 
 <!-- PWA: نصب سایت به‌عنوان اپلیکیشن -->
 <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#0B1B33">
+<meta name="theme-color" content="#14213D">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="اطلس املاک">
@@ -123,11 +123,11 @@
     flex-shrink: 0;
   }
   .footer-social-icon svg { width: 16px; height: 16px; }
-  .footer-social-icon.telegram { background: #229ED9; }
-  .footer-social-icon.instagram {
-    background: radial-gradient(circle at 30% 110%, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285AEB 90%);
+  .footer-social-icon.telegram,
+  .footer-social-icon.instagram,
+  .footer-social-icon.email {
+    background: #B8894F;
   }
-  .footer-social-icon.email { background: #57503F; }
   .footer-social-label {
     font-size: 0.74rem;
     font-weight: 700;
@@ -146,7 +146,7 @@
     margin: 10px auto 0;
   }
   .footer-social-note a {
-    color: #5EC1EF;
+    color: #D9B67D;
     font-weight: 700;
     text-decoration: underline;
   }
@@ -171,7 +171,8 @@
     border: none;
     cursor: pointer;
     font-family: inherit;
-    background: #2E7D32;
+    background: #14213D;
+    color: #F5F1EA !important;
   }
   .install-app-btn:hover { filter: brightness(1.08); }
   .mobile-tabbar .install-app-btn {
