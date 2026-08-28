@@ -122,6 +122,16 @@ def get_default_image(property_type: str, deal_type: str = "") -> str:
 # ================================================
 
 
+def _norm_header(h: str) -> str:
+    """یکدست‌سازی عنوان ستون شیت (فاصله، BOM، ی/ک عربی)."""
+    if h is None:
+        return ""
+    s = str(h).replace("\ufeff", "").strip()
+    s = s.replace("ي", "ی").replace("ك", "ک")
+    s = re.sub(r"\s+", " ", s)
+    return s
+
+
 def fetch_csv_by_gid(gid: str) -> list[dict]:
     """خواندن یک تب گوگل‌شیت به‌صورت CSV و برگرداندن لیست دیکشنری."""
     if not SPREADSHEET_ID or not gid:
@@ -132,7 +142,17 @@ def fetch_csv_by_gid(gid: str) -> list[dict]:
         resp.raise_for_status()
         f = io.StringIO(resp.text)
         reader = csv.DictReader(f)
-        rows = [row for row in reader if any((v or "").strip() for v in row.values())]
+        # نرمال‌سازی نام ستون‌ها تا «توضیحات » یا ی عربی باعث از دست رفتن نشود
+        fieldnames = [_norm_header(h) for h in (reader.fieldnames or [])]
+        rows = []
+        for raw in reader:
+            if not any((v or "").strip() for v in raw.values()):
+                continue
+            row = {_norm_header(k): (v or "").strip() if isinstance(v, str) else v
+                   for k, v in raw.items()}
+            rows.append(row)
+        if fieldnames:
+            print(f"  ستون‌های تب gid={gid}: {', '.join(fieldnames)}")
         return rows
     except Exception as e:
         print(f"خطا در خواندن تب (gid={gid}): {e}")
@@ -255,7 +275,7 @@ ALLOWED_SHEET_COLUMNS = {
     "کد", "نوع ملک", "آدرس", "متراژ", "خواب", "طبقه",
     "پارکینگ", "آسانسور", "انباری", "مشاور",
     "تاریخ ثبت فایل", "قیمت کل", "قیمت متری", "رهن", "کرایه",
-    "وضعیت", "عکس", "مدارک", "توضیحات",
+    "وضعیت", "عکس", "مدارک", "توضیحات", "توضیح", "شرح", "توضیحات فایل",
 }
 
 BLOCKED_OUTPUT_KEYS = {
@@ -300,7 +320,16 @@ def row_to_property(row: dict, deal_type: str) -> dict:
     if docs:
         result["documents"] = docs
 
-    notes = _safe_get(row, "توضیحات")
+    # چند نام رایج برای ستون توضیحات در شیت
+    notes = (
+        _safe_get(row, "توضیحات")
+        or _safe_get(row, "توضیح")
+        or _safe_get(row, "شرح")
+        or _safe_get(row, "توضیحات فایل")
+        or (row.get("توضیحات") or row.get("توضیح") or row.get("شرح") or "")
+    )
+    if isinstance(notes, str):
+        notes = notes.strip()
     if notes:
         result["description"] = notes
 
@@ -525,7 +554,9 @@ def update_snapshot():
     print(f"تعداد فایل‌های فعال: {len(all_props)}")
 
     n_default_images = sum(1 for p in all_props if p.get("image_is_default"))
+    n_with_desc = sum(1 for p in all_props if p.get("description"))
     print(f"تعداد فایل‌هایی که عکس پیش‌فرض گرفتند: {n_default_images}")
+    print(f"  تعداد آگهی با توضیحات: {n_with_desc}")
 
     menu_items = fetch_menu_items()
     print(f"تعداد دکمه‌های سفارشی‌شده: {len(menu_items)}")
