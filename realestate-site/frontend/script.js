@@ -147,6 +147,14 @@ function truncateAddress(address) {
   return text.length > 40 ? text.slice(0, 40).trim() + "…" : text;
 }
 
+function escapeHtml(str) {
+  return String(str || "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
 function buildExtras(p) {
   const extras = [];
   if (p.parking) extras.push("🅿️ پارکینگ");
@@ -382,13 +390,18 @@ function propertyCard(p) {
   const titleCode = p.code ? `<span class="card-code">کد ${p.code}</span>` : "";
   const imageBlock = buildCardImage(p, p.deal_type === "فروش");
 
+  const notesLine = p.description
+    ? `<p class="card-meta card-notes">📝 ${escapeHtml(p.description)}</p>`
+    : "";
+
   const extraBits = [
     specsLine,
     extras.length ? `<p class="card-meta card-extras">${extras.join(" | ")}</p>` : "",
-    p.documents ? `<p class="card-meta card-docs">📄 مدارک: ${p.documents}</p>` : "",
+    p.documents ? `<p class="card-meta card-docs">📄 مدارک: ${escapeHtml(p.documents)}</p>` : "",
     priceM2Line,
     agentLine,
     dateLine,
+    notesLine,
   ].filter(Boolean).join("\n          ");
 
   const hasExtra = Boolean(extraBits);
