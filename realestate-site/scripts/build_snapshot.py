@@ -521,6 +521,55 @@ def update_bagh_page(content: dict) -> bool:
     return True
 
 
+def _to_persian_digits(s: str) -> str:
+    en = "0123456789"
+    fa = "۰۱۲۳۴۵۶۷۸۹"
+    return "".join(fa[en.index(c)] if c in en else c for c in str(s))
+
+
+def update_index_shell_counts(content: str, all_props: list) -> str:
+    """شات اول HTML را با آمار واقعی هم‌خوان می‌کند (بدون تزریق کارت‌های سنگین)."""
+    total = len(all_props)
+    sale = sum(1 for p in all_props if p.get("deal_type") == "فروش")
+    rent = sum(1 for p in all_props if p.get("deal_type") == "رهن و اجاره")
+    page = min(6, total)
+
+    stats = (
+        f"🏠 {_to_persian_digits(total)} فایل فعال — "
+        f"{_to_persian_digits(sale)} فروشی، {_to_persian_digits(rent)} رهن و اجاره"
+    )
+    count = f"{_to_persian_digits(page)} از {_to_persian_digits(total)} آگهی"
+
+    content = re.sub(
+        r'(<span id="statsText">)(.*?)(</span>)',
+        lambda m: m.group(1) + stats + m.group(3),
+        content,
+        count=1,
+        flags=re.S,
+    )
+    content = re.sub(
+        r'(<span class="section-note" id="resultCount">)(.*?)(</span>)',
+        lambda m: m.group(1) + count + m.group(3),
+        content,
+        count=1,
+        flags=re.S,
+    )
+
+    start_c = "<!-- SNAPSHOT_START -->"
+    end_c = "<!-- SNAPSHOT_END -->"
+    if start_c in content and end_c in content:
+        before = content.split(start_c)[0]
+        after = content.split(end_c)[1]
+        content = (
+            before
+            + start_c
+            + "\n      <!-- گرید با JS از __PRELOADED_PROPERTIES__ پر می‌شود -->\n      "
+            + end_c
+            + after
+        )
+    return content
+
+
 def update_snapshot():
     print("در حال دریافت داده‌ها از گوگل‌شیت...")
 
@@ -579,6 +628,9 @@ def update_snapshot():
 
     with open(index_path, "r", encoding="utf-8") as f:
         content = f.read()
+
+    content = update_index_shell_counts(content, all_props)
+    print(f"  شات اول HTML: آمار برای {len(all_props)} آگهی به‌روز شد")
 
     start_marker = "<!-- SNAPSHOT_DATA_START -->"
     end_marker = "<!-- SNAPSHOT_DATA_END -->"
