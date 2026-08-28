@@ -255,7 +255,7 @@ ALLOWED_SHEET_COLUMNS = {
     "کد", "نوع ملک", "آدرس", "متراژ", "خواب", "طبقه",
     "پارکینگ", "آسانسور", "انباری", "مشاور",
     "تاریخ ثبت فایل", "قیمت کل", "قیمت متری", "رهن", "کرایه",
-    "وضعیت", "عکس", "مدارک",
+    "وضعیت", "عکس", "مدارک", "توضیحات",
 }
 
 BLOCKED_OUTPUT_KEYS = {
@@ -299,6 +299,10 @@ def row_to_property(row: dict, deal_type: str) -> dict:
     docs = _safe_get(row, "مدارک")
     if docs:
         result["documents"] = docs
+
+    notes = _safe_get(row, "توضیحات")
+    if notes:
+        result["description"] = notes
 
     # --- عکس: از شیت بخوان، اگر خالی بود عکس پیش‌فرض بر اساس نوع ملک + معامله بگذار ---
     image_url = _safe_get(row, "عکس")
@@ -670,6 +674,7 @@ def render_listing_html(p: dict) -> str:
     price = escape(_listing_price_line(p))
     m2 = escape(_format_price_per_m2(p.get("price_per_m2") or ""))
     docs = escape(str(p.get("documents") or "").strip())
+    desc_note = escape(str(p.get("description") or "").strip())
     agent = escape(str(p.get("agent_name") or "").strip())
     reg = escape(str(p.get("registered_at") or "").strip())
     deal = escape(str(p.get("deal_type") or ""))
@@ -730,6 +735,7 @@ def render_listing_html(p: dict) -> str:
     m2_html = f'<p class="card-meta card-price-m2">قیمت متری: {m2}</p>' if m2 and p.get("deal_type") == "فروش" else ""
     agent_html = f'<p class="card-agent">👤 ثبت‌شده توسط: <strong>{agent}</strong></p>' if agent else ""
     date_html = f'<p class="card-date">📅 ثبت: {reg}</p>' if reg else ""
+    notes_html = f'<p class="card-meta card-notes">📝 {desc_note}</p>' if desc_note else ""
     specs_html = f'<p class="card-meta">{escape(specs_txt)}</p>' if specs_txt else ""
     addr_html = f'<p class="card-meta card-address">📍 {addr}</p>' if addr else ""
 
@@ -883,6 +889,7 @@ def render_listing_html(p: dict) -> str:
           <a class="agent-msg-btn agent-btn-secondary" href="https://ble.ir/Nobody_Mohsen?text={bale_msg}" target="_blank" rel="noopener">💬 پیام</a>
         </div>
         {date_html}
+        {notes_html}
       </div>
     </article>
   </div>
