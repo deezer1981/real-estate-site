@@ -1886,3 +1886,50 @@ body.single-ad-mode .card-image-wrap {
     max-height: 400px;
   }
 }
+
+
+/* ===== کارت جمع‌وجور موبایل: اطلاعات بیشتر ===== */
+.card-more-btn {
+  display: none;
+  margin: 8px 0 4px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1.5px solid var(--brass, #B4894F);
+  background: transparent;
+  color: var(--ink, #201C15);
+  font-family: inherit;
+  font-size: 0.86rem;
+  font-weight: 700;
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.card-more-btn:hover {
+  background: rgba(180, 137, 79, 0.14);
+  color: #8C6530;
+}
+.card-details-extra {
+  display: block;
+}
+
+@media (max-width: 720px) {
+  /* در لیست اصلی موبایل جزئیات اضافه جمع می‌شود؛ صفحه تک‌آگهی باز می‌ماند */
+  body:not(.single-ad-mode) .card:not(.is-expanded) .card-details-extra {
+    display: none;
+  }
+  body:not(.single-ad-mode) .card-more-btn {
+    display: inline-flex;
+  }
+  body:not(.single-ad-mode) .card.is-expanded .card-more-btn {
+    background: rgba(180, 137, 79, 0.16);
+    color: #8C6530;
+  }
+  body:not(.single-ad-mode) .card-body {
+    padding: 14px 16px;
+  }
+  body:not(.single-ad-mode) .card-title {
+    font-size: 1.15rem;
+  }
+}

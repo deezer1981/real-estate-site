@@ -335,9 +335,12 @@ function propertyCard(p) {
 
   const saleTotal = formatSaleTotal(p.price_total);
   const saleM2 = formatPricePerM2(p.price_per_m2);
-  const priceLine = p.deal_type === "فروش"
-    ? `<p class="card-price">💰 ${saleTotal || "توافقی"}</p>${saleM2 ? `<p class="card-meta card-price-m2">قیمت متری: ${saleM2}</p>` : ""}`
+  const priceMain = p.deal_type === "فروش"
+    ? `<p class="card-price">💰 ${saleTotal || "توافقی"}</p>`
     : `<p class="card-price">${formatRentPrice(p)}</p>`;
+  const priceM2Line = (p.deal_type === "فروش" && saleM2)
+    ? `<p class="card-meta card-price-m2">قیمت متری: ${saleM2}</p>`
+    : "";
 
   const extras = buildExtras(p);
   const shortAddress = truncateAddress(p.address);
@@ -379,21 +382,36 @@ function propertyCard(p) {
   const titleCode = p.code ? `<span class="card-code">کد ${p.code}</span>` : "";
   const imageBlock = buildCardImage(p, p.deal_type === "فروش");
 
+  const extraBits = [
+    specsLine,
+    extras.length ? `<p class="card-meta card-extras">${extras.join(" | ")}</p>` : "",
+    p.documents ? `<p class="card-meta card-docs">📄 مدارک: ${p.documents}</p>` : "",
+    priceM2Line,
+    agentLine,
+    dateLine,
+  ].filter(Boolean).join("\n          ");
+
+  const hasExtra = Boolean(extraBits);
+  const moreBtn = hasExtra
+    ? `<button type="button" class="card-more-btn" aria-expanded="false">اطلاعات بیشتر</button>`
+    : "";
+  const detailsBlock = hasExtra
+    ? `<div class="card-details-extra">${extraBits}</div>`
+    : "";
+  const expandedClass = isSingleMode ? " is-expanded" : "";
+
   return `
     <div style="${wrapperStyle}">
       ${backBanner}
-      <article class="card ${p.deal_type === "فروش" ? "card-sale" : "card-rent"}" id="card-${p.code || ""}" data-code="${p.code || ""}">
+      <article class="card ${p.deal_type === "فروش" ? "card-sale" : "card-rent"}${expandedClass}" id="card-${p.code || ""}" data-code="${p.code || ""}">
         ${imageBlock}
         <div class="card-body">
           <h3 class="card-title">${titleType} ${titleCode}</h3>
           ${shortAddress ? `<p class="card-meta card-address">📍 ${shortAddress}</p>` : ""}
-          ${specsLine}
-          ${extras.length ? `<p class="card-meta card-extras">${extras.join(" | ")}</p>` : ""}
-          ${p.documents ? `<p class="card-meta card-docs">📄 مدارک: ${p.documents}</p>` : ""}
-          ${priceLine}
-          ${agentLine}
+          ${priceMain}
+          ${moreBtn}
+          ${detailsBlock}
           ${agentActions}
-          ${dateLine}
         </div>
       </article>
       ${bottomBack}
@@ -1072,6 +1090,18 @@ ${shareUrl}
   });
 }
 
+
+document.addEventListener("click", (e) => {
+  const moreBtn = e.target.closest(".card-more-btn");
+  if (moreBtn) {
+    const card = moreBtn.closest(".card");
+    if (!card) return;
+    const open = card.classList.toggle("is-expanded");
+    moreBtn.setAttribute("aria-expanded", open ? "true" : "false");
+    moreBtn.textContent = open ? "بستن اطلاعات" : "اطلاعات بیشتر";
+    return;
+  }
+});
 
 document.addEventListener("click", (e) => {
   const shareBtn = e.target.closest(".share-btn");
