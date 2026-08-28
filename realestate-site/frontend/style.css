@@ -604,7 +604,27 @@ a { color: inherit; text-decoration: none; }
     font-size: 0.88rem;
   }
 }
-.card-body { padding: 16px 18px; }
+.card-body {
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+}
+.card-body .card-title { order: 1; }
+.card-body .card-address { order: 2; }
+.card-body .card-price { order: 3; }
+/* موبایل: دکمه، بعد جزئیات (باز شدن به پایین) */
+.card-body .card-more-btn { order: 4; }
+.card-body .card-details-mid { order: 5; }
+.card-body .card-details-notes { order: 6; }
+.card-body .card-details-tail { order: 7; }
+.card-body .card-actions { order: 8; }
+@media (min-width: 721px) {
+  /* دسکتاپ: جزئیات اول، بعد دکمه، بعد توضیحات */
+  .card-body .card-details-mid { order: 4; }
+  .card-body .card-more-btn { order: 5; }
+  .card-body .card-details-notes { order: 6; }
+  .card-body .card-details-tail { order: 7; }
+}
 .card-top-row {
   display: flex;
   align-items: center;
@@ -878,7 +898,8 @@ a { color: inherit; text-decoration: none; }
 .lead-form textarea { min-height: 90px; }
 .lead-form input:focus, .lead-form textarea:focus { outline: 2px solid var(--brass); }
 .lead-form button {
-  margin-top: 16px;
+  margin-top: 12px;
+  margin-bottom: 0;
   background: var(--brass);
   color: var(--ink);
   border: none;
@@ -889,7 +910,23 @@ a { color: inherit; text-decoration: none; }
   font-size: 1rem;
   cursor: pointer;
 }
-.form-status { font-size: 0.85rem; color: var(--sage); min-height: 1.2em; }
+.form-hint {
+  margin: 8px 0 0;
+  font-size: 0.88rem;
+  color: #5C5348;
+  font-weight: 600;
+  line-height: 1.55;
+}
+.form-status {
+  font-size: 0.85rem;
+  color: var(--sage);
+  min-height: 0;
+  margin: 4px 0 0;
+}
+.form-status:not(:empty) {
+  min-height: 1.2em;
+  margin-top: 8px;
+}
 
 /* ===================== Simple content pages (about/baghestan/etc) ===================== */
 .page-hero {
