@@ -1892,15 +1892,15 @@ body.single-ad-mode .card-image-wrap {
 .card-more-btn {
   display: none;
   width: auto;
-  margin: 6px 0 2px;
-  padding: 5px 12px;
+  margin: 8px 0 4px;
+  padding: 7px 16px;
   border-radius: 999px;
-  border: 1px solid rgba(180, 137, 79, 0.55);
-  background: transparent;
-  color: #6B6358;
+  border: 1px solid rgba(180, 137, 79, 0.6);
+  background: rgba(180, 137, 79, 0.06);
+  color: #5C5348;
   font-family: inherit;
-  font-size: 0.78rem;
-  font-weight: 600;
+  font-size: 0.84rem;
+  font-weight: 700;
   cursor: pointer;
   align-items: center;
   justify-content: center;

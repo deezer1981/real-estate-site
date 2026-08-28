@@ -431,8 +431,8 @@ function propertyCard(p) {
           <h3 class="card-title">${titleType} ${titleCode}</h3>
           ${shortAddress ? `<p class="card-meta card-address">📍 ${shortAddress}</p>` : ""}
           ${priceMain}
-          ${midBlock}
           ${moreBtn}
+          ${midBlock}
           ${notesBlock}
           ${tailBlock}
           ${agentActions}
@@ -1118,11 +1118,19 @@ ${shareUrl}
 document.addEventListener("click", (e) => {
   const moreBtn = e.target.closest(".card-more-btn");
   if (moreBtn) {
+    e.preventDefault();
     const card = moreBtn.closest(".card");
     if (!card) return;
+    // موقعیت دکمه در صفحه ثابت بماند تا هنگام باز/بسته پرش نکند
+    const yBefore = moreBtn.getBoundingClientRect().top;
     const open = card.classList.toggle("is-expanded");
     moreBtn.setAttribute("aria-expanded", open ? "true" : "false");
     moreBtn.textContent = open ? "بستن اطلاعات" : "اطلاعات بیشتر";
+    requestAnimationFrame(() => {
+      const yAfter = moreBtn.getBoundingClientRect().top;
+      const delta = yAfter - yBefore;
+      if (delta) window.scrollBy(0, delta);
+    });
     return;
   }
 });
