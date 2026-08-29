@@ -542,30 +542,63 @@ function checkSinglePropertyMode() {
     }
     canonical.href = pageUrl;
 
-    // JSON-LD آگهی
+    // JSON-LD آگهی (RealEstateListing + BreadcrumbList)
     const oldLd = document.getElementById("single-ad-jsonld");
     if (oldLd) oldLd.remove();
     const priceForLd = found.deal_type === "فروش"
       ? formatSaleTotal(found.price_total)
       : [formatRentPart(found.rahn), formatRentPart(found.ejare)].filter(Boolean).join(" / ");
-    const ld = {
-      "@context": "https://schema.org",
+    const listingLd = {
       "@type": "RealEstateListing",
+      "@id": pageUrl + "#listing",
       "name": `${label} کد ${targetCode}`,
       "description": descText,
       "url": pageUrl,
-      "datePosted": found.registered_at || undefined,
       "address": {
         "@type": "PostalAddress",
         "streetAddress": found.address || addr,
         "addressLocality": "خادم‌آباد",
         "addressRegion": "تهران",
         "addressCountry": "IR"
+      },
+      "seller": {
+        "@type": "RealEstateAgent",
+        "name": "گروه مشاورین املاک اطلس",
+        "url": "https://atlas-amlak.ir/",
+        "telephone": "+989106943220"
       }
     };
-    if (ogImage) ld.image = ogImage;
-    if (found.area_m2) ld.floorSize = { "@type": "QuantitativeValue", "value": parseAreaM2(found), "unitCode": "MTK" };
-    if (priceForLd) ld.offers = { "@type": "Offer", "priceCurrency": "IRR", "description": priceForLd };
+    if (found.registered_at) listingLd.datePosted = found.registered_at;
+    if (ogImage) listingLd.image = ogImage;
+    const areaN = parseAreaM2(found);
+    if (areaN) listingLd.floorSize = { "@type": "QuantitativeValue", "value": areaN, "unitCode": "MTK" };
+    const roomsN = parseRooms(found);
+    if (roomsN) listingLd.numberOfRooms = roomsN;
+    const extraProps = [];
+    if (found.parking) extraProps.push({ "@type": "PropertyValue", "name": "پارکینگ", "value": "دارد" });
+    if (found.elevator) extraProps.push({ "@type": "PropertyValue", "name": "آسانسور", "value": "دارد" });
+    if (found.storage) extraProps.push({ "@type": "PropertyValue", "name": "انباری", "value": "دارد" });
+    if (found.floor) extraProps.push({ "@type": "PropertyValue", "name": "طبقه", "value": String(found.floor) });
+    if (found.property_type) extraProps.push({ "@type": "PropertyValue", "name": "نوع ملک", "value": String(found.property_type) });
+    if (found.deal_type) extraProps.push({ "@type": "PropertyValue", "name": "نوع معامله", "value": String(found.deal_type) });
+    if (extraProps.length) listingLd.additionalProperty = extraProps;
+    if (priceForLd) {
+      listingLd.offers = {
+        "@type": "Offer",
+        "priceCurrency": "IRR",
+        "description": priceForLd,
+        "availability": "https://schema.org/InStock",
+        "url": pageUrl
+      };
+    }
+    const breadcrumbLd = {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "صفحه اصلی", "item": "https://atlas-amlak.ir/" },
+        { "@type": "ListItem", "position": 2, "name": `${label} کد ${targetCode}`, "item": pageUrl }
+      ]
+    };
+    const ld = { "@context": "https://schema.org", "@graph": [listingLd, breadcrumbLd] };
     const scriptLd = document.createElement("script");
     scriptLd.type = "application/ld+json";
     scriptLd.id = "single-ad-jsonld";
