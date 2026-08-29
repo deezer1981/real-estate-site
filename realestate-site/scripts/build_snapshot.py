@@ -686,10 +686,33 @@ def update_snapshot():
     before = content.split(start_marker)[0]
     after = content.split(end_marker)[1]
 
+    # ItemList سبک برای سئو (حداکثر ۱۲ آگهی اول بعد از مرتب‌سازی پین/تاریخ)
+    item_list_elements = []
+    for i, p in enumerate(all_props[:12], start=1):
+        code = str(p.get("code") or "").strip()
+        if not code:
+            continue
+        item_list_elements.append({
+            "@type": "ListItem",
+            "position": i,
+            "url": f"https://atlas-amlak.ir/agahi/{code}.html",
+            "name": f"{_listing_label(p)} کد {code}",
+        })
+    item_list_ld = {
+        "@context": "https://schema.org",
+        "@type": "ItemList",
+        "name": "آگهی‌های فعال اطلس املاک",
+        "itemListOrder": "https://schema.org/ItemListOrderAscending",
+        "numberOfItems": len(item_list_elements),
+        "itemListElement": item_list_elements,
+    }
+    item_list_json = json.dumps(item_list_ld, ensure_ascii=False)
+
     new_content = (
         f"{before}{start_marker}\n"
         f"<script>window.__PRELOADED_PROPERTIES__ = {properties_json};</script>\n"
         f"<script>window.__MENU_ITEMS__ = {menu_items_json};</script>\n"
+        f'<script type="application/ld+json" id="listings-itemlist-jsonld">{item_list_json}</script>\n'
         f"{end_marker}{after}"
     )
 
@@ -785,6 +808,150 @@ def _og_image_url(p: dict) -> str:
     if (not raw) or p.get("image_is_default") or raw.lower().endswith(".svg"):
         return "https://atlas-amlak.ir/assets/office.jpg"
     return _abs_image_url(raw)
+
+
+
+def _parse_rooms_num(p: dict) -> int | None:
+    raw = str(p.get("rooms") or "").strip()
+    if not raw:
+        return None
+    fa = "۰۱۲۳۴۵۶۷۸۹"
+    en = "0123456789"
+    raw = raw.translate(str.maketrans(fa, en))
+    digits = re.sub(r"[^\d]", "", raw)
+    if not digits:
+        return None
+    try:
+        n = int(digits)
+        return n if n > 0 else None
+    except ValueError:
+        return None
+
+
+def _parse_area_num(p: dict) -> float | None:
+    raw = str(p.get("area_m2") or "").strip()
+    if not raw:
+        return None
+    fa = "۰۱۲۳۴۵۶۷۸۹"
+    en = "0123456789"
+    raw = raw.translate(str.maketrans(fa, en))
+    m = re.search(r"[\d.]+", raw.replace(",", ""))
+    if not m:
+        return None
+    try:
+        n = float(m.group(0))
+        return n if n > 0 else None
+    except ValueError:
+        return None
+
+
+def _build_listing_jsonld(p: dict) -> dict:
+    """اسکیمای غنی RealEstateListing + BreadcrumbList برای صفحه آگهی."""
+    code = str(p.get("code") or "").strip()
+    label = _listing_label(p)
+    page_url = f"https://atlas-amlak.ir/agahi/{code}.html"
+    addr = (p.get("address") or "").strip()
+    specs = []
+    if p.get("area_m2"):
+        specs.append(f"{p.get('area_m2')} متر")
+    if p.get("rooms"):
+        specs.append(f"{p.get('rooms')} خواب")
+    if p.get("floor"):
+        specs.append(f"طبقه {p.get('floor')}")
+    price_line = _listing_price_line(p)
+    desc_parts = [f"{label} کد {code}"]
+    if addr:
+        desc_parts.append(addr)
+    if specs:
+        desc_parts.append(" · ".join(specs))
+    if price_line:
+        desc_parts.append(price_line)
+    description = " — ".join(desc_parts)
+
+    listing = {
+        "@type": "RealEstateListing",
+        "@id": f"{page_url}#listing",
+        "name": f"{label} کد {code}",
+        "description": description,
+        "url": page_url,
+        "image": _og_image_url(p),
+        "address": {
+            "@type": "PostalAddress",
+            "streetAddress": addr or "خادم‌آباد",
+            "addressLocality": "خادم‌آباد",
+            "addressRegion": "تهران",
+            "addressCountry": "IR",
+        },
+        "seller": {
+            "@type": "RealEstateAgent",
+            "name": "گروه مشاورین املاک اطلس",
+            "url": "https://atlas-amlak.ir/",
+            "telephone": "+989106943220",
+        },
+    }
+
+    if p.get("registered_at"):
+        listing["datePosted"] = str(p.get("registered_at")).strip()
+
+    area_n = _parse_area_num(p)
+    if area_n is not None:
+        listing["floorSize"] = {
+            "@type": "QuantitativeValue",
+            "value": area_n,
+            "unitCode": "MTK",
+        }
+
+    rooms_n = _parse_rooms_num(p)
+    if rooms_n is not None:
+        listing["numberOfRooms"] = rooms_n
+
+    extras = []
+    if p.get("parking"):
+        extras.append({"@type": "PropertyValue", "name": "پارکینگ", "value": "دارد"})
+    if p.get("elevator"):
+        extras.append({"@type": "PropertyValue", "name": "آسانسور", "value": "دارد"})
+    if p.get("storage"):
+        extras.append({"@type": "PropertyValue", "name": "انباری", "value": "دارد"})
+    if p.get("floor"):
+        extras.append({"@type": "PropertyValue", "name": "طبقه", "value": str(p.get("floor")).strip()})
+    if p.get("property_type"):
+        extras.append({"@type": "PropertyValue", "name": "نوع ملک", "value": str(p.get("property_type")).strip()})
+    if p.get("deal_type"):
+        extras.append({"@type": "PropertyValue", "name": "نوع معامله", "value": str(p.get("deal_type")).strip()})
+    if extras:
+        listing["additionalProperty"] = extras
+
+    if price_line:
+        listing["offers"] = {
+            "@type": "Offer",
+            "priceCurrency": "IRR",
+            "description": price_line,
+            "availability": "https://schema.org/InStock",
+            "url": page_url,
+        }
+
+    breadcrumb = {
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+            {
+                "@type": "ListItem",
+                "position": 1,
+                "name": "صفحه اصلی",
+                "item": "https://atlas-amlak.ir/",
+            },
+            {
+                "@type": "ListItem",
+                "position": 2,
+                "name": f"{label} کد {code}",
+                "item": page_url,
+            },
+        ],
+    }
+
+    return {
+        "@context": "https://schema.org",
+        "@graph": [listing, breadcrumb],
+    }
 
 
 def render_listing_html(p: dict) -> str:
@@ -981,7 +1148,7 @@ def render_listing_html(p: dict) -> str:
   .agahi-page .agent-msg-btn {{ box-shadow: 0 3px 10px rgba(20,33,61,0.10); }}
 </style>
 <script type="application/ld+json">
-{{"@context":"https://schema.org","@type":"RealEstateListing","name":{json.dumps(label + " کد " + code, ensure_ascii=False)},"description":{json.dumps(" — ".join([_listing_label(p) + f" کد {code}", (p.get("address") or ""), specs_txt, _listing_price_line(p)]), ensure_ascii=False)},"url":{json.dumps(page_url)},"image":{json.dumps(img)},"address":{{"@type":"PostalAddress","streetAddress":{json.dumps(p.get("address") or "", ensure_ascii=False)},"addressLocality":"خادم‌آباد","addressRegion":"تهران","addressCountry":"IR"}}}}
+{json.dumps(_build_listing_jsonld(p), ensure_ascii=False)}
 </script>
 </head>
 <body>
