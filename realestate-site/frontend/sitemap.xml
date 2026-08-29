@@ -31,6 +31,11 @@
     <priority>0.5</priority>
   </url>
   <url>
+    <loc>https://atlas-amlak.ir/agahi/1016.html</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://atlas-amlak.ir/agahi/1027.html</loc>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
@@ -127,11 +132,6 @@
   </url>
   <url>
     <loc>https://atlas-amlak.ir/agahi/1018.html</loc>
-    <changefreq>daily</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://atlas-amlak.ir/agahi/1016.html</loc>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
