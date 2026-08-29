@@ -276,6 +276,7 @@ ALLOWED_SHEET_COLUMNS = {
     "پارکینگ", "آسانسور", "انباری", "مشاور",
     "تاریخ ثبت فایل", "قیمت کل", "قیمت متری", "رهن", "کرایه",
     "وضعیت", "عکس", "مدارک", "توضیحات", "توضیح", "شرح", "توضیحات فایل",
+    "پین",
 }
 
 BLOCKED_OUTPUT_KEYS = {
@@ -300,6 +301,34 @@ def _strip_phone_like(text: str) -> str:
     return cleaned.strip(" -–|/\\")
 
 
+def _parse_pin_order(raw: str) -> int | None:
+    """مقدار ستون «پین» را به عدد اولویت تبدیل می‌کند.
+    خالی / بی‌معنی → None (پین نشده)
+    عدد فارسی یا انگلیسی → همان عدد (عدد کوچکتر = اولویت بالاتر)
+    «بله» / «آره» / «yes» / «true» → 1
+    """
+    s = (raw or "").strip()
+    if not s:
+        return None
+    # ارقام فارسی → انگلیسی
+    fa = "۰۱۲۳۴۵۶۷۸۹"
+    en = "0123456789"
+    trans = str.maketrans(fa, en)
+    s_norm = s.translate(trans).strip().lower()
+    # بله / آره / yes / true
+    if s_norm in ("بله", "آره", "yes", "true", "1", "✓", "✔"):
+        return 1
+    # فقط عدد
+    digits = "".join(c for c in s_norm if c.isdigit())
+    if digits:
+        try:
+            n = int(digits)
+            return n if n > 0 else 1
+        except ValueError:
+            return None
+    return None
+
+
 def row_to_property(row: dict, deal_type: str) -> dict:
     agent = _strip_phone_like(_safe_get(row, "مشاور"))
     result = {
@@ -319,6 +348,12 @@ def row_to_property(row: dict, deal_type: str) -> dict:
     docs = _safe_get(row, "مدارک")
     if docs:
         result["documents"] = docs
+
+    # --- پین: عدد اولویت از ستون «پین» (خالی = بدون پین) ---
+    pin_order = _parse_pin_order(_safe_get(row, "پین") or row.get("پین") or "")
+    if pin_order is not None:
+        result["pinned"] = True
+        result["pin_order"] = pin_order
 
     # چند نام رایج برای ستون توضیحات در شیت
     notes = (
@@ -594,16 +629,22 @@ def update_snapshot():
         return y * 10**10 + mo * 10**8 + d * 10**6 + hh * 10**4 + mm * 100
 
     def sort_key(item):
+        # پین‌شده‌ها اول (عدد کوچکتر = اولویت بالاتر)، بعد تاریخ جدیدتر، بعد کد
         code = str(item.get("code") or "0")
         digits = "".join(c for c in code if c.isdigit())
         code_n = int(digits) if digits else 0
-        return (_parse_reg(item.get("registered_at")), code_n)
+        pinned = 1 if item.get("pinned") else 0
+        # pin_order کوچک‌تر باید بالاتر باشد → با منفی برمی‌گردانیم تا reverse=True درست کار کند
+        pin_ord = item.get("pin_order") or 9999
+        return (pinned, -pin_ord, _parse_reg(item.get("registered_at")), code_n)
 
     all_props.sort(key=sort_key, reverse=True)
     print(f"تعداد فایل‌های فعال: {len(all_props)}")
 
+    n_pinned = sum(1 for p in all_props if p.get("pinned"))
     n_default_images = sum(1 for p in all_props if p.get("image_is_default"))
     n_with_desc = sum(1 for p in all_props if p.get("description"))
+    print(f"تعداد فایل‌های پین‌شده: {n_pinned}")
     print(f"تعداد فایل‌هایی که عکس پیش‌فرض گرفتند: {n_default_images}")
     print(f"  تعداد آگهی با توضیحات: {n_with_desc}")
 
