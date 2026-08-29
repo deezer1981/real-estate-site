@@ -108,7 +108,9 @@ function applyMenuOverrides() {
 }
 
 function sortNewestFirst(list) {
-  // اول تاریخ ثبت (جدیدتر بالاتر)، اگر نبود بر اساس کد
+  // ۱) پین‌شده‌ها اول (عدد pin_order کوچکتر = اولویت بالاتر)
+  // ۲) بعد تاریخ ثبت (جدیدتر بالاتر)
+  // ۳) در نهایت کد
   const parseReg = (s) => {
     const m = String(s || "").trim().match(
       /^(\d{4})\/(\d{1,2})\/(\d{1,2})(?:\s+(\d{1,2}):(\d{1,2}))?/
@@ -122,7 +124,19 @@ function sortNewestFirst(list) {
     const d = String(x.code || "").replace(/\D/g, "");
     return d ? parseInt(d, 10) : 0;
   };
+  const pinOrder = (x) => {
+    if (!x || !x.pinned) return 9999;
+    const n = Number(x.pin_order);
+    return Number.isFinite(n) && n > 0 ? n : 1;
+  };
   return (list || []).slice().sort((a, b) => {
+    const pa = a && a.pinned ? 1 : 0;
+    const pb = b && b.pinned ? 1 : 0;
+    if (pa !== pb) return pb - pa; // پین‌شده اول
+    if (pa && pb) {
+      const oa = pinOrder(a), ob = pinOrder(b);
+      if (oa !== ob) return oa - ob; // عدد کوچکتر بالاتر
+    }
     const da = parseReg(a.registered_at);
     const db = parseReg(b.registered_at);
     if (da !== db) return db - da; // تاریخ جدیدتر اول
@@ -178,9 +192,15 @@ function placeholderIcon(propertyType) {
  *  برچسب معامله و دکمه اشتراک روی خود عکس قرار می‌گیرند تا فضای بدنه کارت خلوت بماند */
 function buildCardImage(p, isSale) {
   const icon = placeholderIcon(p.property_type);
+  const pinBadge = p.pinned
+    ? `<span class="pin-tag" title="آگهی پین‌شده">📌 پین</span>`
+    : "";
   const overlay = `
     <div class="card-image-overlay">
-      <span class="deal-tag ${isSale ? "sale" : "rent"}">${p.deal_type || "آگهی"}</span>
+      <div class="card-overlay-left">
+        <span class="deal-tag ${isSale ? "sale" : "rent"}">${p.deal_type || "آگهی"}</span>
+        ${pinBadge}
+      </div>
       <button class="share-btn share-btn-card" data-code="${p.code || ""}" type="button" aria-label="اشتراک‌گذاری آگهی">🔗 اشتراک</button>
     </div>`;
   if (p.image) {
