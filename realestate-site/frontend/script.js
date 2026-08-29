@@ -193,7 +193,7 @@ function placeholderIcon(propertyType) {
 function buildCardImage(p, isSale) {
   const icon = placeholderIcon(p.property_type);
   const pinBadge = p.pinned
-    ? `<span class="pin-tag" title="آگهی پین‌شده">📌 پین</span>`
+    ? `<span class="pin-tag" title="آگهی پین‌شده" aria-label="پین شده">📌</span>`
     : "";
   const overlay = `
     <div class="card-image-overlay">
