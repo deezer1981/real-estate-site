@@ -714,11 +714,10 @@ def update_index_shell_counts(content: str, all_props: list) -> str:
     page = min(6, grid_total)
 
     stats = (
-        f"🏠 {_to_persian_digits(total)} فایل فعال — "
-        f"{_to_persian_digits(sale)} فروشی، {_to_persian_digits(rent)} رهن و اجاره"
+        f"🏠 {_to_persian_digits(total)} کارت خرید و رهن و اجاره"
     )
     if local_n:
-        stats += f" · {_to_persian_digits(local_n)} محله‌گردی"
+        stats += f" · {_to_persian_digits(local_n)} کارت محله‌گردی"
     count = f"{_to_persian_digits(page)} از {_to_persian_digits(grid_total)} آگهی"
 
     content = re.sub(
