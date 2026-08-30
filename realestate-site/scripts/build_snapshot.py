@@ -696,7 +696,7 @@ def update_snapshot():
             "@type": "ListItem",
             "position": i,
             "url": f"https://atlas-amlak.ir/agahi/{code}.html",
-            "name": f"{_listing_label(p)} کد {code}",
+            "name": _build_seo_title(p),
         })
     item_list_ld = {
         "@context": "https://schema.org",
@@ -845,33 +845,101 @@ def _parse_area_num(p: dict) -> float | None:
         return None
 
 
+def _schema_property_type(p: dict) -> str:
+    """نوع schema.org مناسب برای ملک (Apartment / House / Land و ...)."""
+    t = (p.get("property_type") or "").strip()
+    mapping = {
+        "آپارتمان": "Apartment",
+        "ویلا": "House",
+        "ویلایی": "House",
+        "خانه ویلایی": "House",
+        "باغ ویلا": "House",
+        "باغ": "House",
+        "باغچه": "House",
+        "زمین": "LandForm",
+        "کلنگی": "House",
+        "تجاری": "Store",
+        "مغازه": "Store",
+        "اداری": "OfficeBuilding",
+    }
+    return mapping.get(t, "Residence")
+
+
+def _parse_price_numeric(p: dict) -> float | None:
+    """استخراج قیمت عددی به ریال برای فیلد price در Offer (تا حد امکان)."""
+    if p.get("deal_type") != "فروش":
+        return None
+    raw = _format_sale_total(p.get("price_total") or "")
+    if not raw or "توافقی" in raw:
+        return None
+    fa = "۰۱۲۳۴۵۶۷۸۹"
+    en = "0123456789"
+    s = raw.translate(str.maketrans(fa, en))
+    m = re.search(r"([\d.]+)", s.replace(",", ""))
+    if not m:
+        return None
+    try:
+        num = float(m.group(1))
+    except ValueError:
+        return None
+    if "میلیارد" in s:
+        return int(num * 1_000_000_000)
+    if "میلیون" in s:
+        return int(num * 1_000_000)
+    return None
+
+
+def _build_seo_title(p: dict) -> str:
+    """عنوان سئو محلی و جذاب برای صفحه آگهی و اسکیما."""
+    label = _listing_label(p)
+    code = str(p.get("code") or "").strip()
+    area_n = _parse_area_num(p)
+    rooms_n = _parse_rooms_num(p)
+    parts = [label]
+    if area_n:
+        if area_n >= 100:
+            parts.append(f"{int(area_n) if area_n == int(area_n) else area_n} متری")
+        else:
+            parts.append(f"{int(area_n) if area_n == int(area_n) else area_n} متر")
+    if rooms_n:
+        parts.append(f"{rooms_n} خواب")
+    parts.append("در خادم‌آباد باغستان")
+    title = " ".join(parts) + f" | کد {code}"
+    # حداکثر حدود ۷۰ کاراکتر برای عنوان نتایج گوگل
+    if len(title) > 72:
+        title = f"{label} در خادم‌آباد باغستان | کد {code}"
+    return title
+
+
 def _build_listing_jsonld(p: dict) -> dict:
-    """اسکیمای غنی RealEstateListing + BreadcrumbList برای صفحه آگهی."""
+    """اسکیمای غنی RealEstateListing + about + Offer عددی + BreadcrumbList."""
     code = str(p.get("code") or "").strip()
     label = _listing_label(p)
     page_url = f"https://atlas-amlak.ir/agahi/{code}.html"
     addr = (p.get("address") or "").strip()
-    specs = []
-    if p.get("area_m2"):
-        specs.append(f"{p.get('area_m2')} متر")
-    if p.get("rooms"):
-        specs.append(f"{p.get('rooms')} خواب")
-    if p.get("floor"):
-        specs.append(f"طبقه {p.get('floor')}")
+    seo_title = _build_seo_title(p)
     price_line = _listing_price_line(p)
-    desc_parts = [f"{label} کد {code}"]
+    area_n = _parse_area_num(p)
+    rooms_n = _parse_rooms_num(p)
+
+    # توضیح غنی‌تر برای اسکیما و متا
+    desc_parts = [seo_title]
     if addr:
         desc_parts.append(addr)
-    if specs:
-        desc_parts.append(" · ".join(specs))
     if price_line:
-        desc_parts.append(price_line)
+        desc_parts.append(f"قیمت: {price_line}")
+    note = (p.get("description") or "").strip()
+    if note:
+        # فقط اول جمله توضیح را بگیر تا خیلی طولانی نشود
+        short_note = re.split(r"[\n|]", note)[0].strip()
+        if short_note and len(short_note) > 15:
+            desc_parts.append(short_note[:120])
     description = " — ".join(desc_parts)
 
     listing = {
         "@type": "RealEstateListing",
         "@id": f"{page_url}#listing",
-        "name": f"{label} کد {code}",
+        "name": seo_title,
         "description": description,
         "url": page_url,
         "image": _og_image_url(p),
@@ -893,17 +961,31 @@ def _build_listing_jsonld(p: dict) -> dict:
     if p.get("registered_at"):
         listing["datePosted"] = str(p.get("registered_at")).strip()
 
-    area_n = _parse_area_num(p)
+    # about: نوع ملک مشخص (Apartment / House / Land و ...)
+    about_type = _schema_property_type(p)
+    about = {
+        "@type": about_type,
+        "name": f"{label} کد {code}",
+        "address": {
+            "@type": "PostalAddress",
+            "streetAddress": addr or "خادم‌آباد",
+            "addressLocality": "خادم‌آباد",
+            "addressRegion": "تهران",
+            "addressCountry": "IR",
+        },
+    }
     if area_n is not None:
-        listing["floorSize"] = {
+        about["floorSize"] = {
             "@type": "QuantitativeValue",
             "value": area_n,
             "unitCode": "MTK",
         }
-
-    rooms_n = _parse_rooms_num(p)
+        listing["floorSize"] = about["floorSize"]
     if rooms_n is not None:
+        about["numberOfRooms"] = rooms_n
+        about["numberOfBedrooms"] = rooms_n
         listing["numberOfRooms"] = rooms_n
+    listing["about"] = about
 
     extras = []
     if p.get("parking"):
@@ -921,14 +1003,19 @@ def _build_listing_jsonld(p: dict) -> dict:
     if extras:
         listing["additionalProperty"] = extras
 
+    # Offer با قیمت عددی (مهم برای Rich Results)
     if price_line:
-        listing["offers"] = {
+        offer = {
             "@type": "Offer",
             "priceCurrency": "IRR",
             "description": price_line,
             "availability": "https://schema.org/InStock",
             "url": page_url,
         }
+        numeric_price = _parse_price_numeric(p)
+        if numeric_price is not None and numeric_price > 0:
+            offer["price"] = numeric_price
+        listing["offers"] = offer
 
     breadcrumb = {
         "@type": "BreadcrumbList",
@@ -942,7 +1029,7 @@ def _build_listing_jsonld(p: dict) -> dict:
             {
                 "@type": "ListItem",
                 "position": 2,
-                "name": f"{label} کد {code}",
+                "name": seo_title,
                 "item": page_url,
             },
         ],
@@ -996,15 +1083,15 @@ def render_listing_html(p: dict) -> str:
         extras.append("انباری")
     extras_txt = " | ".join(extras)
 
-    # پیش‌نمایش لینک: عنوان کوتاه + ۲–۳ خط مشخصات (قیمت / متراژ / آدرس)
+    # پیش‌نمایش لینک + عنوان سئو محلی
     price_plain = _listing_price_line(p)
     short_addr = (p.get("address") or "").strip()
     # کوتاه‌کردن آدرس برای پیش‌نمایش
     short_addr = re.sub(r"^باغستان\s*-\s*خادم[\u200c\s]*آباد\s*-\s*", "", short_addr)
     if len(short_addr) > 36:
         short_addr = short_addr[:36].rstrip() + "…"
-    # عنوان: نوع + کد (کوتاه تا در کارت واتساپ نشکند)
-    title = f"{label} کد {code}"
+    # عنوان سئو: شامل متراژ + خواب + خادم‌آباد باغستان (بهبود CTR محلی)
+    title = _build_seo_title(p)
     # خطوط توضیح — اول قیمت و متراژ (مهم‌ترین)
     lines = []
     if price_plain:
@@ -1013,6 +1100,7 @@ def render_listing_html(p: dict) -> str:
         lines.append(specs_txt)
     if short_addr:
         lines.append(short_addr)
+    lines.append("خادم‌آباد، باغستان، شهریار | مشاور املاک اطلس")
     desc_raw = "\n".join(lines)
     desc = (
         desc_raw.replace("&", "&amp;")
