@@ -1724,6 +1724,45 @@ a { color: inherit; text-decoration: none; }
   background: #2F6B5A;
 }
 
+/* سکشن محله‌گردی در صفحه معرفی باغستان */
+.local-guide-section {
+  margin-top: 48px;
+  padding-top: 32px;
+  border-top: 1px solid rgba(61, 139, 117, 0.25);
+}
+.local-guide-title {
+  font-size: 1.45rem;
+  color: #1E4D40;
+  margin: 0 0 10px;
+}
+.local-guide-lead {
+  color: var(--sage);
+  font-size: 0.98rem;
+  line-height: 1.75;
+  margin: 0 0 22px;
+  max-width: 42rem;
+}
+.local-guide-grid {
+  margin-top: 8px;
+}
+.local-guide-empty {
+  color: var(--sage);
+  font-size: 0.95rem;
+  grid-column: 1 / -1;
+}
+.local-guide-more {
+  margin-top: 20px;
+  font-weight: 700;
+}
+.local-guide-more a {
+  color: #2F6B5A;
+  text-decoration: none;
+}
+.local-guide-more a:hover {
+  color: var(--ink);
+  text-decoration: underline;
+}
+
 /* اینستاگرام و ایمیل در بخش تماس — لینک‌های کوچک و ساده، جدا از دکمه‌های اصلی */
 .contact-social-links {
   display: flex;
