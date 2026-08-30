@@ -253,10 +253,12 @@ def fetch_local_guide() -> list[dict]:
 
 
 def _normalize_local_image(raw: str) -> str:
-    """مسیر عکس محله‌گردی: لینک کامل یا مسیر نسبی داخل assets."""
+    """مسیر عکس محله‌گردی: لینک کامل یا مسیر نسبی داخل assets.
+    اگر خالی باشد از پیش‌فرض مخصوص محله‌گردی استفاده می‌شود (نه generic ملکی).
+    """
     s = (raw or "").strip()
     if not s:
-        return "assets/defaults/generic.svg"
+        return "assets/defaults/local-guide.svg"
     if s.startswith("http://") or s.startswith("https://") or s.startswith("assets/"):
         return s
     # فقط نام فایل → داخل assets
