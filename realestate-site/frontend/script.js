@@ -347,7 +347,129 @@ function buildSmsText(p) {
   return lines.join("\n");
 }
 
+/** تشخیص لینک مسیریابی / اینستاگرام از فیلد «لینک» محله‌گردی */
+function classifyLocalLink(url) {
+  const u = String(url || "").trim().toLowerCase();
+  if (!u) return null;
+  if (u.includes("instagram.com") || u.includes("instagr.am") || u.startsWith("@")) {
+    return "instagram";
+  }
+  if (
+    u.includes("maps.google") ||
+    u.includes("google.com/maps") ||
+    u.includes("goo.gl/maps") ||
+    u.includes("maps.app.goo.gl") ||
+    u.includes("neshan.org") ||
+    u.includes("balad.ir") ||
+    u.includes("waze.com")
+  ) {
+    return "maps";
+  }
+  return "other";
+}
+
+function normalizeInstagramUrl(url) {
+  let u = String(url || "").trim();
+  if (u.startsWith("@")) u = "https://www.instagram.com/" + u.slice(1).replace(/\/$/, "");
+  if (!/^https?:\/\//i.test(u)) u = "https://" + u.replace(/^\/+/, "");
+  return u;
+}
+
+/** کارت محله‌گردی — ظاهر متفاوت از آگهی ملکی */
+function localGuideCard(p) {
+  const title = escapeHtml(p.title || p.property_type || "محله‌گردی");
+  const category = escapeHtml(p.category || p.property_type || "");
+  const shortAddress = truncateAddress(p.address);
+  const text = p.description ? escapeHtml(p.description) : "";
+  const dateLine = p.registered_at
+    ? `<p class="card-date">📅 ثبت: ${escapeHtml(p.registered_at)}</p>`
+    : "";
+  const codeBadge = p.code ? `<span class="card-code">کد ${escapeHtml(p.code)}</span>` : "";
+
+  const icon = "📍";
+  const overlay = `
+    <div class="card-image-overlay">
+      <div class="card-overlay-left">
+        <span class="deal-tag local">محله‌گردی</span>
+      </div>
+      <button class="share-btn share-btn-card" data-code="${escapeHtml(p.code || "")}" type="button" aria-label="اشتراک‌گذاری">🔗 اشتراک</button>
+    </div>`;
+  let imageBlock;
+  if (p.image) {
+    imageBlock = `
+      <div class="card-image-wrap">
+        <img class="card-image" src="${escapeHtml(p.image)}" alt="${title}"
+             loading="lazy" decoding="async" width="400" height="280"
+             onerror="this.closest('.card-image-wrap').classList.add('no-image'); this.remove();">
+        <div class="card-image-fallback"><div class="fallback-icon-circle">${icon}</div><span class="fallback-caption">بدون عکس</span></div>
+        ${overlay}
+      </div>`;
+  } else {
+    imageBlock = `
+      <div class="card-image-wrap no-image">
+        <div class="card-image-fallback"><div class="fallback-icon-circle">${icon}</div><span class="fallback-caption">بدون عکس</span></div>
+        ${overlay}
+      </div>`;
+  }
+
+  const actions = [];
+  const linkKind = classifyLocalLink(p.link);
+  if (p.link) {
+    if (linkKind === "instagram") {
+      actions.push(
+        `<a class="agent-msg-btn agent-btn-secondary" href="${escapeHtml(normalizeInstagramUrl(p.link))}" target="_blank" rel="noopener">📸 اینستاگرام</a>`
+      );
+    } else if (linkKind === "maps") {
+      actions.push(
+        `<a class="agent-call-btn agent-btn-primary" href="${escapeHtml(p.link)}" target="_blank" rel="noopener">🗺️ مسیریابی</a>`
+      );
+    } else {
+      actions.push(
+        `<a class="agent-call-btn agent-btn-primary" href="${escapeHtml(p.link)}" target="_blank" rel="noopener">🔗 لینک</a>`
+      );
+    }
+  }
+  if (p.phone) {
+    const tel = String(p.phone).replace(/[^\d+۰-۹]/g, "");
+    actions.push(
+      `<a class="agent-msg-btn agent-btn-secondary" href="tel:${escapeHtml(tel)}">📞 تماس</a>`
+    );
+  }
+  // اگر فقط یکی از لینک‌ها بود و کاربر هر دو را خواسته — دکمه دوم فقط وقتی داده باشد
+  const actionsHtml = actions.length
+    ? `<div class="card-actions">${actions.join("\n      ")}</div>`
+    : "";
+
+  const notesBlock = text
+    ? `<div class="card-details-notes"><p class="card-meta card-notes">📝 ${text}</p></div>`
+    : "";
+  const moreBtn = text
+    ? `<button type="button" class="card-more-btn" aria-expanded="false">اطلاعات بیشتر</button>`
+    : "";
+
+  return `
+    <div style="width: 100%;">
+      <article class="card card-local" id="card-${escapeHtml(p.code || "")}" data-code="${escapeHtml(p.code || "")}" data-local="1">
+        ${imageBlock}
+        <div class="card-body">
+          <h3 class="card-title">${title} ${codeBadge}</h3>
+          ${category ? `<p class="card-meta card-local-cat">🏷️ ${category}</p>` : ""}
+          ${shortAddress ? `<p class="card-meta card-address">📍 ${escapeHtml(shortAddress)}</p>` : ""}
+          ${moreBtn}
+          ${notesBlock}
+          ${dateLine ? `<div class="card-details-tail">${dateLine}</div>` : ""}
+          ${actionsHtml}
+        </div>
+      </article>
+    </div>
+  `;
+}
+
 function propertyCard(p) {
+  if (p.is_local || p.deal_type === "محله‌گردی") {
+    return localGuideCard(p);
+  }
+
   const urlParams = new URLSearchParams(window.location.search);
   const isSingleMode = Boolean(urlParams.get("code"));
 
@@ -423,12 +545,6 @@ function propertyCard(p) {
   ].filter(Boolean).join("\n          ");
 
   // توضیحات → بعد «ثبت‌شده توسط» و تاریخ
-  const tailBits = [
-    notesLine,
-    agentLine,
-    dateLine,
-  ].filter(Boolean).join("\n          ");
-
   const midBlock = midBits ? `<div class="card-details-mid">${midBits}</div>` : "";
   const notesBlock = notesLine ? `<div class="card-details-notes">${notesLine}</div>` : "";
   const tailBlock = (agentLine || dateLine)
@@ -625,9 +741,13 @@ function checkSinglePropertyMode() {
 function updateStatsRibbon() {
   const urlParams = new URLSearchParams(window.location.search);
   if (!statsText || !allProperties.length || urlParams.get("code")) return;
-  const saleCount = allProperties.filter((p) => p.deal_type === "فروش").length;
-  const rentCount = allProperties.filter((p) => p.deal_type === "رهن و اجاره").length;
-  statsText.textContent = `🏠 ${allProperties.length} فایل فعال — ${saleCount} فروشی، ${rentCount} رهن و اجاره`;
+  const listings = allProperties.filter((p) => !p.is_local && p.deal_type !== "محله‌گردی");
+  const saleCount = listings.filter((p) => p.deal_type === "فروش").length;
+  const rentCount = listings.filter((p) => p.deal_type === "رهن و اجاره").length;
+  const localCount = allProperties.filter((p) => p.is_local || p.deal_type === "محله‌گردی").length;
+  let text = `🏠 ${listings.length} فایل فعال — ${saleCount} فروشی، ${rentCount} رهن و اجاره`;
+  if (localCount) text += ` · ${localCount} محله‌گردی`;
+  statsText.textContent = text;
 }
 
 function renderProperties() {
@@ -741,7 +861,10 @@ function applyFilters() {
   const needStorage = isAmenityOn("storage");
 
   let filtered = allProperties;
-  if (dealType) filtered = filtered.filter((p) => p.deal_type === dealType);
+  // فیلتر فروش / رهن: کارت‌های محله‌گردی کنار گذاشته می‌شوند؛ «همه» = مخلوط
+  if (dealType) {
+    filtered = filtered.filter((p) => p.deal_type === dealType);
+  }
 
   if (keyword) {
     const isGardenSearch = keyword === "باغ";
@@ -757,6 +880,12 @@ function applyFilters() {
       return false;
     };
     filtered = filtered.filter((p) => {
+      if (p.is_local || p.deal_type === "محله‌گردی") {
+        const hay = [p.title, p.category, p.property_type, p.address, p.description, p.code]
+          .map((x) => String(x || ""))
+          .join(" ");
+        return hay.includes(keyword);
+      }
       const addr = p.address || "";
       const ptype = p.property_type || "";
       const code = String(p.code || "");
@@ -768,6 +897,7 @@ function applyFilters() {
   // متراژ
   if (areaVal) {
     filtered = filtered.filter((p) => {
+      if (p.is_local || p.deal_type === "محله‌گردی") return false;
       const a = parseAreaM2(p);
       if (!a) return false;
       if (areaVal === "0-70") return a <= 70;
@@ -781,6 +911,7 @@ function applyFilters() {
   // خواب
   if (roomsVal) {
     filtered = filtered.filter((p) => {
+      if (p.is_local || p.deal_type === "محله‌گردی") return false;
       const r = parseRooms(p);
       if (roomsVal === "3+") return r >= 3;
       return r === parseInt(roomsVal, 10);
@@ -790,6 +921,7 @@ function applyFilters() {
   // قیمت فروش (میلیارد) — با فعال شدن، فقط فایل‌های فروشیِ داخل بازه می‌مانند
   if (priceVal && dealType !== "رهن و اجاره") {
     filtered = filtered.filter((p) => {
+      if (p.is_local || p.deal_type === "محله‌گردی") return false;
       if (p.deal_type !== "فروش") return false;
       const bil = parseSalePriceBillion(p);
       if (bil == null) return false;
@@ -804,6 +936,7 @@ function applyFilters() {
   // مبلغ رهن (میلیون تومان) — فقط فایل‌های رهن و اجاره
   if (rahnVal && dealType !== "فروش") {
     filtered = filtered.filter((p) => {
+      if (p.is_local || p.deal_type === "محله‌گردی") return false;
       if (p.deal_type === "فروش") return false;
       const mil = parseRahnMillion(p);
       if (mil == null) return false;
@@ -815,9 +948,10 @@ function applyFilters() {
     });
   }
 
-  if (needParking) filtered = filtered.filter((p) => p.parking);
-  if (needElevator) filtered = filtered.filter((p) => p.elevator);
-  if (needStorage) filtered = filtered.filter((p) => p.storage);
+  // امکانات فقط برای آگهی ملکی معنا دارد
+  if (needParking) filtered = filtered.filter((p) => !p.is_local && p.parking);
+  if (needElevator) filtered = filtered.filter((p) => !p.is_local && p.elevator);
+  if (needStorage) filtered = filtered.filter((p) => !p.is_local && p.storage);
 
   currentFiltered = filtered;
   visibleCount = PAGE_SIZE;
@@ -980,24 +1114,42 @@ function showShareModal(p, shareBtn) {
   const oldModal = document.getElementById("shareModal");
   if (oldModal) oldModal.remove();
 
-  // لینک ثابت صفحه آگهی (پیش‌نمایش پیام‌رسان + سئو) — روی سرعت صفحه اصلی اثر ندارد
-  const shareUrl = `${window.location.origin}/agahi/${encodeURIComponent(p.code)}.html`;
+  // لینک ثابت صفحه آگهی — برای محله‌گردی لینک صفحه اصلی با کد
+  const isLocal = p.is_local || p.deal_type === "محله‌گردی";
+  const shareUrl = isLocal
+    ? `${window.location.origin}/?code=${encodeURIComponent(p.code)}`
+    : `${window.location.origin}/agahi/${encodeURIComponent(p.code)}.html`;
   const extras = buildExtras(p);
-  const label = labeledPropertyType(p);
-  const priceText = p.deal_type === "فروش"
-    ? `💰 قیمت: ${formatSaleTotal(p.price_total) || "توافقی"}`
-    : formatRentPrice(p);
+  const label = isLocal
+    ? (p.title || p.category || "محله‌گردی")
+    : labeledPropertyType(p);
+  const priceText = isLocal
+    ? ""
+    : (p.deal_type === "فروش"
+      ? `💰 قیمت: ${formatSaleTotal(p.price_total) || "توافقی"}`
+      : formatRentPrice(p));
 
-  const specsParts = [
-    p.area_m2 ? p.area_m2 + " متر" : "",
-    p.rooms ? p.rooms + " خواب" : "",
-    p.floor ? "طبقه " + p.floor : ""
-  ].filter(Boolean);
+  const specsParts = isLocal
+    ? [p.category || ""].filter(Boolean)
+    : [
+        p.area_m2 ? p.area_m2 + " متر" : "",
+        p.rooms ? p.rooms + " خواب" : "",
+        p.floor ? "طبقه " + p.floor : ""
+      ].filter(Boolean);
   const m2Share = formatPricePerM2(p.price_per_m2);
-  const priceExtra = (p.deal_type === "فروش" && m2Share) ? `\n📏 قیمت متری: ${m2Share}` : "";
+  const priceExtra = (!isLocal && p.deal_type === "فروش" && m2Share) ? `\n📏 قیمت متری: ${m2Share}` : "";
   const shortAddr = truncateAddress(p.address) || "خادم‌آباد";
-  const shareText =
-`🏠 ${label} · کد ${p.code}
+  const shareText = isLocal
+    ? `📍 محله‌گردی · ${label}${p.code ? " · کد " + p.code : ""}
+
+📍 ${shortAddr}
+${p.category ? "🏷️ " + p.category + "\n" : ""}${p.description ? "📝 " + p.description + "\n" : ""}
+🔗 مشاهده:
+${shareUrl}
+
+🌐 atlas-amlak.ir
+گروه مشاورین املاک اطلس — خادم‌آباد و باغستان`
+    : `🏠 ${label} · کد ${p.code}
 
 📍 ${shortAddr}
 📐 ${specsParts.join(" · ")}${priceExtra}
@@ -1011,7 +1163,7 @@ ${shareUrl}
 🌐 atlas-amlak.ir
 گروه مشاورین املاک اطلس — خادم‌آباد و باغستان`;
 
-  const smsText = buildSmsText(p);
+  const smsText = isLocal ? shareText : buildSmsText(p);
 
   const modalHtml = `
     <div id="shareModal" style="position:fixed;inset:0;z-index:9999;background:rgba(32,28,21,0.55);backdrop-filter:blur(5px);display:flex;align-items:center;justify-content:center;padding:16px;">
