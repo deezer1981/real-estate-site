@@ -1202,13 +1202,14 @@ a { color: inherit; text-decoration: none; }
     justify-content: flex-end !important; /* اجبار: برند سمت چپ */
   }
   .stats-ribbon {
-    padding: 7px 10px;
-    font-size: 0.78rem;
+    padding: 9px 12px;
+    font-size: 0.88rem;
   }
   .stats-ribbon #statsText {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    line-height: 1.45;
   }
   .brand-mark { display: none; }
 

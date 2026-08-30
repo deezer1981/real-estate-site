@@ -412,28 +412,29 @@ function localGuideCard(p) {
       </div>`;
   }
 
+  // ترتیب و استایل مثل کارت آگهی: تماس سرمه‌ای (msg) اول، مسیریابی/لینک برنزی (call) دوم
   const actions = [];
+  if (p.phone) {
+    const tel = String(p.phone).replace(/[^\d+۰-۹]/g, "");
+    actions.push(
+      `<a class="agent-msg-btn agent-btn-primary" href="tel:${escapeHtml(tel)}">📞 تماس</a>`
+    );
+  }
   const linkKind = classifyLocalLink(p.link);
   if (p.link) {
     if (linkKind === "instagram") {
       actions.push(
-        `<a class="agent-msg-btn agent-btn-secondary" href="${escapeHtml(normalizeInstagramUrl(p.link))}" target="_blank" rel="noopener">📸 اینستاگرام</a>`
+        `<a class="agent-call-btn agent-btn-secondary" href="${escapeHtml(normalizeInstagramUrl(p.link))}" target="_blank" rel="noopener">📸 اینستاگرام</a>`
       );
     } else if (linkKind === "maps") {
       actions.push(
-        `<a class="agent-call-btn agent-btn-primary" href="${escapeHtml(p.link)}" target="_blank" rel="noopener">🗺️ مسیریابی</a>`
+        `<a class="agent-call-btn agent-btn-secondary" href="${escapeHtml(p.link)}" target="_blank" rel="noopener">🗺️ مسیریابی</a>`
       );
     } else {
       actions.push(
-        `<a class="agent-call-btn agent-btn-primary" href="${escapeHtml(p.link)}" target="_blank" rel="noopener">🔗 لینک</a>`
+        `<a class="agent-call-btn agent-btn-secondary" href="${escapeHtml(p.link)}" target="_blank" rel="noopener">🔗 لینک</a>`
       );
     }
-  }
-  if (p.phone) {
-    const tel = String(p.phone).replace(/[^\d+۰-۹]/g, "");
-    actions.push(
-      `<a class="agent-msg-btn agent-btn-secondary" href="tel:${escapeHtml(tel)}">📞 تماس</a>`
-    );
   }
   const actionsHtml = actions.length
     ? `<div class="card-actions">${actions.join("\n      ")}</div>`
@@ -750,8 +751,8 @@ function updateStatsRibbon() {
   const saleCount = listings.filter((p) => p.deal_type === "فروش").length;
   const rentCount = listings.filter((p) => p.deal_type === "رهن و اجاره").length;
   const localCount = allProperties.filter((p) => p.is_local || p.deal_type === "محله‌گردی").length;
-  // یک خط برای موبایل و دسکتاپ — واژه «کارت» برای هر دو نوع
-  let text = `🏠 ${listings.length} کارت خرید و رهن و اجاره`;
+  // متن خوانا؛ فروش و اجاره جدا از هم حس بهتری دارد
+  let text = `🏠 ${listings.length} کارت فروش و اجاره`;
   if (localCount) text += ` · ${localCount} کارت محله‌گردی`;
   statsText.textContent = text;
 }
