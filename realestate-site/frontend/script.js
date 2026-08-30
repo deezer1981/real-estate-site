@@ -375,7 +375,7 @@ function normalizeInstagramUrl(url) {
   return u;
 }
 
-/** کارت محله‌گردی — ظاهر متفاوت از آگهی ملکی */
+/** کارت محله‌گردی — همان ظاهر کارت‌های آگهی (یکدست با سایت) */
 function localGuideCard(p) {
   const title = escapeHtml(p.title || p.property_type || "محله‌گردی");
   const category = escapeHtml(p.category || p.property_type || "");
@@ -390,7 +390,7 @@ function localGuideCard(p) {
   const overlay = `
     <div class="card-image-overlay">
       <div class="card-overlay-left">
-        <span class="deal-tag local">🗺️ محله‌گردی</span>
+        <span class="deal-tag sale">محله‌گردی</span>
       </div>
       <button class="share-btn share-btn-card" data-code="${escapeHtml(p.code || "")}" type="button" aria-label="اشتراک‌گذاری">🔗 اشتراک</button>
     </div>`;
@@ -435,7 +435,6 @@ function localGuideCard(p) {
       `<a class="agent-msg-btn agent-btn-secondary" href="tel:${escapeHtml(tel)}">📞 تماس</a>`
     );
   }
-  // اگر فقط یکی از لینک‌ها بود و کاربر هر دو را خواسته — دکمه دوم فقط وقتی داده باشد
   const actionsHtml = actions.length
     ? `<div class="card-actions">${actions.join("\n      ")}</div>`
     : "";
@@ -446,18 +445,24 @@ function localGuideCard(p) {
   const moreBtn = text
     ? `<button type="button" class="card-more-btn" aria-expanded="false">اطلاعات بیشتر</button>`
     : "";
+  const midBlock = category
+    ? `<div class="card-details-mid"><p class="card-meta">🏷️ ${category}</p></div>`
+    : "";
+  const tailBlock = dateLine
+    ? `<div class="card-details-tail">${dateLine}</div>`
+    : "";
 
   return `
     <div style="width: 100%;">
-      <article class="card card-local" id="card-${escapeHtml(p.code || "")}" data-code="${escapeHtml(p.code || "")}" data-local="1">
+      <article class="card card-sale" id="card-${escapeHtml(p.code || "")}" data-code="${escapeHtml(p.code || "")}" data-local="1">
         ${imageBlock}
         <div class="card-body">
           <h3 class="card-title">${title} ${codeBadge}</h3>
-          ${category ? `<p class="card-meta card-local-cat">🏷️ ${category}</p>` : ""}
           ${shortAddress ? `<p class="card-meta card-address">📍 ${escapeHtml(shortAddress)}</p>` : ""}
           ${moreBtn}
+          ${midBlock}
           ${notesBlock}
-          ${dateLine ? `<div class="card-details-tail">${dateLine}</div>` : ""}
+          ${tailBlock}
           ${actionsHtml}
         </div>
       </article>
@@ -745,8 +750,16 @@ function updateStatsRibbon() {
   const saleCount = listings.filter((p) => p.deal_type === "فروش").length;
   const rentCount = listings.filter((p) => p.deal_type === "رهن و اجاره").length;
   const localCount = allProperties.filter((p) => p.is_local || p.deal_type === "محله‌گردی").length;
-  let text = `🏠 ${listings.length} فایل فعال — ${saleCount} فروشی، ${rentCount} رهن و اجاره`;
-  if (localCount) text += ` · ${localCount} محله‌گردی`;
+  // موبایل: یک خط کوتاه؛ دسکتاپ: جزئیات بیشتر
+  const isNarrow = window.matchMedia && window.matchMedia("(max-width: 720px)").matches;
+  let text;
+  if (isNarrow) {
+    text = `🏠 ${listings.length} فایل`;
+    if (localCount) text += ` · ${localCount} محله`;
+  } else {
+    text = `🏠 ${listings.length} فایل فعال — ${saleCount} فروشی، ${rentCount} رهن و اجاره`;
+    if (localCount) text += ` · ${localCount} محله‌گردی`;
+  }
   statsText.textContent = text;
 }
 
