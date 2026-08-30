@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" width="400" height="300">
+  <rect width="400" height="300" fill="#F4FAF7"/>
+  <!-- soft ground -->
+  <ellipse cx="200" cy="255" rx="120" ry="18" fill="#D7EDE4" opacity="0.9"/>
+  <!-- map pin -->
+  <g transform="translate(200,118)">
+    <path d="M0 -72 C-28 -72 -48 -50 -48 -26 C-48 8 0 52 0 52 C0 52 48 8 48 -26 C48 -50 28 -72 0 -72Z"
+          fill="#3D8B75"/>
+    <circle cx="0" cy="-28" r="18" fill="#F4FAF7"/>
+    <circle cx="0" cy="-28" r="8" fill="#1E4D40"/>
+  </g>
+  <!-- small cafe cup hint -->
+  <g transform="translate(268,175)" opacity="0.85">
+    <rect x="0" y="8" width="28" height="22" rx="3" fill="#1E4D40"/>
+    <path d="M28 12 H36 C40 12 42 16 42 20 C42 24 40 28 36 28 H28" fill="none" stroke="#1E4D40" stroke-width="3"/>
+    <path d="M4 4 Q14 0 24 4" fill="none" stroke="#3D8B75" stroke-width="2" stroke-linecap="round"/>
+  </g>
+  <text x="200" y="268" text-anchor="middle" font-family="Tahoma, Arial, sans-serif" font-size="16" font-weight="700" fill="#1E4D40">محله‌گردی</text>
+</svg>
