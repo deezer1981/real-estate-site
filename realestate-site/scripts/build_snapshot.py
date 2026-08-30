@@ -557,6 +557,81 @@ def build_bagh_html_block(content: dict) -> str:
     return html
 
 
+def update_baghestan_local(local_props: list[dict]) -> bool:
+    """تزریق کارت‌های محله‌گردی + JSON-LD به baghestan.html برای سئو و نمایش."""
+    path = find_frontend_file("baghestan.html")
+    if not path:
+        print("⚠️  baghestan.html پیدا نشد")
+        return False
+
+    with open(path, "r", encoding="utf-8") as f:
+        html = f.read()
+
+    data_start = "<!-- SNAPSHOT_LOCAL_DATA_START -->"
+    data_end = "<!-- SNAPSHOT_LOCAL_DATA_END -->"
+    if data_start not in html or data_end not in html:
+        print("⚠️  مارکرهای SNAPSHOT_LOCAL_DATA در baghestan.html پیدا نشد")
+        return False
+
+    local_json = json.dumps(local_props, ensure_ascii=False)
+    before = html.split(data_start)[0]
+    after = html.split(data_end)[1]
+    html = (
+        f"{before}{data_start}\n"
+        f"<script>window.__PRELOADED_LOCAL__ = {local_json};</script>\n"
+        f"{data_end}{after}"
+    )
+
+    ld_start = "<!-- SNAPSHOT_LOCAL_JSONLD_START -->"
+    ld_end = "<!-- SNAPSHOT_LOCAL_JSONLD_END -->"
+    if ld_start in html and ld_end in html:
+        elements = []
+        for i, p in enumerate(local_props[:20], start=1):
+            name = (p.get("title") or p.get("category") or "مکان محلی").strip()
+            item = {
+                "@type": "ListItem",
+                "position": i,
+                "item": {
+                    "@type": "Place",
+                    "name": name,
+                },
+            }
+            if p.get("address"):
+                item["item"]["address"] = str(p.get("address")).strip()
+            if p.get("image") and not str(p.get("image")).endswith(".svg"):
+                img = str(p.get("image")).strip()
+                if img.startswith("http"):
+                    item["item"]["image"] = img
+                else:
+                    item["item"]["image"] = f"https://atlas-amlak.ir/{img.lstrip('/')}"
+            if p.get("phone"):
+                item["item"]["telephone"] = str(p.get("phone")).strip()
+            if p.get("link"):
+                item["item"]["url"] = str(p.get("link")).strip()
+            elements.append(item)
+        item_list = {
+            "@context": "https://schema.org",
+            "@type": "ItemList",
+            "name": "محله‌گردی باغستان و خادم‌آباد",
+            "description": "مکان‌های محلی پیشنهادی در باغستان و خادم‌آباد",
+            "numberOfItems": len(elements),
+            "itemListElement": elements,
+        }
+        ld_json = json.dumps(item_list, ensure_ascii=False)
+        b = html.split(ld_start)[0]
+        a = html.split(ld_end)[1]
+        html = (
+            f"{b}{ld_start}\n"
+            f'<script type="application/ld+json" id="local-guide-jsonld">{ld_json}</script>\n'
+            f"{ld_end}{a}"
+        )
+
+    with open(path, "w", encoding="utf-8") as f:
+        f.write(html)
+    print(f"✅ baghestan.html: {len(local_props)} کارت محله‌گردی تزریق شد")
+    return True
+
+
 def update_bagh_page(content: dict) -> bool:
     """به‌روزرسانی bagh-villa.html با محتوای شیت. True اگر موفق."""
     path = find_frontend_file("bagh-villa.html")
@@ -735,6 +810,9 @@ def update_snapshot():
         update_bagh_page(bagh_content)
     else:
         print("تب صفحه باغ خالی یا تنظیم‌نشده — متن پیش‌فرض حفظ شد")
+
+    # --- صفحه معرفی باغستان + محله‌گردی ---
+    update_baghestan_local(local_props)
 
     # --- index.html ---
     index_path = find_frontend_file("index.html")
@@ -1405,7 +1483,7 @@ def write_sitemap(frontend_dir: Path, props: list[dict]) -> None:
     urls = [
         ("https://atlas-amlak.ir/", "hourly", "1.0"),
         ("https://atlas-amlak.ir/about.html", "monthly", "0.6"),
-        ("https://atlas-amlak.ir/baghestan.html", "monthly", "0.6"),
+        ("https://atlas-amlak.ir/baghestan.html", "weekly", "0.8"),
         ("https://atlas-amlak.ir/bagh-villa.html", "weekly", "0.7"),
         ("https://atlas-amlak.ir/investment.html", "monthly", "0.5"),
         ("https://atlas-amlak.ir/reviews.html", "monthly", "0.5"),
