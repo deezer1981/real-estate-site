@@ -386,11 +386,11 @@ function localGuideCard(p) {
     : "";
   const codeBadge = p.code ? `<span class="card-code">کد ${escapeHtml(p.code)}</span>` : "";
 
-  const icon = "📍";
+  const icon = "🗺️";
   const overlay = `
     <div class="card-image-overlay">
       <div class="card-overlay-left">
-        <span class="deal-tag local">محله‌گردی</span>
+        <span class="deal-tag local">🗺️ محله‌گردی</span>
       </div>
       <button class="share-btn share-btn-card" data-code="${escapeHtml(p.code || "")}" type="button" aria-label="اشتراک‌گذاری">🔗 اشتراک</button>
     </div>`;
