@@ -2098,3 +2098,26 @@ body.single-ad-mode .card-more-btn { display: none !important; }
   white-space: pre-wrap;
   word-break: break-word;
 }
+
+/* نظرات مشتریان */
+.reviews-list { display: flex; flex-direction: column; gap: 16px; margin: 24px 0 8px; }
+.review-card {
+  background: var(--card-bg, #fff);
+  border: 1px solid rgba(20,33,61,0.08);
+  border-right: 4px solid var(--brass, #B8894F);
+  border-radius: 8px;
+  padding: 16px 18px;
+  box-shadow: 0 2px 8px rgba(20,33,61,0.05);
+}
+.review-text {
+  margin: 0 0 10px;
+  font-size: 1rem;
+  line-height: 1.75;
+  color: var(--text, #2B2B2B);
+}
+.review-meta {
+  margin: 0;
+  font-size: 0.88rem;
+  color: var(--sage, #55617A);
+  font-weight: 600;
+}

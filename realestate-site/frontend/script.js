@@ -750,16 +750,9 @@ function updateStatsRibbon() {
   const saleCount = listings.filter((p) => p.deal_type === "فروش").length;
   const rentCount = listings.filter((p) => p.deal_type === "رهن و اجاره").length;
   const localCount = allProperties.filter((p) => p.is_local || p.deal_type === "محله‌گردی").length;
-  // موبایل: یک خط کوتاه؛ دسکتاپ: جزئیات بیشتر
-  const isNarrow = window.matchMedia && window.matchMedia("(max-width: 720px)").matches;
-  let text;
-  if (isNarrow) {
-    text = `🏠 ${listings.length} فایل`;
-    if (localCount) text += ` · ${localCount} محله`;
-  } else {
-    text = `🏠 ${listings.length} فایل فعال — ${saleCount} فروشی، ${rentCount} رهن و اجاره`;
-    if (localCount) text += ` · ${localCount} محله‌گردی`;
-  }
+  // یک خط برای موبایل و دسکتاپ — واژه «کارت» برای هر دو نوع
+  let text = `🏠 ${listings.length} کارت خرید و رهن و اجاره`;
+  if (localCount) text += ` · ${localCount} کارت محله‌گردی`;
   statsText.textContent = text;
 }
 
