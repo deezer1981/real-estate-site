@@ -2197,3 +2197,19 @@ body.single-ad-mode .card-more-btn { display: none !important; }
   color: var(--sage, #55617A);
   font-weight: 600;
 }
+
+
+/* ---- محله‌گردی: تفاوت خیلی ملایم با کارت آگهی ---- */
+.card-local {
+  border-color: #D4C4A8;
+  box-shadow: 0 6px 20px rgba(184, 137, 79, 0.10);
+}
+.card-local .deal-tag-local {
+  background: #4A6B5F;
+  letter-spacing: 0.02em;
+}
+.card-local .card-hours {
+  color: #4A6B5F;
+  font-weight: 600;
+  margin: 4px 0 2px;
+}

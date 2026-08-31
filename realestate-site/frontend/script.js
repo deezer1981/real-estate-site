@@ -384,13 +384,16 @@ function localGuideCard(p) {
   const dateLine = p.registered_at
     ? `<p class="card-date">📅 ثبت: ${escapeHtml(p.registered_at)}</p>`
     : "";
+  const hoursLine = p.hours
+    ? `<p class="card-meta card-hours">🕐 ${escapeHtml(p.hours)}</p>`
+    : "";
   const codeBadge = p.code ? `<span class="card-code">کد ${escapeHtml(p.code)}</span>` : "";
 
   const icon = "🗺️";
   const overlay = `
     <div class="card-image-overlay">
       <div class="card-overlay-left">
-        <span class="deal-tag sale">محله‌گردی</span>
+        <span class="deal-tag sale deal-tag-local">محله‌گردی</span>
       </div>
       <button class="share-btn share-btn-card" data-code="${escapeHtml(p.code || "")}" type="button" aria-label="اشتراک‌گذاری">🔗 اشتراک</button>
     </div>`;
@@ -449,17 +452,17 @@ function localGuideCard(p) {
   const midBlock = category
     ? `<div class="card-details-mid"><p class="card-meta">🏷️ ${category}</p></div>`
     : "";
-  const tailBlock = dateLine
-    ? `<div class="card-details-tail">${dateLine}</div>`
+  const tailBlock = (hoursLine || dateLine)
+    ? `<div class="card-details-tail">${hoursLine}${dateLine}</div>`
     : "";
 
   return `
     <div style="width: 100%;">
-      <article class="card card-sale" id="card-${escapeHtml(p.code || "")}" data-code="${escapeHtml(p.code || "")}" data-local="1">
+      <article class="card card-sale card-local" id="card-${escapeHtml(p.code || "")}" data-code="${escapeHtml(p.code || "")}" data-local="1">
         ${imageBlock}
         <div class="card-body">
                     <h3 class="card-title">
-            <a href="/mahale/${escapeHtml(p.code || "")}.html" style="color:inherit;text-decoration:none;">
+            <a href="/mahale/${escapeHtml(p.slug || p.code || "")}.html" style="color:inherit;text-decoration:none;">
               ${title} ${codeBadge}
             </a>
           </h3>
@@ -1122,8 +1125,9 @@ function showShareModal(p, shareBtn) {
 
   // لینک ثابت صفحه آگهی — برای محله‌گردی صفحه استاتیک mahale
   const isLocal = p.is_local || p.deal_type === "محله‌گردی";
+  const localSlug = (p.slug || p.code || "").toString();
   const shareUrl = isLocal
-    ? `${window.location.origin}/mahale/${encodeURIComponent(p.code)}.html`
+    ? `${window.location.origin}/mahale/${encodeURIComponent(localSlug)}.html`
     : `${window.location.origin}/agahi/${encodeURIComponent(p.code)}.html`;
   const extras = buildExtras(p);
   const label = isLocal
