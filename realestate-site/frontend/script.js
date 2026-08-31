@@ -748,13 +748,8 @@ function updateStatsRibbon() {
   const urlParams = new URLSearchParams(window.location.search);
   if (!statsText || !allProperties.length || urlParams.get("code")) return;
   const listings = allProperties.filter((p) => !p.is_local && p.deal_type !== "محله‌گردی");
-  const saleCount = listings.filter((p) => p.deal_type === "فروش").length;
-  const rentCount = listings.filter((p) => p.deal_type === "رهن و اجاره").length;
-  const localCount = allProperties.filter((p) => p.is_local || p.deal_type === "محله‌گردی").length;
-  // متن خوانا؛ فروش و اجاره جدا از هم حس بهتری دارد
-  let text = `🏠 ${listings.length} کارت فروش و اجاره`;
-  if (localCount) text += ` · ${localCount} کارت محله‌گردی`;
-  statsText.textContent = text;
+  // بدون ذکر محله‌گردی در نوار بالا
+  statsText.textContent = `🏠 ${listings.length} کارت فعال خرید | رهن و اجاره`;
 }
 
 function renderProperties() {
