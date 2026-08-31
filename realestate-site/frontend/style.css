@@ -1048,6 +1048,10 @@ a { color: inherit; text-decoration: none; }
     margin: 12px 0 0;
     max-width: 280px;
   }
+  .footer-copy {
+    text-align: right;
+    width: 100%;
+  }
 }
 
 .footer-meta p { margin: 0 0 8px; line-height: 1.6; }
@@ -1226,6 +1230,7 @@ a { color: inherit; text-decoration: none; }
     gap: 10px;
     padding-top: 8px;
     border-top: 1px solid rgba(255,255,255,0.08);
+    text-align: center;
   }
   .footer-meta p { margin: 0; }
   .footer-brand .phone-row {
@@ -1242,7 +1247,7 @@ a { color: inherit; text-decoration: none; }
     opacity: 0.9;
   }
   .footer-socials { justify-content: center; margin-top: 4px; }
-  .footer-copy { width: 100%; }
+  .footer-copy { width: 100%; text-align: center; }
   .header-inner {
     flex-wrap: nowrap;
     gap: 12px;
