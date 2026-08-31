@@ -28,6 +28,11 @@ LOCAL_SHEET_GID = os.getenv("LOCAL_SHEET_GID") or "1952981132"
 # GID تب «نظرات» مشتریان
 REVIEWS_SHEET_GID = os.getenv("REVIEWS_SHEET_GID") or "443074725"
 
+# صفحات متنی (کلید | مقدار)
+ABOUT_SHEET_GID = os.getenv("ABOUT_SHEET_GID") or "1046935789"
+BAGHESTAN_TEXT_SHEET_GID = os.getenv("BAGHESTAN_TEXT_SHEET_GID") or "559435682"
+INVESTMENT_SHEET_GID = os.getenv("INVESTMENT_SHEET_GID") or "554697258"
+
 # GID تب «دکمه‌ها» (متن دکمه‌های میان‌بر بالای صفحه اصلی) — اختیاری.
 MENU_SHEET_GID = os.getenv("MENU_SHEET_GID") or ""
 
@@ -405,6 +410,134 @@ def update_reviews_page(reviews: list[dict]) -> bool:
     with open(path, "w", encoding="utf-8") as f:
         f.write(new_html)
     print(f"✅ reviews.html: {len(reviews)} نظر تزریق شد")
+    return True
+
+
+
+
+def fetch_kv_sheet(gid: str) -> dict:
+    """خواندن تب کلید|مقدار و برگرداندن dict."""
+    if not SPREADSHEET_ID or not gid:
+        return {}
+    rows = fetch_csv_by_gid(gid)
+    content = {}
+    for row in rows:
+        key = (row.get("کلید") or row.get("key") or "").strip().lower()
+        value = (row.get("مقدار") or row.get("value") or "").strip()
+        if key and value:
+            content[key] = value
+    return content
+
+
+def _apply_page_titles(html: str, content: dict) -> str:
+    """عنوان / زیرعنوان / کپشن صفحه را از شیت اعمال می‌کند."""
+    title = content.get("title", "").strip()
+    subtitle = content.get("subtitle", "").strip()
+    caption = content.get("caption", "").strip()
+    if title:
+        html = re.sub(
+            r'(<h1 id="page-title">)(.*?)(</h1>)',
+            rf'\1{escape(title)}\3',
+            html,
+            count=1,
+            flags=re.DOTALL,
+        )
+    if subtitle:
+        html = re.sub(
+            r'(<p class="page-eyebrow" id="page-subtitle">)(.*?)(</p>)',
+            rf'\1{escape(subtitle)}\3',
+            html,
+            count=1,
+            flags=re.DOTALL,
+        )
+    if caption:
+        html = re.sub(
+            r'(<p class="carousel-caption active" id="page-caption">)(.*?)(</p>)',
+            rf'\1{escape(caption)}\3',
+            html,
+            count=1,
+            flags=re.DOTALL,
+        )
+    return html
+
+
+def _build_simple_content_block(content: dict, max_paras: int = 5, with_list: bool = False) -> str:
+    """ساخت HTML پاراگراف‌ها + لیست اختیاری از دیکشنری شیت."""
+    parts = []
+    # intro alias
+    if content.get("intro") and not content.get("para1"):
+        content = dict(content)
+        content["para1"] = content["intro"]
+
+    for i in range(1, max_paras + 1):
+        val = (content.get(f"para{i}") or "").strip()
+        if val:
+            parts.append(f'    <p id="page-para{i}">{escape(val)}</p>')
+
+    if with_list:
+        list_title = (content.get("list_title") or "").strip()
+        list_items = []
+        for i in range(1, 9):
+            v = (content.get(f"list{i}") or "").strip()
+            if v:
+                list_items.append(f"      <li>{escape(v)}</li>")
+        if list_title:
+            parts.append(f'    <h2 id="page-list-title">{escape(list_title)}</h2>')
+        elif list_items:
+            parts.append('    <h2 id="page-list-title" style="display:none"></h2>')
+        if list_items:
+            parts.append('    <ul class="page-list" id="page-list">')
+            parts.extend(list_items)
+            parts.append('    </ul>')
+
+    return "\n".join(parts) if parts else ""
+
+
+def update_kv_page(
+    filename: str,
+    content: dict,
+    marker_start: str,
+    marker_end: str,
+    *,
+    max_paras: int = 5,
+    with_list: bool = False,
+) -> bool:
+    """تزریق محتوای کلید|مقدار به یک صفحه HTML."""
+    path = find_frontend_file(filename)
+    if not path:
+        print(f"⚠️  {filename} پیدا نشد")
+        return False
+    if not content:
+        print(f"  {filename}: شیت خالی — متن فعلی حفظ شد")
+        return False
+
+    with open(path, "r", encoding="utf-8") as f:
+        html = f.read()
+
+    if marker_start not in html or marker_end not in html:
+        print(f"⚠️  مارکرهای {marker_start} در {filename} پیدا نشد")
+        return False
+
+    html = _apply_page_titles(html, content)
+    inner = _build_simple_content_block(content, max_paras=max_paras, with_list=with_list)
+    if not inner:
+        print(f"  {filename}: هیچ پاراگرافی در شیت نبود")
+        return False
+
+    block = (
+        f"{marker_start}\n"
+        f'    <div id="sheet-content">\n'
+        f"{inner}\n"
+        f"    </div>\n"
+        f"    {marker_end}"
+    )
+    before = html.split(marker_start)[0]
+    after = html.split(marker_end)[1]
+    new_html = before + block + after
+
+    with open(path, "w", encoding="utf-8") as f:
+        f.write(new_html)
+    print(f"✅ {filename}: {len(content)} کلید از شیت تزریق شد")
     return True
 
 
@@ -933,6 +1066,31 @@ def update_snapshot():
     reviews = fetch_reviews()
     print(f"تعداد نظرات فعال: {len(reviews)}")
     update_reviews_page(reviews)
+
+    # --- صفحات متنی از شیت (کلید | مقدار) ---
+    about_c = fetch_kv_sheet(ABOUT_SHEET_GID)
+    print(f"درباره: {len(about_c)} کلید")
+    update_kv_page(
+        "about.html", about_c,
+        "<!-- SNAPSHOT_ABOUT_START -->", "<!-- SNAPSHOT_ABOUT_END -->",
+        max_paras=5, with_list=False,
+    )
+
+    bagh_text_c = fetch_kv_sheet(BAGHESTAN_TEXT_SHEET_GID)
+    print(f"معرفی باغستان: {len(bagh_text_c)} کلید")
+    update_kv_page(
+        "baghestan.html", bagh_text_c,
+        "<!-- SNAPSHOT_BAGHESTAN_TEXT_START -->", "<!-- SNAPSHOT_BAGHESTAN_TEXT_END -->",
+        max_paras=6, with_list=False,
+    )
+
+    inv_c = fetch_kv_sheet(INVESTMENT_SHEET_GID)
+    print(f"سرمایه‌گذاری: {len(inv_c)} کلید")
+    update_kv_page(
+        "investment.html", inv_c,
+        "<!-- SNAPSHOT_INVESTMENT_START -->", "<!-- SNAPSHOT_INVESTMENT_END -->",
+        max_paras=5, with_list=True,
+    )
 
     # --- index.html ---
     index_path = find_frontend_file("index.html")
