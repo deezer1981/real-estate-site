@@ -478,6 +478,51 @@ function localGuideCard(p) {
   `;
 }
 
+
+/** اسلاگ لاتین نوع ملک برای URL زیبای آگهی (بدون رقم) */
+const PROPERTY_TYPE_SLUGS = {
+  "آپارتمان": "aparteman",
+  "ویلا": "villa",
+  "ویلایی": "villa",
+  "خانه ویلایی": "villa",
+  "باغ ویلا": "bagh-villa",
+  "باغ": "bagh",
+  "باغچه": "baghcheh",
+  "زمین": "zamin",
+  "کلنگی": "kolangi",
+  "تجاری": "tejari",
+  "مغازه": "maghaze",
+  "اداری": "edari",
+};
+function codeToAlpha(code) {
+  const s = String(code || "");
+  const digits = (s.match(/\d/g) || []).join("");
+  const letters = (s.match(/[a-zA-Z]/g) || []).join("").toLowerCase();
+  let body = "x";
+  if (digits) {
+    let n = parseInt(digits, 10);
+    if (n <= 0) body = "a";
+    else {
+      const chars = [];
+      while (n > 0) {
+        chars.push(String.fromCharCode(97 + (n % 26)));
+        n = Math.floor(n / 26);
+      }
+      body = chars.reverse().join("");
+    }
+  } else if (letters) body = letters;
+  if (letters && digits) return letters + body;
+  return body || "x";
+}
+function listingSlug(p) {
+  if (p.slug) {
+    const s = String(p.slug).toLowerCase().replace(/\s+/g, "-").replace(/[^a-z\-]/g, "").replace(/-+/g, "-").replace(/^-|-$/g, "");
+    if (s) return s;
+  }
+  const typeSlug = PROPERTY_TYPE_SLUGS[p.property_type] || "melk";
+  return typeSlug + "-" + codeToAlpha(p.code);
+}
+
 function propertyCard(p) {
   if (p.is_local || p.deal_type === "محله‌گردی") {
     return localGuideCard(p);
@@ -612,7 +657,9 @@ function checkSinglePropertyMode() {
     document.body.classList.add("single-ad-mode");
     const label = labeledPropertyType(found);
     const addr = truncateAddress(found.address) || "خادم‌آباد و باغستان";
-    const pageUrl = `${window.location.origin}/agahi/${encodeURIComponent(targetCode)}.html`;
+    const pageUrl = (found.is_local || found.deal_type === "محله‌گردی")
+      ? `${window.location.origin}/mahale/${encodeURIComponent(found.slug || found.code)}.html`
+      : `${window.location.origin}/agahi/${encodeURIComponent(listingSlug(found))}.html`;
 
     // عنوان و توضیح مخصوص همین آگهی (سئو + اشتراک لینک)
     const specsBits = [];
@@ -1128,7 +1175,7 @@ function showShareModal(p, shareBtn) {
   const localSlug = (p.slug || p.code || "").toString();
   const shareUrl = isLocal
     ? `${window.location.origin}/mahale/${encodeURIComponent(localSlug)}.html`
-    : `${window.location.origin}/agahi/${encodeURIComponent(p.code)}.html`;
+    : `${window.location.origin}/agahi/${encodeURIComponent(listingSlug(p))}.html`;
   const extras = buildExtras(p);
   const label = isLocal
     ? (p.title || p.category || "محله‌گردی")

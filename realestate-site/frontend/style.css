@@ -2205,11 +2205,15 @@ body.single-ad-mode .card-more-btn { display: none !important; }
   box-shadow: 0 6px 20px rgba(184, 137, 79, 0.10);
 }
 .card-local .deal-tag-local {
-  background: #4A6B5F;
+  /* خوانا روی عکس: پس‌زمینه روشن + متن تیره (نه زیتونی تیره) */
+  background: rgba(255, 252, 245, 0.95);
+  color: #5C4A32;
+  border: 1px solid rgba(184, 137, 79, 0.45);
   letter-spacing: 0.02em;
+  font-weight: 700;
 }
 .card-local .card-hours {
-  color: #4A6B5F;
+  color: #6B5B45;
   font-weight: 600;
   margin: 4px 0 2px;
 }
