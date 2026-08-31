@@ -86,47 +86,12 @@
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://atlas-amlak.ir/agahi/aparteman-en.html</loc>
-    <changefreq>daily</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://atlas-amlak.ir/agahi/villa-em.html</loc>
-    <changefreq>daily</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://atlas-amlak.ir/agahi/aparteman-el.html</loc>
-    <changefreq>daily</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
     <loc>https://atlas-amlak.ir/agahi/aparteman-bni.html</loc>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://atlas-amlak.ir/agahi/villa-ek.html</loc>
-    <changefreq>daily</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://atlas-amlak.ir/agahi/aparteman-ej.html</loc>
-    <changefreq>daily</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
     <loc>https://atlas-amlak.ir/agahi/aparteman-bnh.html</loc>
-    <changefreq>daily</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://atlas-amlak.ir/agahi/aparteman-eh.html</loc>
-    <changefreq>daily</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://atlas-amlak.ir/agahi/aparteman-eg.html</loc>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
@@ -142,11 +107,6 @@
   </url>
   <url>
     <loc>https://atlas-amlak.ir/agahi/tejari-ec.html</loc>
-    <changefreq>daily</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://atlas-amlak.ir/agahi/aparteman-eb.html</loc>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
@@ -197,11 +157,6 @@
   </url>
   <url>
     <loc>https://atlas-amlak.ir/agahi/aparteman-bms.html</loc>
-    <changefreq>daily</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://atlas-amlak.ir/agahi/aparteman-dy.html</loc>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
