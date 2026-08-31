@@ -458,7 +458,11 @@ function localGuideCard(p) {
       <article class="card card-sale" id="card-${escapeHtml(p.code || "")}" data-code="${escapeHtml(p.code || "")}" data-local="1">
         ${imageBlock}
         <div class="card-body">
-          <h3 class="card-title">${title} ${codeBadge}</h3>
+                    <h3 class="card-title">
+            <a href="/mahale/${escapeHtml(p.code || "")}.html" style="color:inherit;text-decoration:none;">
+              ${title} ${codeBadge}
+            </a>
+          </h3>
           ${shortAddress ? `<p class="card-meta card-address">📍 ${escapeHtml(shortAddress)}</p>` : ""}
           ${moreBtn}
           ${midBlock}
