@@ -25,6 +25,9 @@ SHEET_GIDS = {
 # ستون‌ها: کد | عنوان | دسته | آدرس | متن | عکس | تاریخ ثبت | وضعیت | لینک | تلفن | ساعت | اسلاگ
 LOCAL_SHEET_GID = os.getenv("LOCAL_SHEET_GID") or "1952981132"
 
+# GID تب «نظرات» مشتریان
+REVIEWS_SHEET_GID = os.getenv("REVIEWS_SHEET_GID") or "443074725"
+
 # GID تب «دکمه‌ها» (متن دکمه‌های میان‌بر بالای صفحه اصلی) — اختیاری.
 MENU_SHEET_GID = os.getenv("MENU_SHEET_GID") or ""
 
@@ -313,6 +316,97 @@ def row_to_local(row: dict) -> dict:
     if phone:
         result["phone"] = phone
     return result
+
+
+
+def fetch_reviews() -> list[dict]:
+    """خواندن تب نظرات و برگرداندن ردیف‌های فعال."""
+    if not SPREADSHEET_ID or not REVIEWS_SHEET_GID:
+        return []
+    rows = fetch_csv_by_gid(REVIEWS_SHEET_GID)
+    active = []
+    for row in rows:
+        status = (row.get("وضعیت") or "فعال").strip()
+        if status in INACTIVE_STATUSES:
+            continue
+        text = (row.get("نظر") or row.get("متن") or "").strip()
+        if not text:
+            continue
+        name = (row.get("نام") or row.get("نام مشتری") or "مشتری").strip()
+        deal = (row.get("نوع معامله") or row.get("نوع") or "").strip()
+        year = (row.get("سال") or row.get("تاریخ") or "").strip()
+        active.append({
+            "name": name,
+            "text": text,
+            "deal": deal,
+            "year": year,
+        })
+    return active
+
+
+def update_reviews_page(reviews: list[dict]) -> bool:
+    """تزریق نظرات از شیت به reviews.html"""
+    path = find_frontend_file("reviews.html")
+    if not path:
+        print("⚠️  reviews.html پیدا نشد")
+        return False
+
+    with open(path, "r", encoding="utf-8") as f:
+        html = f.read()
+
+    start = "<!-- SNAPSHOT_REVIEWS_START -->"
+    end = "<!-- SNAPSHOT_REVIEWS_END -->"
+    if start not in html or end not in html:
+        print("⚠️  مارکرهای SNAPSHOT_REVIEWS در reviews.html پیدا نشد")
+        return False
+
+    if not reviews:
+        cards = (
+            '      <article class="review-card">\n'
+            '        <p class="review-text">«هنوز نظری ثبت نشده است.»</p>\n'
+            '        <p class="review-meta"><strong>—</strong></p>\n'
+            '      </article>'
+        )
+    else:
+        parts = []
+        for r in reviews:
+            name = escape(r.get("name") or "مشتری")
+            text = escape(r.get("text") or "")
+            if not (text.startswith("«") or text.startswith('"') or text.startswith("'")):
+                text = f"«{text}»"
+            deal = escape(r.get("deal") or "")
+            year = escape(r.get("year") or "")
+            meta_bits = [f"<strong>{name}</strong>"]
+            if deal:
+                meta_bits.append(deal)
+            if year:
+                meta_bits.append(year)
+            meta = " · ".join(meta_bits)
+            parts.append(
+                f'      <article class="review-card">\n'
+                f'        <p class="review-text">{text}</p>\n'
+                f'        <p class="review-meta">{meta}</p>\n'
+                f'      </article>'
+            )
+        cards = "\n\n".join(parts)
+
+    block = (
+        f"{start}\n"
+        f'    <div class="reviews-list">\n\n'
+        f"{cards}\n\n"
+        f"    </div>\n"
+        f"    {end}"
+    )
+
+    before = html.split(start)[0]
+    after = html.split(end)[1]
+    new_html = before + block + after
+
+    with open(path, "w", encoding="utf-8") as f:
+        f.write(new_html)
+    print(f"✅ reviews.html: {len(reviews)} نظر تزریق شد")
+    return True
+
 
 
 def short_address(raw: str) -> str:
@@ -834,6 +928,11 @@ def update_snapshot():
 
     # --- صفحه معرفی باغستان + محله‌گردی ---
     update_baghestan_local(local_props)
+
+    # --- نظرات مشتریان ---
+    reviews = fetch_reviews()
+    print(f"تعداد نظرات فعال: {len(reviews)}")
+    update_reviews_page(reviews)
 
     # --- index.html ---
     index_path = find_frontend_file("index.html")
