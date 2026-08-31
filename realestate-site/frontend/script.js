@@ -1116,10 +1116,10 @@ function showShareModal(p, shareBtn) {
   const oldModal = document.getElementById("shareModal");
   if (oldModal) oldModal.remove();
 
-  // لینک ثابت صفحه آگهی — برای محله‌گردی لینک صفحه اصلی با کد
+  // لینک ثابت صفحه آگهی — برای محله‌گردی صفحه استاتیک mahale
   const isLocal = p.is_local || p.deal_type === "محله‌گردی";
   const shareUrl = isLocal
-    ? `${window.location.origin}/?code=${encodeURIComponent(p.code)}`
+    ? `${window.location.origin}/mahale/${encodeURIComponent(p.code)}.html`
     : `${window.location.origin}/agahi/${encodeURIComponent(p.code)}.html`;
   const extras = buildExtras(p);
   const label = isLocal
