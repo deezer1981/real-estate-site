@@ -356,7 +356,7 @@ def short_address(raw: str) -> str:
 
 
 ALLOWED_SHEET_COLUMNS = {
-    "کد", "نوع ملک", "آدرس", "متراژ", "خواب", "طبقه",
+    "کد", "اسلاگ", "slug", "نوع ملک", "آدرس", "متراژ", "خواب", "طبقه",
     "پارکینگ", "آسانسور", "انباری", "مشاور",
     "تاریخ ثبت فایل", "قیمت کل", "قیمت متری", "رهن", "کرایه",
     "وضعیت", "عکس", "مدارک", "توضیحات", "توضیح", "شرح", "توضیحات فایل",
@@ -415,6 +415,7 @@ def _parse_pin_order(raw: str) -> int | None:
 
 def row_to_property(row: dict, deal_type: str) -> dict:
     agent = _strip_phone_like(_safe_get(row, "مشاور"))
+    slug_val = (_safe_get(row, "اسلاگ") or (row.get("slug") or "")).strip()
     result = {
         "code": _safe_get(row, "کد"),
         "deal_type": deal_type,
@@ -429,6 +430,9 @@ def row_to_property(row: dict, deal_type: str) -> dict:
         "agent_name": agent,
         "registered_at": _safe_get(row, "تاریخ ثبت فایل"),
     }
+    if slug_val:
+        result["slug"] = slug_val
+
     docs = _safe_get(row, "مدارک")
     if docs:
         result["documents"] = docs
@@ -868,7 +872,7 @@ def update_snapshot():
         item_list_elements.append({
             "@type": "ListItem",
             "position": i,
-            "url": f"https://atlas-amlak.ir/agahi/{code}.html",
+            "url": f"https://atlas-amlak.ir/agahi/{_listing_slug(p)}.html",
             "name": _build_seo_title(p),
         })
     item_list_ld = {
@@ -1092,7 +1096,8 @@ def _build_listing_jsonld(p: dict) -> dict:
     """اسکیمای غنی RealEstateListing + about + Offer عددی + BreadcrumbList."""
     code = str(p.get("code") or "").strip()
     label = _listing_label(p)
-    page_url = f"https://atlas-amlak.ir/agahi/{code}.html"
+    slug = _listing_slug(p)
+    page_url = f"https://atlas-amlak.ir/agahi/{slug}.html"
     addr = (p.get("address") or "").strip()
     seo_title = _build_seo_title(p)
     price_line = _listing_price_line(p)
@@ -1233,7 +1238,8 @@ def render_listing_html(p: dict) -> str:
     agent = escape(str(p.get("agent_name") or "").strip())
     reg = escape(str(p.get("registered_at") or "").strip())
     deal = escape(str(p.get("deal_type") or ""))
-    page_url = f"https://atlas-amlak.ir/agahi/{code}.html"
+    slug = _listing_slug(p)
+    page_url = f"https://atlas-amlak.ir/agahi/{slug}.html"
     img = _og_image_url(p)
     img_rel = escape((p.get("image") or "assets/defaults/generic.svg").lstrip("/"))
     # مسیر نسبی از پوشه agahi/ (نمایش داخل صفحه)
@@ -1791,26 +1797,105 @@ def write_local_pages(frontend_dir: Path, props: list[dict]) -> int:
 
 
 
+
+# نگاشت نوع ملک → اسلاگ لاتین برای URL آگهی
+_PROPERTY_TYPE_SLUGS = {
+    "آپارتمان": "aparteman",
+    "ویلا": "villa",
+    "ویلایی": "villa",
+    "خانه ویلایی": "villa",
+    "باغ ویلا": "bagh-villa",
+    "باغ": "bagh",
+    "باغچه": "baghcheh",
+    "زمین": "zamin",
+    "کلنگی": "kolangi",
+    "تجاری": "tejari",
+    "مغازه": "maghaze",
+    "اداری": "edari",
+}
+
+
+def _code_to_alpha(code: str) -> str:
+    """تبدیل کد عددی به حروف لاتین (بدون رقم) برای URL زیبا و یکتا."""
+    s = str(code or "").strip()
+    digits = "".join(c for c in s if c.isdigit())
+    letters = "".join(c for c in s.lower() if c.isalpha())
+    if digits:
+        n = int(digits)
+        if n <= 0:
+            body = "a"
+        else:
+            chars = []
+            while n > 0:
+                n, r = divmod(n, 26)
+                chars.append(chr(ord("a") + r))
+            body = "".join(reversed(chars))
+    else:
+        body = letters or "x"
+    # اگر کد خودش حرف داشت، اضافه کن تا یکتا بماند
+    if letters and digits:
+        return f"{letters}{body}"
+    return body or "x"
+
+
+def _listing_slug(p: dict) -> str:
+    """اسلاگ آگهی بدون رقم در URL.
+    اولویت: ستون اسلاگ در شیت → نوع‌ملک + کدِ حروفی.
+    مثال: aparteman-all  یا  villa-baghestan (دستی)
+    """
+    manual = str(p.get("slug") or "").strip().lower()
+    if manual:
+        s = manual.replace(" ", "-").replace("_", "-")
+        s = re.sub(r"[^a-z\-]", "", s)  # حذف رقم و غیرلاتین
+        s = re.sub(r"-+", "-", s).strip("-")
+        if s:
+            return s
+    pt = (p.get("property_type") or "").strip()
+    type_slug = _PROPERTY_TYPE_SLUGS.get(pt, "melk")
+    alpha = _code_to_alpha(str(p.get("code") or ""))
+    return f"{type_slug}-{alpha}"
+
+
+
 def write_listing_pages(frontend_dir: Path, props: list[dict]) -> int:
-    """ساخت/به‌روزرسانی agahi/{code}.html و حذف کدهای غیرفعال."""
+    """ساخت agahi/{slug}.html + ریدایرکت از agahi/{code}.html برای سازگاری."""
     agahi = frontend_dir / "agahi"
     agahi.mkdir(exist_ok=True)
-    active_codes = set()
+    active = set()
     for p in props:
-        code = str(p.get("code") or "").strip()
+        code = re.sub(r"[^\w\-]", "", str(p.get("code") or "").strip())
         if not code:
             continue
-        # فقط ارقام و حروف ساده در نام فایل
-        safe = re.sub(r"[^\w\-]", "", code)
-        if not safe:
-            continue
-        active_codes.add(safe)
-        (agahi / f"{safe}.html").write_text(render_listing_html(p), encoding="utf-8")
-    # پاک کردن صفحات قدیمی که دیگر در شیت نیستند
+        slug = _listing_slug(p)
+        safe_slug = re.sub(r"[^\w\-]", "", slug)
+        if not safe_slug:
+            safe_slug = code
+        active.add(safe_slug)
+        active.add(code)
+        html = render_listing_html(p)
+        (agahi / f"{safe_slug}.html").write_text(html, encoding="utf-8")
+        # ریدایرکت سبک از کد قدیمی → اسلاگ جدید (اگر متفاوت باشد)
+        if safe_slug != code:
+            redirect_html = f"""<!DOCTYPE html>
+<html lang="fa">
+<head>
+<meta charset="UTF-8">
+<title>انتقال…</title>
+<link rel="canonical" href="https://atlas-amlak.ir/agahi/{safe_slug}.html">
+<meta http-equiv="refresh" content="0;url=/agahi/{safe_slug}.html">
+<script>location.replace("/agahi/{safe_slug}.html");</script>
+</head>
+<body>
+<p><a href="/agahi/{safe_slug}.html">مشاهده آگهی</a></p>
+</body>
+</html>
+"""
+            (agahi / f"{code}.html").write_text(redirect_html, encoding="utf-8")
     for old in agahi.glob("*.html"):
-        if old.stem not in active_codes:
+        if old.stem not in active:
             old.unlink()
-    return len(active_codes)
+    return len({re.sub(r"[^\w\-]", "", str(p.get("code") or "")) for p in props if p.get("code")})
+
 
 
 def write_sitemap(frontend_dir: Path, props: list[dict], local_props: list[dict] | None = None) -> None:
@@ -1822,11 +1907,13 @@ def write_sitemap(frontend_dir: Path, props: list[dict], local_props: list[dict]
         ("https://atlas-amlak.ir/investment.html", "monthly", "0.5"),
         ("https://atlas-amlak.ir/reviews.html", "monthly", "0.5"),
     ]
-    # آگهی‌های ملکی
+    # آگهی‌های ملکی (آدرس زیبا بر اساس نوع + کد)
     for p in props:
         code = re.sub(r"[^\w\-]", "", str(p.get("code") or "").strip())
-        if code:
-            urls.append((f"https://atlas-amlak.ir/agahi/{code}.html", "daily", "0.8"))
+        if not code:
+            continue
+        slug = re.sub(r"[^\w\-]", "", _listing_slug(p))
+        urls.append((f"https://atlas-amlak.ir/agahi/{slug or code}.html", "daily", "0.8"))
     # کارت‌های محله‌گردی
     for p in (local_props or []):
         slug = re.sub(r"[^\w\-]", "", str(p.get("slug") or p.get("code") or "").strip())
