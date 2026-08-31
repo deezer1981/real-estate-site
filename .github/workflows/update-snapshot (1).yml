@@ -1,0 +1,66 @@
+name: Update Snapshot (آگهی‌ها)
+
+on:
+  # هر روز ساعت ۰۶:۳۰ صبح به وقت تهران (۰۳:۰۰ UTC)
+  schedule:
+    - cron: "0 3 * * *"
+
+  # امکان اجرای دستی از تب Actions
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: update-snapshot
+  cancel-in-progress: true
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests
+
+      - name: Build snapshot from Google Sheet
+        env:
+          SPREADSHEET_ID: ${{ secrets.SPREADSHEET_ID }}
+          MENU_SHEET_GID: ${{ secrets.MENU_SHEET_GID }}
+          BAGH_SHEET_GID: ${{ secrets.BAGH_SHEET_GID }}
+          LOCAL_SHEET_GID: ${{ secrets.LOCAL_SHEET_GID }}
+        run: |
+          cd realestate-site
+          python scripts/build_snapshot.py
+
+      - name: Commit and push if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          # فقط فایل‌های فرانت‌اند که اسنپ‌شات داخلشان نوشته می‌شود
+          git add realestate-site/frontend/index.html \
+                  realestate-site/frontend/bagh-villa.html \
+                  realestate-site/frontend/baghestan.html \
+                  realestate-site/frontend/sitemap.xml \
+                  realestate-site/frontend/agahi/ \
+                  realestate-site/frontend/mahale/ || true
+
+          if git diff --staged --quiet; then
+            echo "هیچ تغییری در اسنپ‌شات نبود."
+          else
+            git commit -m "chore: به‌روزرسانی خودکار اسنپ‌شات آگهی‌ها ($(date -u +%Y-%m-%d))"
+            git push
+            echo "اسنپ‌شات با موفقیت آپدیت و پوش شد."
+          fi
