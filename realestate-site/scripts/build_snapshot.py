@@ -22,7 +22,7 @@ SHEET_GIDS = {
 }
 
 # GID تب «محله‌گردی» — کارت‌های معرفی مکان‌های محلی (کافه، مغازه، ...)
-# ستون‌ها: کد | عنوان | دسته | آدرس | متن | عکس | تاریخ ثبت | وضعیت | لینک | تلفن
+# ستون‌ها: کد | عنوان | دسته | آدرس | متن | عکس | تاریخ ثبت | وضعیت | لینک | تلفن | ساعت | اسلاگ
 LOCAL_SHEET_GID = os.getenv("LOCAL_SHEET_GID") or "1952981132"
 
 # GID تب «دکمه‌ها» (متن دکمه‌های میان‌بر بالای صفحه اصلی) — اختیاری.
@@ -265,6 +265,18 @@ def _normalize_local_image(raw: str) -> str:
     return f"assets/{s.lstrip('/')}"
 
 
+def _slugify_local(raw: str, fallback: str = "") -> str:
+    """اسلاگ انگلیسی/لاتین برای URL محله‌گردی. فقط a-z 0-9 و خط تیره."""
+    s = (raw or "").strip().lower()
+    s = s.replace(" ", "-").replace("_", "-")
+    s = re.sub(r"[^a-z0-9\-]", "", s)
+    s = re.sub(r"-+", "-", s).strip("-")
+    if s:
+        return s
+    fb = re.sub(r"[^\w\-]", "", (fallback or "").strip())
+    return fb or "local"
+
+
 def row_to_local(row: dict) -> dict:
     """تبدیل ردیف تب محله‌گردی به دیکشنری سازگار با اسنپ‌شات."""
     code = (row.get("کد") or "").strip()
@@ -276,23 +288,29 @@ def row_to_local(row: dict) -> dict:
     registered = (row.get("تاریخ ثبت") or "").strip()
     link = (row.get("لینک") or "").strip()
     phone = (row.get("تلفن") or "").strip()
+    hours = (row.get("ساعت") or row.get("ساعات") or row.get("ساعت کاری") or "").strip()
+    # اسلاگ دستی از شیت؛ اگر خالی → از کد
+    slug_raw = (row.get("اسلاگ") or row.get("slug") or "").strip()
+    slug = _slugify_local(slug_raw, fallback=code)
 
     result = {
         "code": code,
+        "slug": slug,
         "deal_type": "محله‌گردی",
         "is_local": True,
         "title": title,
-        "property_type": category or "محله‌گردی",  # برای فیلتر/جستجو
+        "property_type": category or "محله‌گردی",
         "category": category,
         "address": short_address(address) if address else address,
         "description": text,
         "image": image,
         "registered_at": registered,
     }
+    if hours:
+        result["hours"] = hours
     if link:
         result["link"] = link
     if phone:
-        # تلفن کسب‌وکار محلی عمومی است (برخلاف شماره مالک آگهی)
         result["phone"] = phone
     return result
 
@@ -1481,7 +1499,8 @@ def _build_local_jsonld(p: dict) -> dict:
     """اسکیمای LocalBusiness / Place برای کارت محله‌گردی."""
     code = str(p.get("code") or "").strip()
     name = (p.get("title") or p.get("category") or "مکان محلی").strip()
-    page_url = f"https://atlas-amlak.ir/mahale/{code}.html"
+    slug = str(p.get("slug") or code).strip()
+    page_url = f"https://atlas-amlak.ir/mahale/{slug}.html"
     addr = (p.get("address") or "").strip()
     desc = (p.get("description") or "").strip()
     if not desc:
@@ -1509,6 +1528,8 @@ def _build_local_jsonld(p: dict) -> dict:
     }
     if p.get("phone"):
         business["telephone"] = str(p.get("phone")).strip()
+    if p.get("hours"):
+        business["openingHours"] = str(p.get("hours")).strip()
     if p.get("category"):
         business["additionalType"] = str(p.get("category")).strip()
     if p.get("link"):
@@ -1543,9 +1564,11 @@ def render_local_html(p: dict) -> str:
     addr = escape((p.get("address") or "").strip())
     desc_note = escape((p.get("description") or "").strip())
     reg = escape(str(p.get("registered_at") or "").strip())
+    hours = escape(str(p.get("hours") or "").strip())
     phone = escape(str(p.get("phone") or "").strip())
     link = (p.get("link") or "").strip()
-    page_url = f"https://atlas-amlak.ir/mahale/{code}.html"
+    slug = str(p.get("slug") or code).strip()
+    page_url = f"https://atlas-amlak.ir/mahale/{slug}.html"
     seo_title = _build_local_seo_title(p)
     img = _og_image_url(p)
     img_rel = escape((p.get("image") or "assets/defaults/local-guide.svg").lstrip("/"))
@@ -1574,6 +1597,7 @@ def render_local_html(p: dict) -> str:
     cat_html = f'<p class="card-meta">🏷️ {category}</p>' if category else ""
     notes_html = f'<p class="card-meta card-notes">📝 {desc_note}</p>' if desc_note else ""
     date_html = f'<p class="card-date">📅 ثبت: {reg}</p>' if reg else ""
+    hours_html = f'<p class="card-meta card-hours">🕐 ساعت کاری: {hours}</p>' if hours else ""
 
     actions = []
     if phone:
@@ -1713,6 +1737,7 @@ def render_local_html(p: dict) -> str:
         {addr_html}
         {cat_html}
         {notes_html}
+        {hours_html}
         {date_html}
         {actions_html}
       </div>
@@ -1746,23 +1771,24 @@ def render_local_html(p: dict) -> str:
 
 
 def write_local_pages(frontend_dir: Path, props: list[dict]) -> int:
-    """ساخت/به‌روزرسانی mahale/{code}.html و حذف کدهای غیرفعال."""
+    """ساخت/به‌روزرسانی mahale/{slug}.html و حذف اسلاگ‌های غیرفعال."""
     mahale = frontend_dir / "mahale"
     mahale.mkdir(exist_ok=True)
-    active_codes = set()
+    active = set()
     for p in props:
-        code = str(p.get("code") or "").strip()
-        if not code:
+        slug = str(p.get("slug") or p.get("code") or "").strip()
+        if not slug:
             continue
-        safe = re.sub(r"[^\w\-]", "", code)
+        safe = re.sub(r"[^\w\-]", "", slug)
         if not safe:
             continue
-        active_codes.add(safe)
+        active.add(safe)
         (mahale / f"{safe}.html").write_text(render_local_html(p), encoding="utf-8")
     for old in mahale.glob("*.html"):
-        if old.stem not in active_codes:
+        if old.stem not in active:
             old.unlink()
-    return len(active_codes)
+    return len(active)
+
 
 
 def write_listing_pages(frontend_dir: Path, props: list[dict]) -> int:
@@ -1803,9 +1829,9 @@ def write_sitemap(frontend_dir: Path, props: list[dict], local_props: list[dict]
             urls.append((f"https://atlas-amlak.ir/agahi/{code}.html", "daily", "0.8"))
     # کارت‌های محله‌گردی
     for p in (local_props or []):
-        code = re.sub(r"[^\w\-]", "", str(p.get("code") or "").strip())
-        if code:
-            urls.append((f"https://atlas-amlak.ir/mahale/{code}.html", "weekly", "0.7"))
+        slug = re.sub(r"[^\w\-]", "", str(p.get("slug") or p.get("code") or "").strip())
+        if slug:
+            urls.append((f"https://atlas-amlak.ir/mahale/{slug}.html", "weekly", "0.7"))
     lines = [
         '<?xml version="1.0" encoding="UTF-8"?>',
         '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
