@@ -53,6 +53,7 @@ jobs:
           git add realestate-site/frontend/index.html \
                   realestate-site/frontend/bagh-villa.html \
                   realestate-site/frontend/baghestan.html \
+                  realestate-site/frontend/reviews.html \
                   realestate-site/frontend/sitemap.xml \
                   realestate-site/frontend/agahi/ \
                   realestate-site/frontend/mahale/ || true
