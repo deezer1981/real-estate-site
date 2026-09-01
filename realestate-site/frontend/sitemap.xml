@@ -31,17 +31,17 @@
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://atlas-amlak.ir/agahi/aparteman-bnr.html</loc>
-    <changefreq>daily</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
     <loc>https://atlas-amlak.ir/agahi/baghcheh-bno.html</loc>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://atlas-amlak.ir/agahi/aparteman-bnc.html</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://atlas-amlak.ir/agahi/aparteman-bnr.html</loc>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
