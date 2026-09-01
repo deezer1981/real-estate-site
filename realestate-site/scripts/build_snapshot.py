@@ -43,7 +43,7 @@ MENU_SHEET_GID = os.getenv("MENU_SHEET_GID") or ""
 #   list1, list2, list3, list4, list5,
 #   image1, image1_caption, image2, image2_caption, image3, image3_caption, image4, image4_caption,
 #   hero_image
-BAGH_SHEET_GID = os.getenv("BAGH_SHEET_GID") or ""
+BAGH_SHEET_GID = os.getenv("BAGH_SHEET_GID") or "1304456576"
 
 INACTIVE_STATUSES = {
     "لغو شده",
@@ -429,44 +429,61 @@ def fetch_kv_sheet(gid: str) -> dict:
     return content
 
 
+
+def _normalize_asset_path(raw: str) -> str:
+    """مسیر عکس: لینک کامل یا assets/... — نام فایل تنها → assets/"""
+    s = (raw or "").strip()
+    if not s:
+        return ""
+    if s.startswith(("http://", "https://", "assets/", "/")):
+        return s
+    return f"assets/{s.lstrip('/')}"
+
+
 def _apply_page_titles(html: str, content: dict) -> str:
-    """عنوان / زیرعنوان / کپشن صفحه را از شیت اعمال می‌کند."""
-    title = content.get("title", "").strip()
-    subtitle = content.get("subtitle", "").strip()
-    caption = content.get("caption", "").strip()
+    """عنوان / زیرعنوان / کپشن / عکس هیرو از شیت."""
+    title = (content.get("title") or "").strip()
+    subtitle = (content.get("subtitle") or "").strip()
+    caption = (content.get("caption") or "").strip()
+    hero = _normalize_asset_path(content.get("hero_image") or content.get("hero") or "")
+
     if title:
         html = re.sub(
             r'(<h1 id="page-title">)(.*?)(</h1>)',
             rf'\1{escape(title)}\3',
-            html,
-            count=1,
-            flags=re.DOTALL,
+            html, count=1, flags=re.DOTALL,
         )
     if subtitle:
         html = re.sub(
             r'(<p class="page-eyebrow" id="page-subtitle">)(.*?)(</p>)',
             rf'\1{escape(subtitle)}\3',
-            html,
-            count=1,
-            flags=re.DOTALL,
+            html, count=1, flags=re.DOTALL,
         )
     if caption:
         html = re.sub(
             r'(<p class="carousel-caption active" id="page-caption">)(.*?)(</p>)',
             rf'\1{escape(caption)}\3',
-            html,
-            count=1,
-            flags=re.DOTALL,
+            html, count=1, flags=re.DOTALL,
+        )
+    if hero:
+        html = re.sub(
+            r'(<div class="carousel-slide active"[^>]*>\s*<img src=")([^"]*)(")',
+            rf'\1{escape(hero, quote=True)}\3',
+            html, count=1, flags=re.DOTALL,
+        )
+        html = re.sub(
+            r'(<img src=")([^"]*)(" alt="[^"]*" fetchpriority="high")',
+            rf'\1{escape(hero, quote=True)}\3',
+            html, count=1,
         )
     return html
 
 
-def _build_simple_content_block(content: dict, max_paras: int = 5, with_list: bool = False) -> str:
-    """ساخت HTML پاراگراف‌ها + لیست اختیاری از دیکشنری شیت."""
+def _build_simple_content_block(content: dict, max_paras: int = 8, with_list: bool = True) -> str:
+    """پاراگراف + لیست + گالری + CTA — یکدست برای همه صفحات متنی."""
     parts = []
-    # intro alias
+    content = dict(content)
     if content.get("intro") and not content.get("para1"):
-        content = dict(content)
         content["para1"] = content["intro"]
 
     for i in range(1, max_paras + 1):
@@ -474,21 +491,40 @@ def _build_simple_content_block(content: dict, max_paras: int = 5, with_list: bo
         if val:
             parts.append(f'    <p id="page-para{i}">{escape(val)}</p>')
 
-    if with_list:
-        list_title = (content.get("list_title") or "").strip()
-        list_items = []
-        for i in range(1, 9):
-            v = (content.get(f"list{i}") or "").strip()
-            if v:
-                list_items.append(f"      <li>{escape(v)}</li>")
+    list_title = (content.get("list_title") or "").strip()
+    list_items = []
+    for i in range(1, 9):
+        v = (content.get(f"list{i}") or "").strip()
+        if v:
+            list_items.append(f"      <li>{escape(v)}</li>")
+    if list_items:
         if list_title:
             parts.append(f'    <h2 id="page-list-title">{escape(list_title)}</h2>')
-        elif list_items:
-            parts.append('    <h2 id="page-list-title" style="display:none"></h2>')
-        if list_items:
-            parts.append('    <ul class="page-list" id="page-list">')
-            parts.extend(list_items)
-            parts.append('    </ul>')
+        parts.append('    <ul class="page-list" id="page-list">')
+        parts.extend(list_items)
+        parts.append('    </ul>')
+
+    gallery_parts = []
+    for i in range(1, 5):
+        img = _normalize_asset_path(content.get(f"image{i}") or "")
+        cap = (content.get(f"image{i}_caption") or content.get(f"image{i}_cap") or "").strip()
+        if img:
+            safe_url = escape(img, quote=True)
+            safe_cap = escape(cap) if cap else f"عکس {i}"
+            gallery_parts.append(
+                f'      <figure>\n'
+                f'        <img src="{safe_url}" alt="{safe_cap}" loading="lazy" width="400" height="220">\n'
+                f'        <figcaption>{safe_cap}</figcaption>\n'
+                f'      </figure>'
+            )
+    if gallery_parts:
+        parts.append('    <div class="page-gallery" id="page-gallery">')
+        parts.extend(gallery_parts)
+        parts.append('    </div>')
+
+    cta = (content.get("cta_text") or content.get("cta") or "").strip()
+    if cta:
+        parts.append(f'    <p id="page-cta-text" class="page-cta-lead">{escape(cta)}</p>')
 
     return "\n".join(parts) if parts else ""
 
@@ -499,8 +535,8 @@ def update_kv_page(
     marker_start: str,
     marker_end: str,
     *,
-    max_paras: int = 5,
-    with_list: bool = False,
+    max_paras: int = 8,
+    with_list: bool = True,
 ) -> bool:
     """تزریق محتوای کلید|مقدار به یک صفحه HTML."""
     path = find_frontend_file(filename)
@@ -1073,7 +1109,7 @@ def update_snapshot():
     update_kv_page(
         "about.html", about_c,
         "<!-- SNAPSHOT_ABOUT_START -->", "<!-- SNAPSHOT_ABOUT_END -->",
-        max_paras=5, with_list=False,
+        max_paras=8, with_list=True,
     )
 
     bagh_text_c = fetch_kv_sheet(BAGHESTAN_TEXT_SHEET_GID)
@@ -1081,7 +1117,7 @@ def update_snapshot():
     update_kv_page(
         "baghestan.html", bagh_text_c,
         "<!-- SNAPSHOT_BAGHESTAN_TEXT_START -->", "<!-- SNAPSHOT_BAGHESTAN_TEXT_END -->",
-        max_paras=6, with_list=False,
+        max_paras=8, with_list=True,
     )
 
     inv_c = fetch_kv_sheet(INVESTMENT_SHEET_GID)
