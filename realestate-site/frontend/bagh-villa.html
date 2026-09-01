@@ -83,6 +83,49 @@
     color: var(--ink);
     margin: 28px 0 12px;
   }
+
+  /* یکدست‌سازی صفحات متنی شیت‌محور */
+  .page-gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(168px, 1fr));
+    gap: 16px;
+    margin: 28px 0 12px;
+  }
+  .page-gallery figure { margin: 0; }
+  .page-gallery img {
+    width: 100%;
+    height: 160px;
+    object-fit: cover;
+    border-radius: 12px;
+    display: block;
+    box-shadow: 0 2px 10px rgba(20,33,61,0.08);
+  }
+  .page-gallery figcaption {
+    font-size: 0.82rem;
+    color: #6B6358;
+    margin-top: 8px;
+    text-align: center;
+    line-height: 1.5;
+  }
+  .page-cta-lead {
+    margin: 22px 0 10px !important;
+    font-weight: 700;
+    color: #14213D;
+    font-size: 1.05rem;
+  }
+  #page-list-title {
+    font-size: 1.15rem;
+    margin: 22px 0 12px;
+    color: #14213D;
+  }
+  .page-content .page-list {
+    background: rgba(184, 137, 79, 0.08);
+    border-radius: 12px;
+    padding: 16px 16px 16px 28px;
+    margin: 0 0 20px;
+  }
+  .page-content .page-list li { margin-bottom: 10px; }
+
 </style>
 <script type="application/ld+json" id="page-jsonld">
 {"@context": "https://schema.org", "@graph": [{"@type": "WebPage", "@id": "https://atlas-amlak.ir/bagh-villa.html#webpage", "url": "https://atlas-amlak.ir/bagh-villa.html", "name": "باغ، باغچه و ویلا در باغستان و خادم‌آباد", "description": "معرفی باغ، باغچه و باغ‌ویلا در منطقه باغستان و خادم‌آباد شهریار. فرصت‌های خرید و سرمایه‌گذاری در املاک سبز و ویلایی.", "isPartOf": {"@type": "WebSite", "name": "اطلس املاک", "url": "https://atlas-amlak.ir/"}, "about": {"@type": "RealEstateAgent", "name": "گروه مشاورین املاک اطلس", "url": "https://atlas-amlak.ir/", "telephone": "+989106943220"}, "inLanguage": "fa-IR"}, {"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "صفحه اصلی", "item": "https://atlas-amlak.ir/"}, {"@type": "ListItem", "position": 2, "name": "باغ، باغچه و ویلا در باغستان و خادم‌آباد", "item": "https://atlas-amlak.ir/bagh-villa.html"}]}]}
