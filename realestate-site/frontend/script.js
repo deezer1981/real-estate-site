@@ -1693,8 +1693,11 @@ document.querySelectorAll(".quick-card[href='#listings']").forEach((card) => {
 applyMenuOverrides();
 
 
-// --- کاروسل خودکار هیرو (صفحه اصلی) ---
+// --- کاروسل خودکار هیرو (فقط موبایل) ---
 (function initHeroCarousel() {
+  // فقط روی موبایل فعال باشد — دسکتاپ تک‌عکس می‌ماند
+  if (window.matchMedia("(min-width: 721px)").matches) return;
+
   const track = document.getElementById("carouselTrack");
   const dotsWrap = document.getElementById("carouselDots");
   if (!track || !dotsWrap) return;

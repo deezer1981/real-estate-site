@@ -172,6 +172,20 @@
     .footer-socials { gap: 22px; }
   }
 
+  /* دسکتاپ: فقط اسلاید اول دیده شود، نقطه‌ها مخفی */
+  @media (min-width: 721px) {
+    #heroCarousel .carousel-slide:not([data-index="0"]) {
+      display: none !important;
+    }
+    #heroCarousel .carousel-slide[data-index="0"] {
+      opacity: 1 !important;
+    }
+    #heroCarousel .carousel-dots {
+      display: none !important;
+    }
+  }
+
+
   /* لوگو موبایل: کمی از لبه‌ی چپ فاصله بگیرد تا با کارت‌های زمین/سرمایه‌گذاری هم‌راستا شود */
   @media (max-width: 720px) {
     .header-inner { padding-left: 34px; }
