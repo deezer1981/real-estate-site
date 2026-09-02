@@ -45,33 +45,45 @@ MENU_SHEET_GID = os.getenv("MENU_SHEET_GID") or ""
 #   hero_image
 BAGH_SHEET_GID = os.getenv("BAGH_SHEET_GID") or "1304456576"
 
-INACTIVE_STATUSES = {
-    "لغو شده",
+DELETE_STATUSES = {
     "حذف شده",
-    "غیرفعال",
-    "غیر فعال",
-    "غیرفعال شده",
+    "حذف",
 }
 
-# --- فقط برای آگهی‌های ملکی (فروش/رهن‌واجاره): تفکیک «حذف کامل» از «آرشیو» ---
-# این وضعیت‌ها یعنی فایل کلاً باید از سایت پاک شود (مثلاً اشتباهی ثبت شده)
-PROPERTY_DELETE_STATUSES = {
-    "حذف شده",
-    "غیرفعال",
-    "غیر فعال",
-    "غیرفعال شده",
+ARCHIVE_STATUS_MAP = {
+    "فروخته شده": "واگذار شده",
+    "فروخته": "واگذار شده",
+    "واگذار شده": "واگذار شده",
+    "واگذار شد": "واگذار شده",
+    "رهن داده شده": "رهن داده شده",
+    "اجاره داده شده": "رهن داده شده",
+    "رهن‌داده‌شده": "رهن داده شده",
+    "منقضی شده": "منقضی شده",
+    "منقضی": "منقضی شده",
+    "منصرف شده": "منصرف شده",
+    "منصرف": "منصرف شده",
+    "کنسل شده": "منصرف شده",
+    "لغو شده": "منصرف شده",
+    "غیرفعال": "غیرفعال",
+    "غیر فعال": "غیرفعال",
+    "غیرفعال شده": "غیرفعال",
 }
 
-# این وضعیت‌ها یعنی معامله بسته شده — صفحه آرشیو می‌شود (حذف نمی‌شود، از فهرست
-# اصلی/شمارش‌ها خارج می‌شود ولی آدرسش برای سئو زنده می‌ماند و برچسب می‌خورد)
-PROPERTY_ARCHIVE_STATUSES = {
-    "فروخته شد",
-    "رهن داده شد",
-    "معامله شد",
-    "منقضی شد",
-    "کنسل شد",
-    "لغو شده",
-}
+INACTIVE_STATUSES = DELETE_STATUSES | set(ARCHIVE_STATUS_MAP.keys())
+
+
+def normalize_listing_status(raw: str) -> tuple:
+    """برمی‌گرداند (برچسب_نمایش, is_active)."""
+    s = (raw or "").strip()
+    if not s or s == "فعال":
+        return "فعال", True
+    if s in DELETE_STATUSES:
+        return "حذف شده", False
+    if s in ARCHIVE_STATUS_MAP:
+        return ARCHIVE_STATUS_MAP[s], False
+    if s != "فعال":
+        return s, False
+    return "فعال", True
 
 # ---------------------------------------------------------------
 # عکس‌های پیش‌فرض وقتی ستون «عکس» در شیت خالی باشد.
@@ -243,34 +255,28 @@ def find_frontend_file(filename: str) -> Path | None:
     return None
 
 
-def fetch_sheet(deal_type: str) -> tuple[list[dict], list[dict]]:
-    """می‌خواند و (active_rows, archived_rows) را برمی‌گرداند.
-    archived_rows یعنی معامله بسته شده (فروخته شد/رهن داده شد/...) —
-    این‌ها حذف نمی‌شوند، فقط از فهرست اصلی/فعال خارج و بعداً آرشیو می‌شوند.
-    """
+def fetch_sheet(deal_type: str) -> list[dict]:
     if not SPREADSHEET_ID:
         print("Error: SPREADSHEET_ID تنظیم نشده است")
-        return [], []
+        return []
     gid = SHEET_GIDS.get(deal_type)
     if not gid:
-        return [], []
+        return []
     rows = fetch_csv_by_gid(gid)
-    active = []
-    archived = []
+    out = []
     for row in rows:
-        status = (row.get("وضعیت") or "فعال").strip()
+        status_raw = (row.get("وضعیت") or "فعال").strip()
+        label, is_active = normalize_listing_status(status_raw)
+        if label == "حذف شده":
+            continue
         code = (row.get("کد") or "").strip()
         if not code:
             continue
-        if status in PROPERTY_DELETE_STATUSES:
-            continue
-        if status in PROPERTY_ARCHIVE_STATUSES:
-            row = dict(row)
-            row["__status_label__"] = status
-            archived.append(row)
-            continue
-        active.append(row)
-    return active, archived
+        row = dict(row)
+        row["وضعیت"] = label
+        row["_is_active"] = is_active
+        out.append(row)
+    return out
 
 
 def fetch_local_guide() -> list[dict]:
@@ -706,12 +712,18 @@ def _parse_pin_order(raw: str) -> int | None:
     return None
 
 
-def row_to_property(row: dict, deal_type: str, archive_label: str = "") -> dict:
+def row_to_property(row: dict, deal_type: str) -> dict:
     agent = _strip_phone_like(_safe_get(row, "مشاور"))
     slug_val = (_safe_get(row, "اسلاگ") or (row.get("slug") or "")).strip()
+    status_label = (row.get("وضعیت") or "فعال").strip() or "فعال"
+    is_active = row.get("_is_active")
+    if is_active is None:
+        status_label, is_active = normalize_listing_status(status_label)
     result = {
         "code": _safe_get(row, "کد"),
         "deal_type": deal_type,
+        "status": status_label,
+        "is_active": bool(is_active),
         "property_type": _safe_get(row, "نوع ملک"),
         "address": short_address(_safe_get(row, "آدرس")),
         "area_m2": _safe_get(row, "متراژ"),
@@ -770,14 +782,6 @@ def row_to_property(row: dict, deal_type: str, archive_label: str = "") -> dict:
     for bad in list(result.keys()):
         if bad in BLOCKED_OUTPUT_KEYS or any(b in bad for b in ("phone", "مالک", "مشتری", "شماره")):
             del result[bad]
-
-    if archive_label:
-        result["archived"] = True
-        result["archive_label"] = archive_label
-        # آگهی‌های آرشیوشده دیگر نباید پین/اولویت داشته باشند
-        result.pop("pinned", None)
-        result.pop("pin_order", None)
-
     return result
 
 
@@ -1028,12 +1032,11 @@ def _to_persian_digits(s: str) -> str:
 
 def update_index_shell_counts(content: str, all_props: list) -> str:
     """شات اول HTML را با آمار واقعی هم‌خوان می‌کند (بدون تزریق کارت‌های سنگین)."""
-    listing = [p for p in all_props if not p.get("is_local")]
-    local_n = sum(1 for p in all_props if p.get("is_local"))
+    # فقط فعال‌ها در آمار صفحه اصلی
+    active = [p for p in all_props if p.get("is_active", True)]
+    listing = [p for p in active if not p.get("is_local")]
     total = len(listing)
-    sale = sum(1 for p in listing if p.get("deal_type") == "فروش")
-    rent = sum(1 for p in listing if p.get("deal_type") == "رهن و اجاره")
-    grid_total = len(all_props)
+    grid_total = len(active)
     page = min(6, grid_total)
 
     stats = (
@@ -1079,19 +1082,19 @@ def update_snapshot():
         exit(1)
 
     all_props = []
-    archived_props = []
     for deal_type in SHEET_GIDS:
-        active_rows, archived_rows = fetch_sheet(deal_type)
-        all_props.extend(row_to_property(r, deal_type) for r in active_rows)
-        archived_props.extend(
-            row_to_property(r, deal_type, archive_label=r.get("__status_label__", "واگذار شد"))
-            for r in archived_rows
-        )
-    print(f"تعداد آگهی‌های آرشیوشده (واگذارشده، صفحه‌شان حفظ می‌شود): {len(archived_props)}")
+        rows = fetch_sheet(deal_type)
+        all_props.extend(row_to_property(r, deal_type) for r in rows)
 
-    # کارت‌های محله‌گردی — با آگهی‌ها قاطی می‌شوند (بر اساس تاریخ ثبت)
+    n_active = sum(1 for p in all_props if p.get("is_active", True))
+    n_archive = len(all_props) - n_active
+    print(f"تعداد آگهی ملکی: {len(all_props)} (فعال: {n_active} | آرشیو: {n_archive})")
+
     local_rows = fetch_local_guide()
     local_props = [row_to_local(r) for r in local_rows]
+    for lp in local_props:
+        lp.setdefault("status", "فعال")
+        lp.setdefault("is_active", True)
     all_props.extend(local_props)
     print(f"تعداد کارت محله‌گردی: {len(local_props)}")
 
@@ -1193,7 +1196,8 @@ def update_snapshot():
         print("Error: مارکرهای SNAPSHOT_DATA پیدا نشد")
         exit(1)
 
-    properties_json = json.dumps(all_props, ensure_ascii=False)
+    active_props = [p for p in all_props if p.get("is_active", True)]
+    properties_json = json.dumps(active_props, ensure_ascii=False)
     menu_items_json = json.dumps(menu_items, ensure_ascii=False)
 
     before = content.split(start_marker)[0]
@@ -1201,7 +1205,7 @@ def update_snapshot():
 
     # ItemList سبک برای سئو (حداکثر ۱۲ آگهی اول — فقط آگهی‌های ملکی، نه محله‌گردی)
     item_list_elements = []
-    listing_for_seo = [p for p in all_props if not p.get("is_local")][:12]
+    listing_for_seo = [p for p in all_props if not p.get("is_local") and p.get("is_active", True)][:12]
     for i, p in enumerate(listing_for_seo, start=1):
         code = str(p.get("code") or "").strip()
         if not code:
@@ -1238,13 +1242,12 @@ def update_snapshot():
     # صفحات سبک هر آگهی (سئو + پیش‌نمایش لینک) — فقط آگهی‌های ملکی
     frontend_dir = index_path.parent
     listing_only = [p for p in all_props if not p.get("is_local")]
-    n_pages, n_archived_pages = write_listing_pages(frontend_dir, listing_only, archived_props)
-    print(f"✅ صفحات آگهی فعال: {n_pages} فایل در agahi/")
-    print(f"📦 صفحات آرشیو (واگذارشده، حفظ‌شده برای سئو): {n_archived_pages} فایل در agahi/")
+    n_pages = write_listing_pages(frontend_dir, listing_only)
+    print(f"✅ صفحات آگهی: {n_pages} فایل در agahi/")
     # صفحات استاتیک محله‌گردی
     n_local = write_local_pages(frontend_dir, local_props)
     print(f"✅ صفحات محله‌گردی: {n_local} فایل در mahale/")
-    write_sitemap(frontend_dir, listing_only, local_props, archived_props)
+    write_sitemap(frontend_dir, listing_only, local_props)
     print("✅ sitemap.xml به‌روز شد")
 
 
@@ -1529,14 +1532,11 @@ def _build_listing_jsonld(p: dict) -> dict:
             "@type": "Offer",
             "priceCurrency": "IRR",
             "description": price_line,
-            "availability": (
-                "https://schema.org/OutOfStock" if p.get("archived")
-                else "https://schema.org/InStock"
-            ),
+            "availability": "https://schema.org/InStock",
             "url": page_url,
         }
         numeric_price = _parse_price_numeric(p)
-        if numeric_price is not None and numeric_price > 0 and not p.get("archived"):
+        if numeric_price is not None and numeric_price > 0:
             offer["price"] = numeric_price
         listing["offers"] = offer
 
@@ -1564,14 +1564,8 @@ def _build_listing_jsonld(p: dict) -> dict:
     }
 
 
-def render_listing_html(p: dict, similar_props: list[dict] | None = None) -> str:
-    """صفحه HTML سبک و ایستا برای یک آگهی — بدون JS سنگین.
-    اگر p.archived=True باشد (معامله بسته شده)، صفحه به‌جای حذف، با برچسب
-    وضعیت (فروخته شد/رهن داده شد/...) و بدون دکمه تماس رندر می‌شود تا آدرس
-    برای سئو زنده بماند؛ similar_props چند آگهی فعال مشابه برای پیشنهاد است.
-    """
-    is_archived = bool(p.get("archived"))
-    archive_label = escape(str(p.get("archive_label") or "واگذار شد"))
+def render_listing_html(p: dict) -> str:
+    """صفحه HTML سبک و ایستا برای یک آگهی — بدون JS سنگین."""
     code = escape(str(p.get("code") or ""))
     label = escape(_listing_label(p))
     addr = escape((p.get("address") or "").strip())
@@ -1622,13 +1616,13 @@ def render_listing_html(p: dict, similar_props: list[dict] | None = None) -> str
         short_addr = short_addr[:36].rstrip() + "…"
     # عنوان سئو: شامل متراژ + خواب + خادم‌آباد باغستان (بهبود CTR محلی)
     title = _build_seo_title(p)
-    if is_archived:
-        title = f"{title} ({p.get('archive_label') or 'واگذار شد'})"
+    status_label = (p.get("status") or "فعال").strip()
+    is_active = p.get("is_active", True)
+    if not is_active and status_label and status_label != "فعال":
+        title = f"{status_label} | {title}"
     # خطوط توضیح — اول قیمت و متراژ (مهم‌ترین)
     lines = []
-    if is_archived:
-        lines.append(f"این آگهی {p.get('archive_label') or 'واگذار شد'} — نمونه‌های مشابه فعال را ببینید")
-    if price_plain and not is_archived:
+    if price_plain:
         lines.append(f"قیمت: {price_plain}")
     if specs_txt:
         lines.append(specs_txt)
@@ -1655,46 +1649,6 @@ def render_listing_html(p: dict, similar_props: list[dict] | None = None) -> str
     bale_msg = escape(
         f"سلام، در مورد آگهی کد {code} از سایت اطلس املاک پیام می‌دم."
     )
-
-    # --- حالت آرشیو: بج وضعیت + حذف دکمه‌های تماس + پیشنهاد آگهی‌های مشابه فعال ---
-    if is_archived:
-        actions_html = ""
-        archived_badge_html = (
-            f'<p class="card-archived-badge">✅ این آگهی <strong>{archive_label}</strong> '
-            f'— دیگر فعال نیست</p>'
-        )
-        similar_props = similar_props or []
-        if similar_props:
-            cards = []
-            for sp in similar_props:
-                sp_slug = escape(_listing_slug(sp), quote=True)
-                sp_label = escape(_listing_label(sp))
-                sp_price = escape(_listing_price_line(sp))
-                sp_code = escape(str(sp.get("code") or ""))
-                cards.append(
-                    f'<a class="similar-card" href="{sp_slug}.html">'
-                    f'<strong>{sp_label}</strong> <span class="similar-code">کد {sp_code}</span>'
-                    f'<span class="similar-price">{sp_price}</span></a>'
-                )
-            similar_html = (
-                '<div class="agahi-similar">'
-                '<h2 class="agahi-similar-title">آگهی‌های مشابه فعال</h2>'
-                f'{"".join(cards)}'
-                "</div>"
-            )
-        else:
-            similar_html = (
-                '<div class="agahi-similar">'
-                '<a class="agahi-similar-link" href="../">مشاهده همه آگهی‌های فعال ←</a>'
-                "</div>"
-            )
-    else:
-        archived_badge_html = ""
-        similar_html = ""
-        actions_html = f"""<div class="card-actions">
-          <a class="agent-call-btn agent-btn-primary" href="tel:09106943220">📞 مشاوره / بازدید</a>
-          <a class="agent-msg-btn agent-btn-secondary" href="https://ble.ir/Nobody_Mohsen?text={bale_msg}" target="_blank" rel="noopener">💬 پیام</a>
-        </div>"""
 
     return f"""<!DOCTYPE html>
 <html lang="fa" dir="rtl">
@@ -1743,6 +1697,14 @@ def render_listing_html(p: dict, similar_props: list[dict] | None = None) -> str
   .agahi-back:hover {{ background: #FBF6EC; box-shadow: 0 4px 14px rgba(32,28,21,0.09); }}
   .agahi-back:active {{ transform: scale(0.97); }}
   .agahi-back-icon {{ font-size: 0.78rem; }}
+  .status-tag {{
+    display: inline-block; margin-right: 6px; padding: 5px 12px; border-radius: 999px;
+    background: #8B2942; color: #fff; font-size: 0.78rem; font-weight: 800;
+  }}
+  .status-banner {{
+    background: #F8E8EC; color: #5C1A2E; border: 1px solid #E5B8C4; border-radius: 12px;
+    padding: 12px 14px; margin-bottom: 14px; font-size: 0.92rem; line-height: 1.7; font-weight: 600;
+  }}
   .agahi-brand-chip {{
     display: inline-flex; align-items: center; gap: 6px;
     font-size: 0.78rem; font-weight: 700; color: #B8894F;
@@ -1821,16 +1783,17 @@ def render_listing_html(p: dict, similar_props: list[dict] | None = None) -> str
   </div>
 
   <div class="agahi-card-wrap">
-    <article class="card {'card-sale' if p.get('deal_type') == 'فروش' else 'card-rent'}{' card-archived' if is_archived else ''}">
+    <article class="card {'card-sale' if p.get('deal_type') == 'فروش' else 'card-rent'}">
       <div class="card-image-wrap">
         <img class="card-image" src="{img_src}" alt="{label} کد {code}" width="400" height="280" loading="eager">
         <div class="card-image-overlay">
-          <span class="deal-tag {'archived' if is_archived else ('sale' if p.get('deal_type') == 'فروش' else 'rent')}">{archive_label if is_archived else deal}</span>
+          <span class="deal-tag {'sale' if p.get('deal_type') == 'فروش' else 'rent'}">{deal}</span>
+          {'' if is_active else f'<span class="status-tag">{escape(status_label)}</span>'}
         </div>
       </div>
       <div class="card-body">
+        {'' if is_active else f'<div class="status-banner">این فایل <strong>{escape(status_label)}</strong> است و دیگر در لیست آگهی‌های فعال نمایش داده نمی‌شود.</div>'}
         <h1 class="card-title">{label} <span class="card-code">کد {code}</span></h1>
-        {archived_badge_html}
         {addr_html}
         {specs_html}
         {extras_html}
@@ -1838,12 +1801,14 @@ def render_listing_html(p: dict, similar_props: list[dict] | None = None) -> str
         <p class="card-price">💰 {price}</p>
         {m2_html}
         {agent_html}
-        {actions_html}
+        <div class="card-actions">
+          <a class="agent-call-btn agent-btn-primary" href="tel:09106943220">📞 مشاوره / بازدید</a>
+          <a class="agent-msg-btn agent-btn-secondary" href="https://ble.ir/Nobody_Mohsen?text={bale_msg}" target="_blank" rel="noopener">💬 پیام</a>
+        </div>
         {date_html}
         {notes_html}
       </div>
     </article>
-    {similar_html}
   </div>
 
   <div class="agahi-bottom-back">
@@ -2247,50 +2212,22 @@ def _listing_slug(p: dict) -> str:
 
 
 
-def _find_similar_active(p: dict, active_props: list[dict], limit: int = 3) -> list[dict]:
-    """چند آگهی فعال مشابه (همان نوع ملک + نوع معامله) برای نمایش زیر صفحه آرشیوشده.
-    اگر به اندازه کافی مشابه دقیق نبود، با آگهی‌های همان نوع معامله پر می‌شود."""
-    pt = (p.get("property_type") or "").strip()
-    dt = (p.get("deal_type") or "").strip()
-    same = [x for x in active_props if x.get("property_type") == pt and x.get("deal_type") == dt]
-    if len(same) < limit:
-        extra = [x for x in active_props if x.get("deal_type") == dt and x not in same]
-        same = same + extra
-    return same[:limit]
-
-
-def write_listing_pages(
-    frontend_dir: Path,
-    props: list[dict],
-    archived_props: list[dict] | None = None,
-) -> tuple[int, int]:
-    """ساخت agahi/{slug}.html + ریدایرکت از agahi/{code}.html برای سازگاری.
-
-    props = آگهی‌های فعال (رندر عادی).
-    archived_props = آگهی‌های واگذارشده/فروخته‌شده (رندر با برچسب آرشیو + مشابه‌های فعال).
-    صفحات آرشیو هیچ‌وقت حذف نمی‌شوند تا اعتبار سئوی‌شان حفظ شود — فقط آگهی‌هایی که
-    دیگر نه در props و نه در archived_props باشند (یعنی کلاً از شیت حذف شده‌اند) پاک می‌شوند.
-    """
+def write_listing_pages(frontend_dir: Path, props: list[dict]) -> int:
+    """ساخت agahi/{slug}.html + ریدایرکت از agahi/{code}.html برای سازگاری."""
     agahi = frontend_dir / "agahi"
     agahi.mkdir(exist_ok=True)
-    archived_props = archived_props or []
-    keep = set()
-
-    def _write_one(p: dict, archived: bool) -> str | None:
+    active = set()
+    for p in props:
         code = re.sub(r"[^\w\-]", "", str(p.get("code") or "").strip())
         if not code:
-            return None
+            continue
         slug = _listing_slug(p)
         safe_slug = re.sub(r"[^\w\-]", "", slug)
         if not safe_slug:
             safe_slug = code
-        keep.add(safe_slug)
-        keep.add(code)
-        if archived:
-            similar = _find_similar_active(p, props, limit=3)
-            html = render_listing_html(p, similar_props=similar)
-        else:
-            html = render_listing_html(p)
+        active.add(safe_slug)
+        active.add(code)
+        html = render_listing_html(p)
         (agahi / f"{safe_slug}.html").write_text(html, encoding="utf-8")
         # ریدایرکت سبک از کد قدیمی → اسلاگ جدید (اگر متفاوت باشد)
         if safe_slug != code:
@@ -2309,29 +2246,14 @@ def write_listing_pages(
 </html>
 """
             (agahi / f"{code}.html").write_text(redirect_html, encoding="utf-8")
-        return code
-
-    for p in props:
-        _write_one(p, archived=False)
-    for p in archived_props:
-        _write_one(p, archived=True)
-
     for old in agahi.glob("*.html"):
-        if old.stem not in keep:
+        if old.stem not in active:
             old.unlink()
-
-    n_active = len({re.sub(r"[^\w\-]", "", str(p.get("code") or "")) for p in props if p.get("code")})
-    n_archived = len({re.sub(r"[^\w\-]", "", str(p.get("code") or "")) for p in archived_props if p.get("code")})
-    return n_active, n_archived
+    return len({re.sub(r"[^\w\-]", "", str(p.get("code") or "")) for p in props if p.get("code")})
 
 
 
-def write_sitemap(
-    frontend_dir: Path,
-    props: list[dict],
-    local_props: list[dict] | None = None,
-    archived_props: list[dict] | None = None,
-) -> None:
+def write_sitemap(frontend_dir: Path, props: list[dict], local_props: list[dict] | None = None) -> None:
     urls = [
         ("https://atlas-amlak.ir/", "hourly", "1.0"),
         ("https://atlas-amlak.ir/about.html", "monthly", "0.6"),
@@ -2340,21 +2262,13 @@ def write_sitemap(
         ("https://atlas-amlak.ir/investment.html", "monthly", "0.5"),
         ("https://atlas-amlak.ir/reviews.html", "monthly", "0.5"),
     ]
-    # آگهی‌های ملکی فعال (آدرس زیبا بر اساس نوع + کد)
+    # آگهی‌های ملکی (آدرس زیبا بر اساس نوع + کد)
     for p in props:
         code = re.sub(r"[^\w\-]", "", str(p.get("code") or "").strip())
         if not code:
             continue
         slug = re.sub(r"[^\w\-]", "", _listing_slug(p))
         urls.append((f"https://atlas-amlak.ir/agahi/{slug or code}.html", "daily", "0.8"))
-    # صفحات آرشیو (واگذارشده) — همچنان در سایت‌مپ می‌مانند تا اعتبار سئوشان حفظ شود،
-    # فقط با اولویت/فرکانس کمتر چون دیگر خرید/اجاره واقعی روی آن‌ها اتفاق نمی‌افتد
-    for p in (archived_props or []):
-        code = re.sub(r"[^\w\-]", "", str(p.get("code") or "").strip())
-        if not code:
-            continue
-        slug = re.sub(r"[^\w\-]", "", _listing_slug(p))
-        urls.append((f"https://atlas-amlak.ir/agahi/{slug or code}.html", "monthly", "0.3"))
     # کارت‌های محله‌گردی
     for p in (local_props or []):
         slug = re.sub(r"[^\w\-]", "", str(p.get("slug") or p.get("code") or "").strip())
