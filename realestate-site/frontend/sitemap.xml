@@ -31,11 +31,6 @@
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://atlas-amlak.ir/agahi/aparteman-bnt.html</loc>
-    <changefreq>daily</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
     <loc>https://atlas-amlak.ir/agahi/aparteman-bns.html</loc>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
@@ -274,6 +269,11 @@
     <loc>https://atlas-amlak.ir/agahi/aparteman-bmn.html</loc>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://atlas-amlak.ir/agahi/aparteman-bnt.html</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.3</priority>
   </url>
   <url>
     <loc>https://atlas-amlak.ir/mahale/bazar-ruz.html</loc>
