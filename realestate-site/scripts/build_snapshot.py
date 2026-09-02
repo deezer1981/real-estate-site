@@ -45,13 +45,45 @@ MENU_SHEET_GID = os.getenv("MENU_SHEET_GID") or ""
 #   hero_image
 BAGH_SHEET_GID = os.getenv("BAGH_SHEET_GID") or "1304456576"
 
-INACTIVE_STATUSES = {
-    "لغو شده",
+DELETE_STATUSES = {
     "حذف شده",
-    "غیرفعال",
-    "غیر فعال",
-    "غیرفعال شده",
+    "حذف",
 }
+
+ARCHIVE_STATUS_MAP = {
+    "فروخته شده": "واگذار شده",
+    "فروخته": "واگذار شده",
+    "واگذار شده": "واگذار شده",
+    "واگذار شد": "واگذار شده",
+    "رهن داده شده": "رهن داده شده",
+    "اجاره داده شده": "رهن داده شده",
+    "رهن‌داده‌شده": "رهن داده شده",
+    "منقضی شده": "منقضی شده",
+    "منقضی": "منقضی شده",
+    "منصرف شده": "منصرف شده",
+    "منصرف": "منصرف شده",
+    "کنسل شده": "منصرف شده",
+    "لغو شده": "منصرف شده",
+    "غیرفعال": "غیرفعال",
+    "غیر فعال": "غیرفعال",
+    "غیرفعال شده": "غیرفعال",
+}
+
+INACTIVE_STATUSES = DELETE_STATUSES | set(ARCHIVE_STATUS_MAP.keys())
+
+
+def normalize_listing_status(raw: str) -> tuple:
+    """برمی‌گرداند (برچسب_نمایش, is_active)."""
+    s = (raw or "").strip()
+    if not s or s == "فعال":
+        return "فعال", True
+    if s in DELETE_STATUSES:
+        return "حذف شده", False
+    if s in ARCHIVE_STATUS_MAP:
+        return ARCHIVE_STATUS_MAP[s], False
+    if s != "فعال":
+        return s, False
+    return "فعال", True
 
 # ---------------------------------------------------------------
 # عکس‌های پیش‌فرض وقتی ستون «عکس» در شیت خالی باشد.
@@ -231,16 +263,20 @@ def fetch_sheet(deal_type: str) -> list[dict]:
     if not gid:
         return []
     rows = fetch_csv_by_gid(gid)
-    active = []
+    out = []
     for row in rows:
-        status = (row.get("وضعیت") or "فعال").strip()
-        if status in INACTIVE_STATUSES:
+        status_raw = (row.get("وضعیت") or "فعال").strip()
+        label, is_active = normalize_listing_status(status_raw)
+        if label == "حذف شده":
             continue
         code = (row.get("کد") or "").strip()
         if not code:
             continue
-        active.append(row)
-    return active
+        row = dict(row)
+        row["وضعیت"] = label
+        row["_is_active"] = is_active
+        out.append(row)
+    return out
 
 
 def fetch_local_guide() -> list[dict]:
@@ -679,9 +715,15 @@ def _parse_pin_order(raw: str) -> int | None:
 def row_to_property(row: dict, deal_type: str) -> dict:
     agent = _strip_phone_like(_safe_get(row, "مشاور"))
     slug_val = (_safe_get(row, "اسلاگ") or (row.get("slug") or "")).strip()
+    status_label = (row.get("وضعیت") or "فعال").strip() or "فعال"
+    is_active = row.get("_is_active")
+    if is_active is None:
+        status_label, is_active = normalize_listing_status(status_label)
     result = {
         "code": _safe_get(row, "کد"),
         "deal_type": deal_type,
+        "status": status_label,
+        "is_active": bool(is_active),
         "property_type": _safe_get(row, "نوع ملک"),
         "address": short_address(_safe_get(row, "آدرس")),
         "area_m2": _safe_get(row, "متراژ"),
@@ -990,12 +1032,11 @@ def _to_persian_digits(s: str) -> str:
 
 def update_index_shell_counts(content: str, all_props: list) -> str:
     """شات اول HTML را با آمار واقعی هم‌خوان می‌کند (بدون تزریق کارت‌های سنگین)."""
-    listing = [p for p in all_props if not p.get("is_local")]
-    local_n = sum(1 for p in all_props if p.get("is_local"))
+    # فقط فعال‌ها در آمار صفحه اصلی
+    active = [p for p in all_props if p.get("is_active", True)]
+    listing = [p for p in active if not p.get("is_local")]
     total = len(listing)
-    sale = sum(1 for p in listing if p.get("deal_type") == "فروش")
-    rent = sum(1 for p in listing if p.get("deal_type") == "رهن و اجاره")
-    grid_total = len(all_props)
+    grid_total = len(active)
     page = min(6, grid_total)
 
     stats = (
@@ -1045,9 +1086,15 @@ def update_snapshot():
         rows = fetch_sheet(deal_type)
         all_props.extend(row_to_property(r, deal_type) for r in rows)
 
-    # کارت‌های محله‌گردی — با آگهی‌ها قاطی می‌شوند (بر اساس تاریخ ثبت)
+    n_active = sum(1 for p in all_props if p.get("is_active", True))
+    n_archive = len(all_props) - n_active
+    print(f"تعداد آگهی ملکی: {len(all_props)} (فعال: {n_active} | آرشیو: {n_archive})")
+
     local_rows = fetch_local_guide()
     local_props = [row_to_local(r) for r in local_rows]
+    for lp in local_props:
+        lp.setdefault("status", "فعال")
+        lp.setdefault("is_active", True)
     all_props.extend(local_props)
     print(f"تعداد کارت محله‌گردی: {len(local_props)}")
 
@@ -1149,7 +1196,8 @@ def update_snapshot():
         print("Error: مارکرهای SNAPSHOT_DATA پیدا نشد")
         exit(1)
 
-    properties_json = json.dumps(all_props, ensure_ascii=False)
+    active_props = [p for p in all_props if p.get("is_active", True)]
+    properties_json = json.dumps(active_props, ensure_ascii=False)
     menu_items_json = json.dumps(menu_items, ensure_ascii=False)
 
     before = content.split(start_marker)[0]
@@ -1157,7 +1205,7 @@ def update_snapshot():
 
     # ItemList سبک برای سئو (حداکثر ۱۲ آگهی اول — فقط آگهی‌های ملکی، نه محله‌گردی)
     item_list_elements = []
-    listing_for_seo = [p for p in all_props if not p.get("is_local")][:12]
+    listing_for_seo = [p for p in all_props if not p.get("is_local") and p.get("is_active", True)][:12]
     for i, p in enumerate(listing_for_seo, start=1):
         code = str(p.get("code") or "").strip()
         if not code:
@@ -1568,6 +1616,10 @@ def render_listing_html(p: dict) -> str:
         short_addr = short_addr[:36].rstrip() + "…"
     # عنوان سئو: شامل متراژ + خواب + خادم‌آباد باغستان (بهبود CTR محلی)
     title = _build_seo_title(p)
+    status_label = (p.get("status") or "فعال").strip()
+    is_active = p.get("is_active", True)
+    if not is_active and status_label and status_label != "فعال":
+        title = f"{status_label} | {title}"
     # خطوط توضیح — اول قیمت و متراژ (مهم‌ترین)
     lines = []
     if price_plain:
@@ -1645,6 +1697,14 @@ def render_listing_html(p: dict) -> str:
   .agahi-back:hover {{ background: #FBF6EC; box-shadow: 0 4px 14px rgba(32,28,21,0.09); }}
   .agahi-back:active {{ transform: scale(0.97); }}
   .agahi-back-icon {{ font-size: 0.78rem; }}
+  .status-tag {{
+    display: inline-block; margin-right: 6px; padding: 5px 12px; border-radius: 999px;
+    background: #8B2942; color: #fff; font-size: 0.78rem; font-weight: 800;
+  }}
+  .status-banner {{
+    background: #F8E8EC; color: #5C1A2E; border: 1px solid #E5B8C4; border-radius: 12px;
+    padding: 12px 14px; margin-bottom: 14px; font-size: 0.92rem; line-height: 1.7; font-weight: 600;
+  }}
   .agahi-brand-chip {{
     display: inline-flex; align-items: center; gap: 6px;
     font-size: 0.78rem; font-weight: 700; color: #B8894F;
@@ -1728,9 +1788,11 @@ def render_listing_html(p: dict) -> str:
         <img class="card-image" src="{img_src}" alt="{label} کد {code}" width="400" height="280" loading="eager">
         <div class="card-image-overlay">
           <span class="deal-tag {'sale' if p.get('deal_type') == 'فروش' else 'rent'}">{deal}</span>
+          {'' if is_active else f'<span class="status-tag">{escape(status_label)}</span>'}
         </div>
       </div>
       <div class="card-body">
+        {'' if is_active else f'<div class="status-banner">این فایل <strong>{escape(status_label)}</strong> است و دیگر در لیست آگهی‌های فعال نمایش داده نمی‌شود.</div>'}
         <h1 class="card-title">{label} <span class="card-code">کد {code}</span></h1>
         {addr_html}
         {specs_html}
