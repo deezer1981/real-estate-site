@@ -347,6 +347,82 @@ function buildSmsText(p) {
   return lines.join("\n");
 }
 
+/** حالت ادمین سبک: ?ig=1 در آدرس */
+function isIgAdminMode() {
+  try {
+    return new URLSearchParams(window.location.search).get("ig") === "1";
+  } catch (e) {
+    return false;
+  }
+}
+
+/** کپشن آماده اینستاگرام برای یک آگهی */
+function buildInstagramCaption(p) {
+  if (!p) return "";
+  const title = labeledPropertyType(p);
+  const code = p.code ? String(p.code) : "";
+
+  const specs = [];
+  if (p.area_m2) specs.push(`${p.area_m2} متر`);
+  if (p.rooms) specs.push(`${p.rooms} خواب`);
+  if (p.floor) specs.push(`طبقه ${p.floor}`);
+
+  const amenities = [];
+  if (p.parking) amenities.push("پارکینگ");
+  if (p.elevator) amenities.push("آسانسور");
+  if (p.storage) amenities.push("انباری");
+
+  const lines = [];
+  lines.push(`🏠 ${title}${code ? " · کد " + code : ""}`);
+  lines.push("");
+  if (p.address) lines.push(`📍 ${String(p.address).trim()}`);
+  if (specs.length) lines.push(`📐 ${specs.join(" · ")}`);
+
+  if (p.deal_type === "فروش") {
+    const total = formatSaleTotal(p.price_total);
+    if (total) lines.push(`💰 ${total}`);
+    const m2 = formatPricePerM2(p.price_per_m2);
+    if (m2) lines.push(`قیمت متری: ${m2}`);
+  } else {
+    const rentBits = [];
+    if (p.rahn && p.rahn !== "-") {
+      const r = formatRentPart(p.rahn);
+      if (r) rentBits.push(`رهن ${r}`);
+    }
+    if (p.ejare && p.ejare !== "-") {
+      const e = formatRentPart(p.ejare);
+      if (e) rentBits.push(`اجاره ${e}`);
+    }
+    if (rentBits.length) lines.push(`💰 ${rentBits.join(" · ")}`);
+  }
+
+  if (amenities.length) {
+    lines.push("");
+    lines.push(amenities.join(" · "));
+  }
+  if (p.documents) lines.push(`مدارک: ${String(p.documents).trim()}`);
+
+  lines.push("");
+  lines.push("📞 تماس با دفتر اطلس: ۰۹۱۰ ۶۹۴ ۳۲۲۰");
+
+  // لینک صفحه آگهی
+  let link = "https://atlas-amlak.ir/";
+  try {
+    if (p.is_local || p.deal_type === "محله‌گردی") {
+      link = `${window.location.origin}/mahale/${encodeURIComponent(p.slug || p.code || "")}.html`;
+    } else {
+      link = `${window.location.origin}/agahi/${encodeURIComponent(listingSlug(p))}.html`;
+    }
+  } catch (e) {}
+  lines.push("🔗 جزئیات کامل:");
+  lines.push(link);
+
+  lines.push("");
+  lines.push("#املاک_باغستان #خادم‌آباد #شهریار #آپارتمان_فروشی #اطلس_املاک #خرید_آپارتمان_شهریار #فایل_روز");
+
+  return lines.join("\n");
+}
+
 /** تشخیص لینک مسیریابی / اینستاگرام از فیلد «لینک» محله‌گردی */
 function classifyLocalLink(url) {
   const u = String(url || "").trim().toLowerCase();
@@ -562,11 +638,15 @@ function propertyCard(p) {
   const baleUser = (typeof BALE_USERNAME !== "undefined") ? BALE_USERNAME : "Nobody_Mohsen";
   const baleMsg = encodeURIComponent(`سلام، در مورد آگهی کد ${p.code || ""} از سایت اطلس املاک پیام می‌دم.`);
   /* اشتراک فقط روی عکس کارت (مثل صفحه اصلی) — دکمه جدا پایین حذف شد */
+  const igBtn = isIgAdminMode()
+    ? `<button type="button" class="ig-caption-btn" data-code="${p.code || ""}">📋 کپی کپشن اینستا</button>`
+    : "";
   const agentActions = `
     <div class="card-actions">
       <a class="agent-call-btn agent-btn-primary" href="tel:${officePhone}">📞 مشاوره / بازدید</a>
       <a class="agent-msg-btn agent-btn-secondary" href="https://ble.ir/${baleUser}?text=${baleMsg}" target="_blank" rel="noopener">💬 پیام</a>
-    </div>`;
+    </div>
+    ${igBtn}`;
 
   const bottomBack = isSingleMode
     ? `<div class="single-ad-bottom">
@@ -1407,6 +1487,28 @@ document.addEventListener("click", (e) => {
   const p = allProperties.find((item) => String(item.code) === String(code));
   if (p) {
     showShareModal(p, shareBtn);
+  }
+});
+
+document.addEventListener("click", async (e) => {
+  const igBtn = e.target.closest(".ig-caption-btn");
+  if (!igBtn) return;
+  e.preventDefault();
+  const code = igBtn.getAttribute("data-code");
+  if (!code) return;
+  const p = allProperties.find((item) => String(item.code) === String(code));
+  if (!p) return;
+  const text = buildInstagramCaption(p);
+  try {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      await navigator.clipboard.writeText(text);
+    } else {
+      forceCopyText(text);
+    }
+    showCopySuccess(igBtn, "✅ کپشن کپی شد");
+  } catch (err) {
+    forceCopyText(text);
+    showCopySuccess(igBtn, "✅ کپشن کپی شد");
   }
 });
 
