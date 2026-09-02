@@ -405,17 +405,8 @@ function buildInstagramCaption(p) {
   lines.push("");
   lines.push("📞 تماس با دفتر اطلس: 0910 694 3220");
 
-  // لینک صفحه آگهی
-  let link = "https://atlas-amlak.ir/";
-  try {
-    if (p.is_local || p.deal_type === "محله‌گردی") {
-      link = `${window.location.origin}/mahale/${encodeURIComponent(p.slug || p.code || "")}.html`;
-    } else {
-      link = `${window.location.origin}/agahi/${encodeURIComponent(listingSlug(p))}.html`;
-    }
-  } catch (e) {}
   lines.push("🔗 جزئیات کامل:");
-  lines.push(link);
+  lines.push(propertyPageUrl(p));
 
   lines.push("");
   // هشتگ‌ها: ثابت + نوع معامله
@@ -431,6 +422,52 @@ function buildInstagramCaption(p) {
 
   return lines.join("\n");
 }
+
+/** متن کوتاه روی تصویر ری‌لز (۲–۴ خط) */
+function buildReelOverlayText(p) {
+  if (!p) return "";
+  const lines = [];
+  const code = p.code ? String(p.code) : "";
+  lines.push(code ? `کد ${code}` : labeledPropertyType(p));
+  if (p.address) {
+    const addr = truncateAddress(p.address) || String(p.address).trim();
+    if (addr) lines.push(addr);
+  }
+  const specs = [];
+  if (p.area_m2) specs.push(`${p.area_m2} متر`);
+  if (p.rooms) specs.push(`${p.rooms} خواب`);
+  if (specs.length) lines.push(specs.join(" · "));
+  if (p.deal_type === "فروش") {
+    const total = formatSaleTotal(p.price_total);
+    if (total) lines.push(total);
+  } else {
+    const rentBits = [];
+    if (p.rahn && p.rahn !== "-") {
+      const r = formatRentPart(p.rahn);
+      if (r) rentBits.push(`رهن ${r}`);
+    }
+    if (p.ejare && p.ejare !== "-") {
+      const e = formatRentPart(p.ejare);
+      if (e) rentBits.push(`اجاره ${e}`);
+    }
+    if (rentBits.length) lines.push(rentBits.join(" · "));
+  }
+  return lines.join("\n");
+}
+
+/** لینک صفحه آگهی */
+function propertyPageUrl(p) {
+  if (!p) return "https://atlas-amlak.ir/";
+  try {
+    if (p.is_local || p.deal_type === "محله‌گردی") {
+      return `${window.location.origin}/mahale/${encodeURIComponent(p.slug || p.code || "")}.html`;
+    }
+    return `${window.location.origin}/agahi/${encodeURIComponent(listingSlug(p))}.html`;
+  } catch (e) {
+    return "https://atlas-amlak.ir/";
+  }
+}
+
 
 /** تشخیص لینک مسیریابی / اینستاگرام از فیلد «لینک» محله‌گردی */
 function classifyLocalLink(url) {
@@ -647,15 +684,19 @@ function propertyCard(p) {
   const baleUser = (typeof BALE_USERNAME !== "undefined") ? BALE_USERNAME : "Nobody_Mohsen";
   const baleMsg = encodeURIComponent(`سلام، در مورد آگهی کد ${p.code || ""} از سایت اطلس املاک پیام می‌دم.`);
   /* اشتراک فقط روی عکس کارت (مثل صفحه اصلی) — دکمه جدا پایین حذف شد */
-  const igBtn = isIgAdminMode()
-    ? `<button type="button" class="ig-caption-btn" data-code="${p.code || ""}">📋 کپی کپشن اینستا</button>`
+  const igTools = isIgAdminMode()
+    ? `<div class="ig-admin-tools">
+        <button type="button" class="ig-caption-btn" data-code="${p.code || ""}" data-ig-action="caption">📋 کپی کپشن اینستا</button>
+        <button type="button" class="ig-caption-btn ig-caption-btn-secondary" data-code="${p.code || ""}" data-ig-action="link">🔗 کپی لینک آگهی</button>
+        <button type="button" class="ig-caption-btn ig-caption-btn-secondary" data-code="${p.code || ""}" data-ig-action="reel">🎬 کپی متن ری‌لز</button>
+      </div>`
     : "";
   const agentActions = `
     <div class="card-actions">
       <a class="agent-call-btn agent-btn-primary" href="tel:${officePhone}">📞 مشاوره / بازدید</a>
       <a class="agent-msg-btn agent-btn-secondary" href="https://ble.ir/${baleUser}?text=${baleMsg}" target="_blank" rel="noopener">💬 پیام</a>
     </div>
-    ${igBtn}`;
+    ${igTools}`;
 
   const bottomBack = isSingleMode
     ? `<div class="single-ad-bottom">
@@ -1507,17 +1548,29 @@ document.addEventListener("click", async (e) => {
   if (!code) return;
   const p = allProperties.find((item) => String(item.code) === String(code));
   if (!p) return;
-  const text = buildInstagramCaption(p);
+  const action = igBtn.getAttribute("data-ig-action") || "caption";
+  let text = "";
+  let okMsg = "✅ کپی شد";
+  if (action === "link") {
+    text = propertyPageUrl(p);
+    okMsg = "✅ لینک کپی شد";
+  } else if (action === "reel") {
+    text = buildReelOverlayText(p);
+    okMsg = "✅ متن ری‌لز کپی شد";
+  } else {
+    text = buildInstagramCaption(p);
+    okMsg = "✅ کپشن کپی شد";
+  }
   try {
     if (navigator.clipboard && navigator.clipboard.writeText) {
       await navigator.clipboard.writeText(text);
     } else {
       forceCopyText(text);
     }
-    showCopySuccess(igBtn, "✅ کپشن کپی شد");
+    showCopySuccess(igBtn, okMsg);
   } catch (err) {
     forceCopyText(text);
-    showCopySuccess(igBtn, "✅ کپشن کپی شد");
+    showCopySuccess(igBtn, okMsg);
   }
 });
 
