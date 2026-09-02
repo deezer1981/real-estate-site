@@ -403,7 +403,7 @@ function buildInstagramCaption(p) {
   if (p.documents) lines.push(`مدارک: ${String(p.documents).trim()}`);
 
   lines.push("");
-  lines.push("📞 تماس با دفتر اطلس: ۰۹۱۰ ۶۹۴ ۳۲۲۰");
+  lines.push("📞 تماس با دفتر اطلس: 0910 694 3220");
 
   // لینک صفحه آگهی
   let link = "https://atlas-amlak.ir/";
@@ -418,7 +418,16 @@ function buildInstagramCaption(p) {
   lines.push(link);
 
   lines.push("");
-  lines.push("#املاک_باغستان #خادم‌آباد #شهریار #آپارتمان_فروشی #اطلس_املاک #خرید_آپارتمان_شهریار #فایل_روز");
+  // هشتگ‌ها: ثابت + نوع معامله
+  const tags = ["#املاک_باغستان", "#خادم‌آباد", "#شهریار", "#اطلس_املاک", "#فایل_روز"];
+  if (p.deal_type === "فروش") {
+    tags.push("#آپارتمان_فروشی", "#خرید_آپارتمان_شهریار", "#خرید_ملک_شهریار");
+  } else {
+    tags.push("#رهن_اجاره", "#رهن_اجاره_شهریار", "#اجاره_آپارتمان");
+  }
+  if ((p.property_type || "").includes("زمین")) tags.push("#زمین_فروشی");
+  if ((p.property_type || "").includes("باغ")) tags.push("#باغ_ویلا", "#باغچه");
+  lines.push(tags.join(" "));
 
   return lines.join("\n");
 }
