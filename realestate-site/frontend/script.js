@@ -1897,62 +1897,6 @@ document.querySelectorAll(".quick-card[href='#listings']").forEach((card) => {
 applyMenuOverrides();
 
 
-// --- کاروسل خودکار هیرو (فقط موبایل) ---
-(function initHeroCarousel() {
-  // فقط روی موبایل فعال باشد — دسکتاپ تک‌عکس می‌ماند
-  if (window.matchMedia("(min-width: 721px)").matches) return;
+// --- هیرو ثابت: کاروسل غیرفعال (سرعت بالاتر، بدون لود عکس‌های about) ---
+// اسلایدهای about/IMG*.jpg دیگر در HTML نیستند؛ فقط office.jpg نمایش داده می‌شود.
 
-  const track = document.getElementById("carouselTrack");
-  const dotsWrap = document.getElementById("carouselDots");
-  if (!track || !dotsWrap) return;
-
-  const slides = track.querySelectorAll(".carousel-slide");
-  const dots = dotsWrap.querySelectorAll(".dot");
-  if (slides.length < 2) return;
-
-  let current = 0;
-  const INTERVAL = 4500;
-  let timer = null;
-
-  function goTo(index) {
-    slides[current].classList.remove("active");
-    if (dots[current]) dots[current].classList.remove("active");
-    current = (index + slides.length) % slides.length;
-    slides[current].classList.add("active");
-    if (dots[current]) dots[current].classList.add("active");
-  }
-
-  function next() {
-    goTo(current + 1);
-  }
-
-  function start() {
-    stop();
-    timer = setInterval(next, INTERVAL);
-  }
-
-  function stop() {
-    if (timer) {
-      clearInterval(timer);
-      timer = null;
-    }
-  }
-
-  dots.forEach((dot) => {
-    dot.addEventListener("click", () => {
-      const idx = parseInt(dot.getAttribute("data-index"), 10);
-      if (!Number.isNaN(idx)) {
-        goTo(idx);
-        start();
-      }
-    });
-  });
-
-  const carousel = document.getElementById("heroCarousel");
-  if (carousel) {
-    carousel.addEventListener("mouseenter", stop);
-    carousel.addEventListener("mouseleave", start);
-  }
-
-  start();
-})();

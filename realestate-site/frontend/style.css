@@ -2241,3 +2241,8 @@ body.single-ad-mode .card-more-btn { display: none !important; }
   font-weight: 600;
   margin: 4px 0 2px;
 }
+
+
+/* هدر ثابت — بدون کاروسل */
+.carousel-static .carousel-dots { display: none !important; }
+.carousel-static .carousel-slide { display: block !important; opacity: 1 !important; }
