@@ -1766,6 +1766,11 @@ def render_listing_html(p: dict) -> str:
     extras_html = f'<p class="card-meta card-extras">{escape(extras_txt)}</p>' if extras_txt else ""
     docs_html = f'<p class="card-meta card-docs">📄 مدارک: {docs}</p>' if docs else ""
     m2_html = f'<p class="card-meta card-price-m2">قیمت متری: {m2}</p>' if m2 and _is_sale_like_prop(p) else ""
+    negotiate_html = (
+        '<p class="card-meta card-negotiate">💬 قیمت اعلامی مالک است؛ جای مذاکره دارد</p>'
+        if _is_sale_like_prop(p)
+        else ""
+    )
     agent_html = f'<p class="card-agent">👤 ثبت‌شده توسط: <strong>{agent}</strong></p>' if agent else ""
     date_html = f'<p class="card-date">📅 ثبت: {reg}</p>' if reg else ""
     notes_html = f'<p class="card-meta card-notes">📝 {desc_note}</p>' if desc_note else ""
@@ -1958,6 +1963,7 @@ def render_listing_html(p: dict) -> str:
         {docs_html}
         <p class="card-price">💰 {price}</p>
         {m2_html}
+        {negotiate_html}
         {presale_html}
         {agent_html}
         <div class="card-actions">
