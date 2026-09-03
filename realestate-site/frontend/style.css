@@ -1544,8 +1544,8 @@ a { color: inherit; text-decoration: none; }
     text-align: center;
   }
   .advanced-filter-toggle {
-    font-size: 0.9rem;
-    min-height: 50px;
+    min-height: 56px;
+    padding: 10px 16px;
   }
   .advanced-filters .filter-row-label {
     font-size: 0.92rem;
@@ -2350,4 +2350,46 @@ body.single-ad-mode .card-more-btn { display: none !important; }
   font-weight: 600;
   color: #6B5A3E;
   opacity: 0.92;
+}
+
+
+/* ===== دکمه «فیلتر پیشرفته» در موبایل: دو خط =====
+   روی موبایل، متن کامل ("فیلتر پیشرفته (متراژ، خواب، قیمت، رهن،
+   امکانات)") توی یک خط جا نمی‌شد و دکمه را کش می‌داد. این‌جا متن
+   واقعیِ داخل .toggle-label (که با JS بین حالت باز/بسته عوض می‌شود)
+   نامرئی می‌شود (font-size: 0) و به‌جایش دو خط ثابت با ::before/::after
+   نمایش داده می‌شود: خط اول پررنگ «فیلتر پیشرفته»، خط دوم ریزتر لیست
+   فیلترها. چون این قانون به کلاس «open» (که خودِ اسکریپت روی دکمه
+   می‌گذارد) واکنش نشان می‌دهد، نیازی به تغییر در JS نیست. این بلوک
+   عمداً انتهای فایل است تا از قانون کلی ::before بالاتر (که فقط آیکون
+   ⚙️ اضافه می‌کند) در موبایل جلو بزند؛ دسکتاپ دست‌نخورده و تک‌خط می‌ماند. */
+@media (max-width: 720px) {
+  .advanced-filter-toggle .toggle-label {
+    font-size: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    line-height: 1.3;
+  }
+  .advanced-filter-toggle .toggle-label::before {
+    content: "⚙️ فیلتر پیشرفته";
+    font-size: 0.94rem;
+    font-weight: 800;
+    display: block;
+  }
+  .advanced-filter-toggle .toggle-label::after {
+    content: "متراژ، خواب، قیمت، رهن، امکانات";
+    font-size: 0.73rem;
+    font-weight: 600;
+    opacity: 0.82;
+    display: block;
+  }
+  .advanced-filter-toggle.open .toggle-label::before {
+    content: "⚙️ بستن فیلتر پیشرفته";
+  }
+  .advanced-filter-toggle.open .toggle-label::after {
+    content: "";
+    display: none;
+  }
 }
