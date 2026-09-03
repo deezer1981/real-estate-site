@@ -463,6 +463,24 @@ a { color: inherit; text-decoration: none; }
 }
 .loading { color: #777; grid-column: 1 / -1; text-align: center; padding: 40px 0; }
 
+/* ===== یکدست‌سازی ارتفاع کارت‌ها در هر ردیف گرید =====
+   script.js هر کارت را داخل <div style="width:100%"> می‌گذارد.
+   CSS Grid به‌صورت پیش‌فرض این divها را هم‌قد می‌کند (align-items: stretch)
+   ولی خودِ کارت داخلش (تگ article.card) به‌صورت پیش‌فرض فقط به اندازه‌ی
+   محتوایش بلند می‌ماند و به قد بیرونی کشیده نمی‌شود. با تبدیل هر دو به
+   flex-column و flex:1 روی کارت، کارت‌های هر ردیف دقیقاً هم‌قد می‌شوند و
+   دکمه‌های تماس/پیام هم همیشه ته کارت می‌چسبند، فارغ از کوتاه/بلند بودن متن. */
+.grid > div {
+  display: flex;
+  flex-direction: column;
+}
+.grid > div > .card {
+  flex: 1 1 auto;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
 .load-more-wrap { text-align: center; margin-top: 32px; }
 .load-more-btn {
   background: transparent;
@@ -496,6 +514,7 @@ a { color: inherit; text-decoration: none; }
   aspect-ratio: 4 / 3;
   background: linear-gradient(145deg, #FBF3E6, #F0E4CE 55%, #E8D9B8);
   overflow: hidden;
+  flex-shrink: 0;
 }
 .card-image {
   display: block;
@@ -615,6 +634,8 @@ a { color: inherit; text-decoration: none; }
   padding: 16px 18px;
   display: flex;
   flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
 }
 .card-body .card-title { order: 1; }
 .card-body .card-address { order: 2; }
@@ -824,7 +845,8 @@ a { color: inherit; text-decoration: none; }
 .card-actions {
   display: flex;
   gap: 10px;
-  margin-top: 18px;
+  margin-top: auto;
+  padding-top: 18px;
 }
 .agent-call-btn,
 .agent-msg-btn {
