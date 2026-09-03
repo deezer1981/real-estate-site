@@ -341,6 +341,60 @@ def _slugify_local(raw: str, fallback: str = "") -> str:
     return fb or "local"
 
 
+# نام ماه‌های شمسی → شماره (برای تاریخ‌های مثل ۱۲/شهریور/۱۴۰۵)
+_JALALI_MONTHS = {
+    "فروردین": 1, "اردیبهشت": 2, "خرداد": 3, "تیر": 4,
+    "مرداد": 5, "شهریور": 6, "مهر": 7, "آبان": 8,
+    "آذر": 9, "دی": 10, "بهمن": 11, "اسفند": 12,
+}
+
+
+def _fa_digits_to_en(s: str) -> str:
+    """تبدیل ارقام فارسی/عربی به انگلیسی."""
+    if not s:
+        return ""
+    table = str.maketrans("۰۱۲۳۴۵۶۷۸۹٠١٢٣٤٥٦٧٨٩", "01234567890123456789")
+    return str(s).translate(table)
+
+
+def normalize_jalali_date(raw: str) -> str:
+    """تاریخ ثبت را به فرم استاندارد YYYY/MM/DD تبدیل می‌کند.
+
+    پشتیبانی از:
+      - 1405/06/12
+      - 12/شهریور/1405
+      - 1405/شهریور/12
+      - ارقام فارسی
+    اگر قابل تشخیص نباشد همان متن خام برمی‌گردد.
+    """
+    s = _fa_digits_to_en((raw or "").strip())
+    if not s:
+        return ""
+    # از قبل استاندارد
+    m = re.match(r"^(\d{4})/(\d{1,2})/(\d{1,2})(?:\s+(\d{1,2}):(\d{1,2}))?$", s)
+    if m:
+        y, mo, d = int(m.group(1)), int(m.group(2)), int(m.group(3))
+        out = f"{y:04d}/{mo:02d}/{d:02d}"
+        if m.group(4) is not None:
+            out += f" {int(m.group(4)):02d}:{int(m.group(5) or 0):02d}"
+        return out
+    # روز/نام‌ماه/سال  →  12/شهریور/1405
+    m = re.match(r"^(\d{1,2})/([^\s/]+)/(\d{4})$", s)
+    if m:
+        d, mon_name, y = int(m.group(1)), m.group(2).strip(), int(m.group(3))
+        mo = _JALALI_MONTHS.get(mon_name)
+        if mo:
+            return f"{y:04d}/{mo:02d}/{d:02d}"
+    # سال/نام‌ماه/روز  →  1405/شهریور/12
+    m = re.match(r"^(\d{4})/([^\s/]+)/(\d{1,2})$", s)
+    if m:
+        y, mon_name, d = int(m.group(1)), m.group(2).strip(), int(m.group(3))
+        mo = _JALALI_MONTHS.get(mon_name)
+        if mo:
+            return f"{y:04d}/{mo:02d}/{d:02d}"
+    return s
+
+
 def row_to_local(row: dict) -> dict:
     """تبدیل ردیف تب محله‌گردی به دیکشنری سازگار با اسنپ‌شات."""
     code = (row.get("کد") or "").strip()
@@ -349,7 +403,7 @@ def row_to_local(row: dict) -> dict:
     address = (row.get("آدرس") or "").strip()
     text = (row.get("متن") or "").strip()
     image = _normalize_local_image(row.get("عکس") or "")
-    registered = (row.get("تاریخ ثبت") or "").strip()
+    registered = normalize_jalali_date(row.get("تاریخ ثبت") or "")
     link = (row.get("لینک") or "").strip()
     phone = (row.get("تلفن") or "").strip()
     hours = (row.get("ساعت") or row.get("ساعات") or row.get("ساعت کاری") or "").strip()
@@ -1210,9 +1264,11 @@ def update_snapshot():
     print(f"تعداد کارت محله‌گردی: {len(local_props)}")
 
     def _parse_reg(s):
+        # اول نرمال‌سازی (پشتیبانی از ۱۲/شهریور/۱۴۰۵ و ارقام فارسی)
+        s = normalize_jalali_date(str(s or "").strip())
         m = re.match(
             r"^(\d{4})/(\d{1,2})/(\d{1,2})(?:\s+(\d{1,2}):(\d{1,2}))?",
-            str(s or "").strip(),
+            s,
         )
         if not m:
             return 0
