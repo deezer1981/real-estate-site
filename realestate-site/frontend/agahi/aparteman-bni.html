@@ -81,47 +81,12 @@
   }
   .agahi-bottom-back a:hover { background: #B8894F; color: #fff; }
 
-  /* فوتر برند — نوار رنگی بالا + لوگوی دایره‌ای + لینک‌های پیلی */
-  .agahi-footer {
-    margin-top: 0; padding: 0; text-align: center;
-    background: linear-gradient(180deg, #FFFCFA 0%, #F3EDE3 100%);
-    border: 1px solid #E0D5C4; border-radius: 20px;
-    color: #57503F; font-size: 0.9rem; line-height: 1.75;
-    box-shadow: 0 8px 26px rgba(32,28,21,0.08); overflow: hidden;
+  /* فوتر این صفحه دیگه سفارشی نیست — از همون .site-footer اصلی سایت
+     استفاده می‌کنه (در style.css تعریف شده) تا با بقیه‌ی سایت یکدست باشه. */
+  .agahi-page .site-footer {
+    margin: 0 -14px -28px;
+    border-radius: 20px 20px 0 0;
   }
-  .agahi-footer::before {
-    content: ""; display: block; height: 4px;
-    background: linear-gradient(90deg, #B8894F 0%, #4A6B5F 100%);
-  }
-  .agahi-footer-inner { padding: 24px 20px 22px; }
-  .agahi-footer-logo {
-    width: 50px; height: 50px; border-radius: 50%;
-    background: #fff; border: 1px solid #E8DFD0;
-    display: flex; align-items: center; justify-content: center;
-    margin: 0 auto 12px; font-size: 1.4rem;
-    box-shadow: 0 4px 12px rgba(32,28,21,0.06);
-  }
-  .agahi-footer strong { color: #201C15; display: block; margin-bottom: 6px; font-size: 1.1rem; }
-  .agahi-footer .footer-tagline { margin: 0 0 14px; color: #6B6358; }
-  .agahi-footer .phone-row {
-    display: inline-flex; align-items: center; gap: 8px;
-    background: rgba(74,107,95,0.10); padding: 8px 16px; border-radius: 999px; margin: 0 0 6px;
-  }
-  .agahi-footer a { color: #201C15; font-weight: 700; text-decoration: none; }
-  .agahi-footer .phone { direction: ltr; unicode-bidi: embed; font-weight: 800; font-size: 1.03rem; }
-  .agahi-footer .hours { margin: 0 0 16px; color: #8A8070; font-size: 0.82rem; }
-  .agahi-footer-links {
-    display: flex; flex-wrap: wrap; justify-content: center; gap: 8px;
-    margin-top: 6px; padding-top: 16px; border-top: 1px dashed #E0D5C4;
-  }
-  .agahi-footer-links a {
-    font-size: 0.84rem; color: #6B6358; font-weight: 600;
-    padding: 6px 13px; border-radius: 999px; background: #fff; border: 1px solid #EDE4D3;
-    transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
-  }
-  .agahi-footer-links a:hover { background: #FBF6EC; color: #B8894F; border-color: #D9CDB4; }
-  .agahi-footer-site { margin: 16px 0 0; font-size: 0.84rem; }
-  .agahi-footer-site a { color: #B8894F; }
 
   /* دکمه‌های تماس/پیام داخل کارت کمی نرم‌تر روی این صفحه */
   .agahi-page .card-actions { gap: 10px; }
@@ -179,20 +144,54 @@ https://divar.ir/v/gaLK0D6y
     <a href="../"><span class="agahi-back-icon">←</span> بازگشت به صفحه اصلی سایت</a>
   </div>
 
-  <footer class="agahi-footer">
-    <div class="agahi-footer-inner">
-      <div class="agahi-footer-logo">🏠</div>
-      <strong>گروه مشاورین املاک اطلس</strong>
-      <p class="footer-tagline">خرید، فروش، رهن و اجاره در خادم‌آباد، باغستان و شهریار</p>
-      <div class="phone-row">📞 <a class="phone" href="tel:+989106943220" dir="ltr">0910 694 3220</a></div>
-      <p class="hours">ساعات پاسخگویی: همه‌روزه ۱۰ صبح تا ۹ شب</p>
-      <div class="agahi-footer-links">
-        <a href="../">صفحه اصلی</a>
+  <footer class="site-footer">
+    <div class="wrap footer-inner">
+      <div class="footer-brand">
+        <strong>گروه مشاورین املاک اطلس</strong>
+        <p>خرید، فروش، رهن و اجاره در خادم‌آباد، باغستان و شهریار</p>
+        <p class="phone-row footer-brand-phone">📞 <a class="phone-ltr" href="tel:+989106943220" dir="ltr">0910 694 3220</a></p>
+        <p class="footer-hours footer-brand-hours">ساعات پاسخگویی: همه‌روزه ۱۰ صبح تا ۹ شب</p>
+      </div>
+      <div class="footer-links">
+        <a href="../#listings">آگهی‌ها</a>
+        <a href="../#contact">تماس با ما</a>
         <a href="../about.html">درباره دفتر</a>
         <a href="../baghestan.html">معرفی باغستان</a>
         <a href="../bagh-villa.html">باغ و ویلا</a>
+        <a href="../reviews.html">نظرات مشتریان</a>
       </div>
-      <p class="agahi-footer-site"><a href="../">atlas-amlak.ir</a></p>
+      <div class="footer-meta">
+        <div class="footer-socials">
+          <a href="https://t.me/KhademAbad_RealEstate_bot" target="_blank" rel="noopener" class="footer-social-item footer-telegram-item">
+            <span class="footer-social-icon telegram">
+              <svg viewBox="0 0 448 512" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <path fill="#fff" d="M446.7 98.6 379.1 417.4c-5.1 22.5-18.4 28.1-37.3 17.5l-103-75.9-49.7 47.8c-5.5 5.5-10.1 10.1-20.7 10.1l7.4-104.9 190.9-172.5c8.3-7.4-1.8-11.5-12.9-4.1L117.8 284 15.3 252.1c-22.3-6.9-22.7-22.3 4.6-33L418.2 65.4c18.6-6.9 34.9 4.1 28.5 33.2z"/>
+              </svg>
+            </span>
+            <span class="footer-social-label">تلگرام</span>
+          </a>
+          <a href="https://www.instagram.com/shahryar.estate.guide" target="_blank" rel="noopener" class="footer-social-item">
+            <span class="footer-social-icon instagram">
+              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <rect x="2.5" y="2.5" width="19" height="19" rx="6" stroke="#fff" stroke-width="2"/>
+                <circle cx="12" cy="12" r="4.6" stroke="#fff" stroke-width="2"/>
+                <circle cx="17.6" cy="6.4" r="1.3" fill="#fff"/>
+              </svg>
+            </span>
+            <span class="footer-social-label">اینستاگرام</span>
+          </a>
+          <a href="mailto:mohsen1618k@gmail.com" class="footer-social-item">
+            <span class="footer-social-icon email">
+              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <rect x="2.5" y="5" width="19" height="14" rx="2.2" stroke="#fff" stroke-width="2"/>
+                <path d="M4 7l8 6.2L20 7" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </span>
+            <span class="footer-social-label">ایمیل</span>
+          </a>
+        </div>
+        <p class="footer-copy">© اطلس املاک</p>
+      </div>
     </div>
   </footer>
 </main>
