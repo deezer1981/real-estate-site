@@ -1536,12 +1536,19 @@ a { color: inherit; text-decoration: none; }
     justify-content: flex-start;
   }
   .filter-chip {
-    padding: 8px 16px;
-    min-height: 38px;
-    font-size: 0.84rem;
+    padding: 9px 16px;
+    min-height: 42px;
+    font-size: 0.86rem;
     flex: 1 1 auto;
     min-width: 0;
     text-align: center;
+  }
+  .advanced-filter-toggle {
+    font-size: 0.9rem;
+    min-height: 50px;
+  }
+  .advanced-filters .filter-row-label {
+    font-size: 0.92rem;
   }
   .filter-search-inner {
     padding: 3px 3px 3px 10px;
@@ -1698,14 +1705,14 @@ a { color: inherit; text-decoration: none; }
   margin-bottom: 12px;
 }
 .filter-chip {
-  border: 1.5px solid var(--brass);
-  background: #fff;
+  border: 2px solid var(--brass);
+  background: #FBF6EC;
   color: var(--ink);
   font-family: inherit;
   font-weight: 700;
-  font-size: 0.88rem;
-  padding: 8px 22px;
-  min-height: 40px;
+  font-size: 0.9rem;
+  padding: 9px 22px;
+  min-height: 42px;
   border-radius: 999px;
   cursor: pointer;
   display: inline-flex;
@@ -1713,9 +1720,17 @@ a { color: inherit; text-decoration: none; }
   justify-content: center;
   line-height: 1.2;
   min-width: 88px;
+  box-shadow: 0 2px 6px rgba(184, 137, 79, 0.12);
+  transition: background 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease;
 }
-.filter-chip:hover { background: #F7F1E6; }
-.filter-chip.active { background: var(--ink); color: #FFFCFA; border-color: var(--ink); }
+.filter-chip:hover { background: #F3E4C8; box-shadow: 0 3px 10px rgba(184, 137, 79, 0.22); }
+.filter-chip:active { transform: scale(0.97); }
+.filter-chip.active {
+  background: var(--ink);
+  color: #FFFCFA;
+  border-color: var(--ink);
+  box-shadow: 0 3px 10px rgba(20,33,61,0.28);
+}
 
 /* نوار جستجوی مینیمال — همیشه باز */
 .filter-search-bar {
@@ -2048,38 +2063,66 @@ body.single-ad-mode .card-image-wrap {
   }
 }
 
-/* ===== دکمه/پنل «فیلتر پیشرفته» (جمع‌شونده در موبایل و دسکتاپ) ===== */
+/* ===== دکمه/پنل «فیلتر پیشرفته» (جمع‌شونده در موبایل و دسکتاپ) =====
+   قبلاً یک دکمه‌ی سفید با border نقطه‌چین کم‌رنگ بود که توی پس‌زمینه‌ی
+   روشن صفحه گم می‌شد. حالا دکمه‌ی توپر سرمه‌ای با سایه‌ی محسوس، و پنلِ
+   بازشو هم یک کارت جدا با پس‌زمینه‌ی سفید و سایه می‌گیرد تا از پس‌زمینه
+   کاملاً جدا دیده شود — هم در موبایل هم دسکتاپ. */
 .advanced-filter-toggle {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
+  gap: 8px;
   width: 100%;
-  background: #fff;
-  border: 1.5px dashed #D9CDB4;
-  color: var(--ink);
+  background: linear-gradient(135deg, var(--ink) 0%, #1c2c50 100%);
+  border: none;
+  color: #FFFCFA;
   font-family: inherit;
-  font-weight: 700;
-  font-size: 0.86rem;
-  padding: 11px 14px;
-  min-height: 44px;
-  border-radius: 10px;
+  font-weight: 800;
+  font-size: 0.92rem;
+  padding: 14px 16px;
+  min-height: 50px;
+  border-radius: 12px;
   cursor: pointer;
-  margin: 4px 0 12px;
-  transition: background 0.15s ease, border-color 0.15s ease;
+  margin: 8px 0 14px;
+  box-shadow: 0 4px 14px rgba(20,33,61,0.24);
+  transition: filter 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease;
 }
-.advanced-filter-toggle:hover { background: #F7F1E6; }
+.advanced-filter-toggle:hover { filter: brightness(1.12); box-shadow: 0 6px 18px rgba(20,33,61,0.32); }
+.advanced-filter-toggle:active { transform: scale(0.98); }
+.advanced-filter-toggle .toggle-label::before {
+  content: "⚙️";
+  margin-inline-end: 6px;
+}
 .advanced-filter-toggle .chevron {
-  display: inline-block;
-  transition: transform 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.14);
+  transition: transform 0.2s ease, background 0.15s ease, color 0.15s ease;
   font-size: 0.75rem;
   color: var(--brass);
 }
-.advanced-filter-toggle.open .chevron { transform: rotate(180deg); }
+.advanced-filter-toggle.open .chevron {
+  transform: rotate(180deg);
+  background: var(--brass);
+  color: var(--ink);
+}
 
 /* موبایل و دسکتاپ یکسان: پنل پیش‌فرض بسته، با کلاس open باز می‌شود */
 .advanced-filters { display: none; }
-.advanced-filters.open { display: block; }
+.advanced-filters.open {
+  display: block;
+  background: #FFFFFF;
+  border: 1px solid #ECE0C8;
+  border-radius: 14px;
+  padding: 2px 16px 6px;
+  margin: 0 0 16px;
+  box-shadow: 0 8px 24px rgba(20,33,61,0.08);
+}
 
 /* --- فیلتر پیشرفته: هر ردیف آکاردئونی (فقط یکی هم‌زمان باز) --- */
 .advanced-filters .filter-row {
@@ -2095,24 +2138,35 @@ body.single-ad-mode .card-image-wrap {
   align-items: center;
   justify-content: space-between;
   cursor: pointer;
-  padding: 13px 2px;
-  font-size: 0.85rem;
+  padding: 14px 2px;
+  font-size: 0.94rem;
+  font-weight: 800;
+  color: var(--ink);
   user-select: none;
 }
 .advanced-filters .filter-row-label::after {
   content: "▾";
-  font-size: 0.72rem;
-  color: var(--brass);
+  font-size: 0.8rem;
+  font-weight: 800;
+  color: #fff;
+  background: var(--brass);
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   transition: transform 0.2s ease;
   margin-inline-start: 8px;
+  flex-shrink: 0;
 }
 .advanced-filters .filter-row.open .filter-row-label::after {
   transform: rotate(180deg);
 }
 .advanced-filters .filter-row-label .row-selected {
-  font-weight: 500;
+  font-weight: 700;
   color: var(--brass);
-  font-size: 0.82rem;
+  font-size: 0.84rem;
   margin-inline-start: auto;
   margin-inline-end: 8px;
 }
