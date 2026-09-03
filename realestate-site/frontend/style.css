@@ -30,7 +30,7 @@ a { color: inherit; text-decoration: none; }
 
 /* ===================== Header ===================== */
 .site-header {
-  background: var(--ink);
+  background: linear-gradient(135deg, var(--ink) 0%, #1a2847 100%);
   color: var(--paper);
   position: sticky;
   top: 0;
@@ -339,7 +339,7 @@ a { color: inherit; text-decoration: none; }
   width: 54px;
   height: 54px;
   border-radius: 50%;
-  background: rgba(184, 137, 79, 0.12);
+  background: radial-gradient(circle at 30% 30%, rgba(184,137,79,0.24), rgba(184,137,79,0.08));
   color: var(--brass);
   display: flex;
   align-items: center;
@@ -354,7 +354,7 @@ a { color: inherit; text-decoration: none; }
 
 /* ===================== Hero / search ===================== */
 .hero {
-  background: var(--ink);
+  background: linear-gradient(160deg, var(--ink) 0%, #0f1930 100%);
   color: var(--paper);
   padding: 48px 0 56px;
   position: relative;
@@ -412,7 +412,7 @@ a { color: inherit; text-decoration: none; }
 }
 .search-bar input:focus, .search-bar select:focus { outline: 2px solid var(--brass); }
 .search-bar button {
-  background: var(--brass);
+  background: linear-gradient(135deg, #C99A5D, var(--brass));
   color: var(--ink);
   border: none;
   font-weight: 700;
@@ -506,6 +506,15 @@ a { color: inherit; text-decoration: none; }
   border: 1px solid rgba(20,33,61,0.05);
 }
 .card:hover { transform: translateY(-4px); box-shadow: 0 12px 24px rgba(20,33,61,0.12); }
+.card::before {
+  content: "";
+  display: block;
+  height: 3px;
+  background: linear-gradient(90deg, var(--brass) 0%, var(--sage) 100%);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+.card:hover::before { opacity: 1; }
 
 /* ===== عکس آگهی ===== */
 .card-image-wrap {
