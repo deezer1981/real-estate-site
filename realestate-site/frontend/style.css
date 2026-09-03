@@ -2246,3 +2246,32 @@ body.single-ad-mode .card-more-btn { display: none !important; }
 /* هدر ثابت — بدون کاروسل */
 .carousel-static .carousel-dots { display: none !important; }
 .carousel-static .carousel-slide { display: block !important; opacity: 1 !important; }
+
+
+/* هیرو واکنش‌گرا: picture + img یکسان پر می‌شوند */
+.carousel-slide picture,
+.page-top-visual .carousel-slide picture {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.carousel-slide picture img,
+.page-top-visual .carousel-slide picture img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+}
+/* گالری بدون کپشن خالی */
+.page-gallery figcaption:empty { display: none; }
+
+
+/* جمله مذاکره زیر قیمت فروش */
+.card-negotiate {
+  margin: 2px 0 8px;
+  font-size: 0.86rem;
+  font-weight: 600;
+  color: #6B5A3E;
+  opacity: 0.92;
+}

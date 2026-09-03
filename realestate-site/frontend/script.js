@@ -704,6 +704,9 @@ function propertyCard(p) {
   const priceM2Line = (isSaleLike(p) && saleM2)
     ? `<p class="card-meta card-price-m2">قیمت متری: ${saleM2}</p>`
     : "";
+  const negotiateLine = isSaleLike(p)
+    ? `<p class="card-meta card-negotiate">💬 قیمت اعلامی مالک است؛ جای مذاکره دارد</p>`
+    : "";
 
   const extras = buildExtras(p);
   const shortAddress = truncateAddress(p.address);
@@ -791,6 +794,7 @@ function propertyCard(p) {
           <h3 class="card-title">${titleType} ${titleCode}</h3>
           ${shortAddress ? `<p class="card-meta card-address">📍 ${shortAddress}</p>` : ""}
           ${priceMain}
+          ${negotiateLine}
           ${moreBtn}
           ${midBlock}
           ${notesBlock}
