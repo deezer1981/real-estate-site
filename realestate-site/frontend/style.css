@@ -1827,11 +1827,17 @@ a { color: inherit; text-decoration: none; }
   font-size: 0.86rem;
   box-sizing: border-box;
 }
-/* ردیف آخر (محله‌گردی) تمام‌عرض تا متقارن بماند */
-.filter-chips-deal .filter-chip:last-child {
-  grid-column: 1 / -1;
+/* موبایل: چیپ محله‌گردی مخفی — لینک در فوتر */
+.footer-link-local { display: none; }
+@media (max-width: 720px) {
+  .filter-chips-deal .filter-chip-local {
+    display: none !important;
+  }
+  .footer-link-local {
+    display: block !important;
+  }
 }
-@media (min-width: 640px) {
+@media (min-width: 721px) {
   .filter-chips-deal {
     grid-template-columns: repeat(5, minmax(0, 1fr));
     gap: 10px;
@@ -1840,8 +1846,11 @@ a { color: inherit; text-decoration: none; }
     font-size: 0.9rem;
     padding: 9px 12px;
   }
-  .filter-chips-deal .filter-chip:last-child {
-    grid-column: auto;
+  .filter-chips-deal .filter-chip-local {
+    display: inline-flex !important;
+  }
+  .footer-link-local {
+    display: none !important;
   }
 }
 
