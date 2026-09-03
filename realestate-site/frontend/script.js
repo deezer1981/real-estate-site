@@ -111,14 +111,36 @@ function sortNewestFirst(list) {
   // ۱) پین‌شده‌ها اول (عدد pin_order کوچکتر = اولویت بالاتر)
   // ۲) بعد تاریخ ثبت (جدیدتر بالاتر)
   // ۳) در نهایت کد
+  const faToEn = (str) =>
+    String(str || "").replace(/[۰-۹]/g, (d) => "۰۱۲۳۴۵۶۷۸۹".indexOf(d))
+      .replace(/[٠-٩]/g, (d) => "٠١٢٣٤٥٦٧٨٩".indexOf(d));
+  const MONTHS = {
+    فروردین: 1, اردیبهشت: 2, خرداد: 3, تیر: 4,
+    مرداد: 5, شهریور: 6, مهر: 7, آبان: 8,
+    آذر: 9, دی: 10, بهمن: 11, اسفند: 12,
+  };
   const parseReg = (s) => {
-    const m = String(s || "").trim().match(
-      /^(\d{4})\/(\d{1,2})\/(\d{1,2})(?:\s+(\d{1,2}):(\d{1,2}))?/
-    );
-    if (!m) return 0;
-    const y = +m[1], mo = +m[2], d = +m[3];
-    const hh = +(m[4] || 0), mm = +(m[5] || 0);
-    return y * 1e10 + mo * 1e8 + d * 1e6 + hh * 1e4 + mm * 100;
+    let t = faToEn(s).trim();
+    // YYYY/MM/DD
+    let m = t.match(/^(\d{4})\/(\d{1,2})\/(\d{1,2})(?:\s+(\d{1,2}):(\d{1,2}))?/);
+    if (m) {
+      const y = +m[1], mo = +m[2], d = +m[3];
+      const hh = +(m[4] || 0), mm = +(m[5] || 0);
+      return y * 1e10 + mo * 1e8 + d * 1e6 + hh * 1e4 + mm * 100;
+    }
+    // D/ماه/YYYY  مثل 12/شهریور/1405
+    m = t.match(/^(\d{1,2})\/([^\s/]+)\/(\d{4})$/);
+    if (m && MONTHS[m[2]]) {
+      const d = +m[1], mo = MONTHS[m[2]], y = +m[3];
+      return y * 1e10 + mo * 1e8 + d * 1e6;
+    }
+    // YYYY/ماه/D
+    m = t.match(/^(\d{4})\/([^\s/]+)\/(\d{1,2})$/);
+    if (m && MONTHS[m[2]]) {
+      const y = +m[1], mo = MONTHS[m[2]], d = +m[3];
+      return y * 1e10 + mo * 1e8 + d * 1e6;
+    }
+    return 0;
   };
   const codeNum = (x) => {
     const d = String(x.code || "").replace(/\D/g, "");
