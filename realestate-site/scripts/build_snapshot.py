@@ -1801,6 +1801,13 @@ def render_listing_html(p: dict) -> str:
         f"سلام، در مورد آگهی کد {code} از سایت اطلس املاک پیام می‌دم."
     )
 
+    # متغیرهای از پیش محاسبه‌شده (سازگار با Python 3.11 — بدون \ داخل f-string)
+    _presale = _is_presale_prop(p)
+    _sale_like = _is_sale_like_prop(p)
+    card_cls = "card-presale" if _presale else ("card-sale" if _sale_like else "card-rent")
+    deal_tag_cls = "presale" if _presale else ("sale" if _sale_like else "rent")
+    deal_tag_label = "پیش‌فروش" if _presale else deal
+
     return f"""<!DOCTYPE html>
 <html lang="fa" dir="rtl">
 <head>
@@ -1934,11 +1941,11 @@ def render_listing_html(p: dict) -> str:
   </div>
 
   <div class="agahi-card-wrap">
-    <article class="card {'card-presale' if _is_presale_prop(p) else ('card-sale' if _is_sale_like_prop(p) else 'card-rent')}">
+    <article class="card {card_cls}">
       <div class="card-image-wrap">
         <img class="card-image" src="{img_src}" alt="{label} کد {code}" width="400" height="280" loading="eager">
         <div class="card-image-overlay">
-          <span class="deal-tag {'presale' if _is_presale_prop(p) else ('sale' if _is_sale_like_prop(p) else 'rent')}">{'پیش\u200cفروش' if _is_presale_prop(p) else deal}</span>
+          <span class="deal-tag {deal_tag_cls}">{deal_tag_label}</span>
           {'' if is_active else f'<span class="status-tag">{escape(status_label)}</span>'}
         </div>
       </div>
