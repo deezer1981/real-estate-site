@@ -1810,24 +1810,38 @@ a { color: inherit; text-decoration: none; }
   box-shadow: 0 2px 8px rgba(184, 137, 79, 0.28);
 }
 
+/* چیپ نوع معامله: شبکه مرتب به‌جای یک خط فشرده */
 .filter-chips-deal {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 8px;
   margin-bottom: 14px;
+  flex-wrap: unset;
+  overflow: visible;
 }
-@media (max-width: 520px) {
+.filter-chips-deal .filter-chip {
+  width: 100%;
+  min-width: 0;
+  justify-content: center;
+  padding: 9px 10px;
+  font-size: 0.86rem;
+  box-sizing: border-box;
+}
+/* ردیف آخر (محله‌گردی) تمام‌عرض تا متقارن بماند */
+.filter-chips-deal .filter-chip:last-child {
+  grid-column: 1 / -1;
+}
+@media (min-width: 640px) {
   .filter-chips-deal {
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-    padding-bottom: 2px;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 10px;
   }
-  .filter-chips-deal::-webkit-scrollbar { display: none; }
   .filter-chips-deal .filter-chip {
-    flex: 0 0 auto;
-    min-width: 0;
-    padding: 8px 14px;
-    font-size: 0.84rem;
+    font-size: 0.9rem;
+    padding: 9px 12px;
+  }
+  .filter-chips-deal .filter-chip:last-child {
+    grid-column: auto;
   }
 }
 
