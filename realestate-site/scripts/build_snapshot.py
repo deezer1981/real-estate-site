@@ -732,6 +732,84 @@ def _parse_pin_order(raw: str) -> int | None:
     return None
 
 
+def _extract_presale_fields(row: dict, notes: str) -> tuple[dict, str]:
+    """فیلدهای پیش‌فروش را از ستون یا توضیحات برمی‌دارد و از notes جدا می‌کند.
+
+    برمی‌گرداند: (dict فیلدها, notes تمیز بدون خطوط پیش‌فروش)
+    """
+    out: dict = {}
+
+    def _from_row(*names: str) -> str:
+        for n in names:
+            v = (_safe_get(row, n) or (row.get(n) or "")).strip()
+            if v and v not in ("-", "ندارم", "ندارد"):
+                return v
+        return ""
+
+    delivery = _from_row("زمان تحویل")
+    payment = _from_row("نحوه پرداخت")
+    stage = _from_row("مرحله ساخت")
+
+    clean_lines = []
+    for line in (notes or "").splitlines():
+        s = line.strip()
+        if not s:
+            continue
+        if s in ("[پیش‌فروش]", "پیش‌فروش") or s.startswith("[پیش‌فروش]"):
+            continue
+        m = re.match(r"^(زمان تحویل|نحوه پرداخت|مرحله ساخت)\s*[:：]\s*(.+)$", s)
+        if m:
+            label, val = m.group(1), m.group(2).strip()
+            if label == "زمان تحویل" and not delivery:
+                delivery = val
+            elif label == "نحوه پرداخت" and not payment:
+                payment = val
+            elif label == "مرحله ساخت" and not stage:
+                stage = val
+            continue
+        # همان‌ها ممکن است با | جدا شده باشند
+        if "زمان تحویل" in s or "نحوه پرداخت" in s or "مرحله ساخت" in s:
+            for part in re.split(r"\s*\|\s*", s):
+                mm = re.match(r"^(زمان تحویل|نحوه پرداخت|مرحله ساخت)\s*[:：]\s*(.+)$", part.strip())
+                if mm:
+                    label, val = mm.group(1), mm.group(2).strip()
+                    if label == "زمان تحویل" and not delivery:
+                        delivery = val
+                    elif label == "نحوه پرداخت" and not payment:
+                        payment = val
+                    elif label == "مرحله ساخت" and not stage:
+                        stage = val
+            continue
+        clean_lines.append(s)
+
+    if delivery:
+        out["presale_delivery"] = delivery
+    if payment:
+        out["presale_payment"] = payment
+    if stage:
+        out["presale_stage"] = stage
+    return out, "\n".join(clean_lines).strip()
+
+
+def _row_is_presale(row: dict, deal_type: str, notes: str) -> bool:
+    raw = (
+        _safe_get(row, "نوع معامله")
+        or _safe_get(row, "فروش")
+        or (row.get("نوع معامله") or row.get("فروش") or "")
+        or deal_type
+        or ""
+    )
+    s = str(raw).strip().replace("ي", "ی").replace("‌", "").replace(" ", "")
+    if s == "پیشفروش" or "پیشفروش" in s:
+        return True
+    n = (notes or "").strip()
+    if n.startswith("[پیش‌فروش]") or n.startswith("[پیش فروش]"):
+        return True
+    if any((_safe_get(row, k) or "").strip() for k in ("زمان تحویل", "نحوه پرداخت", "مرحله ساخت")):
+        return True
+    return False
+
+
 def row_to_property(row: dict, deal_type: str) -> dict:
     agent = _strip_phone_like(_safe_get(row, "مشاور"))
     slug_val = (_safe_get(row, "اسلاگ") or (row.get("slug") or "")).strip()
@@ -739,9 +817,27 @@ def row_to_property(row: dict, deal_type: str) -> dict:
     is_active = row.get("_is_active")
     if is_active is None:
         status_label, is_active = normalize_listing_status(status_label)
+
+    # چند نام رایج برای ستون توضیحات در شیت
+    notes = (
+        _safe_get(row, "توضیحات")
+        or _safe_get(row, "توضیح")
+        or _safe_get(row, "شرح")
+        or _safe_get(row, "توضیحات فایل")
+        or (row.get("توضیحات") or row.get("توضیح") or row.get("شرح") or "")
+    )
+    if isinstance(notes, str):
+        notes = notes.strip()
+    else:
+        notes = ""
+
+    is_presale = _row_is_presale(row, deal_type, notes)
+    display_deal = "پیش‌فروش" if is_presale else deal_type
+    presale_fields, clean_notes = _extract_presale_fields(row, notes)
+
     result = {
         "code": _safe_get(row, "کد"),
-        "deal_type": deal_type,
+        "deal_type": display_deal,
         "status": status_label,
         "is_active": bool(is_active),
         "property_type": _safe_get(row, "نوع ملک"),
@@ -755,6 +851,10 @@ def row_to_property(row: dict, deal_type: str) -> dict:
         "agent_name": agent,
         "registered_at": _safe_get(row, "تاریخ ثبت فایل"),
     }
+    if is_presale:
+        result["is_presale"] = True
+        result.update(presale_fields)
+
     if slug_val:
         result["slug"] = slug_val
 
@@ -768,18 +868,8 @@ def row_to_property(row: dict, deal_type: str) -> dict:
         result["pinned"] = True
         result["pin_order"] = pin_order
 
-    # چند نام رایج برای ستون توضیحات در شیت
-    notes = (
-        _safe_get(row, "توضیحات")
-        or _safe_get(row, "توضیح")
-        or _safe_get(row, "شرح")
-        or _safe_get(row, "توضیحات فایل")
-        or (row.get("توضیحات") or row.get("توضیح") or row.get("شرح") or "")
-    )
-    if isinstance(notes, str):
-        notes = notes.strip()
-    if notes:
-        result["description"] = notes
+    if clean_notes:
+        result["description"] = clean_notes
 
     # --- عکس: از شیت بخوان، اگر خالی بود عکس پیش‌فرض بر اساس نوع ملک + معامله بگذار ---
     image_url = _safe_get(row, "عکس")
@@ -792,7 +882,8 @@ def row_to_property(row: dict, deal_type: str) -> dict:
         if is_default_image:
             result["image_is_default"] = True
 
-    if deal_type == "فروش":
+    # پیش‌فروش مثل فروش قیمت دارد
+    if deal_type == "فروش" or is_presale:
         result["price_total"] = _safe_get(row, "قیمت کل") or "توافقی"
         result["price_per_m2"] = _safe_get(row, "قیمت متری")
     else:
@@ -1318,15 +1409,30 @@ def _format_price_per_m2(text: str) -> str:
     return s
 
 
+def _is_presale_prop(p: dict) -> bool:
+    if p.get("is_presale"):
+        return True
+    dt = str(p.get("deal_type") or "").strip().replace("ي", "ی")
+    return dt in ("پیش‌فروش", "پیش فروش")
+
+
+def _is_sale_like_prop(p: dict) -> bool:
+    if _is_presale_prop(p):
+        return True
+    return str(p.get("deal_type") or "").strip() == "فروش"
+
+
 def _listing_label(p: dict) -> str:
     t = (p.get("property_type") or "ملک").strip()
-    if p.get("deal_type") == "فروش":
+    if _is_presale_prop(p):
+        return f"{t} پیش‌فروش"
+    if _is_sale_like_prop(p):
         return f"{t} فروشی"
     return f"رهن و اجاره {t}"
 
 
 def _listing_price_line(p: dict) -> str:
-    if p.get("deal_type") == "فروش":
+    if _is_sale_like_prop(p):
         return _format_sale_total(p.get("price_total") or "") or "توافقی"
     bits = []
     if p.get("rahn") and p.get("rahn") != "-":
@@ -1659,12 +1765,37 @@ def render_listing_html(p: dict) -> str:
 
     extras_html = f'<p class="card-meta card-extras">{escape(extras_txt)}</p>' if extras_txt else ""
     docs_html = f'<p class="card-meta card-docs">📄 مدارک: {docs}</p>' if docs else ""
-    m2_html = f'<p class="card-meta card-price-m2">قیمت متری: {m2}</p>' if m2 and p.get("deal_type") == "فروش" else ""
+    m2_html = f'<p class="card-meta card-price-m2">قیمت متری: {m2}</p>' if m2 and _is_sale_like_prop(p) else ""
     agent_html = f'<p class="card-agent">👤 ثبت‌شده توسط: <strong>{agent}</strong></p>' if agent else ""
     date_html = f'<p class="card-date">📅 ثبت: {reg}</p>' if reg else ""
     notes_html = f'<p class="card-meta card-notes">📝 {desc_note}</p>' if desc_note else ""
     specs_html = f'<p class="card-meta">{escape(specs_txt)}</p>' if specs_txt else ""
     addr_html = f'<p class="card-meta card-address">📍 {addr}</p>' if addr else ""
+    # بلوک جداگانه پیش‌فروش
+    presale_rows = []
+    if p.get("presale_delivery"):
+        presale_rows.append(
+            f'<p class="card-meta card-presale-item">📅 زمان تحویل: <strong>{escape(str(p["presale_delivery"]))}</strong></p>'
+        )
+    if p.get("presale_payment"):
+        presale_rows.append(
+            f'<p class="card-meta card-presale-item">💳 نحوه پرداخت: <strong>{escape(str(p["presale_payment"]))}</strong></p>'
+        )
+    if p.get("presale_stage"):
+        presale_rows.append(
+            f'<p class="card-meta card-presale-item">🏗 مرحله ساخت: <strong>{escape(str(p["presale_stage"]))}</strong></p>'
+        )
+    if _is_presale_prop(p) and presale_rows:
+        presale_html = (
+            '<div class="card-presale-box">'
+            '<p class="card-presale-title">🏗 مشخصات پیش‌فروش</p>'
+            + "".join(presale_rows)
+            + "</div>"
+        )
+    elif _is_presale_prop(p):
+        presale_html = '<p class="card-meta">🏗 پیش‌فروش</p>'
+    else:
+        presale_html = ""
 
     bale_msg = escape(
         f"سلام، در مورد آگهی کد {code} از سایت اطلس املاک پیام می‌دم."
@@ -1803,11 +1934,11 @@ def render_listing_html(p: dict) -> str:
   </div>
 
   <div class="agahi-card-wrap">
-    <article class="card {'card-sale' if p.get('deal_type') == 'فروش' else 'card-rent'}">
+    <article class="card {'card-presale' if _is_presale_prop(p) else ('card-sale' if _is_sale_like_prop(p) else 'card-rent')}">
       <div class="card-image-wrap">
         <img class="card-image" src="{img_src}" alt="{label} کد {code}" width="400" height="280" loading="eager">
         <div class="card-image-overlay">
-          <span class="deal-tag {'sale' if p.get('deal_type') == 'فروش' else 'rent'}">{deal}</span>
+          <span class="deal-tag {'presale' if _is_presale_prop(p) else ('sale' if _is_sale_like_prop(p) else 'rent')}">{'پیش\u200cفروش' if _is_presale_prop(p) else deal}</span>
           {'' if is_active else f'<span class="status-tag">{escape(status_label)}</span>'}
         </div>
       </div>
@@ -1820,6 +1951,7 @@ def render_listing_html(p: dict) -> str:
         {docs_html}
         <p class="card-price">💰 {price}</p>
         {m2_html}
+        {presale_html}
         {agent_html}
         <div class="card-actions">
           <a class="agent-call-btn agent-btn-primary" href="tel:09106943220">📞 مشاوره / بازدید</a>
