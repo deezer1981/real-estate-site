@@ -592,27 +592,27 @@ function localGuideCard(p) {
       </div>`;
   }
 
-  // ترتیب و استایل مثل کارت آگهی: تماس سرمه‌ای (msg) اول، مسیریابی/لینک برنزی (call) دوم
+  // مثل کارت آگهی: call = برنزی primary، msg = سرمه‌ای secondary
   const actions = [];
   if (p.phone) {
     const tel = String(p.phone).replace(/[^\d+۰-۹]/g, "");
     actions.push(
-      `<a class="agent-msg-btn agent-btn-primary" href="tel:${escapeHtml(tel)}">📞 تماس</a>`
+      `<a class="agent-call-btn agent-btn-primary" href="tel:${escapeHtml(tel)}">📞 تماس</a>`
     );
   }
   const linkKind = classifyLocalLink(p.link);
   if (p.link) {
     if (linkKind === "instagram") {
       actions.push(
-        `<a class="agent-call-btn agent-btn-secondary" href="${escapeHtml(normalizeInstagramUrl(p.link))}" target="_blank" rel="noopener">📸 اینستاگرام</a>`
+        `<a class="agent-msg-btn agent-btn-secondary" href="${escapeHtml(normalizeInstagramUrl(p.link))}" target="_blank" rel="noopener">📸 اینستاگرام</a>`
       );
     } else if (linkKind === "maps") {
       actions.push(
-        `<a class="agent-call-btn agent-btn-secondary" href="${escapeHtml(p.link)}" target="_blank" rel="noopener">🗺️ مسیریابی</a>`
+        `<a class="agent-msg-btn agent-btn-secondary" href="${escapeHtml(p.link)}" target="_blank" rel="noopener">🗺️ مسیریابی</a>`
       );
     } else {
       actions.push(
-        `<a class="agent-call-btn agent-btn-secondary" href="${escapeHtml(p.link)}" target="_blank" rel="noopener">🔗 لینک</a>`
+        `<a class="agent-msg-btn agent-btn-secondary" href="${escapeHtml(p.link)}" target="_blank" rel="noopener">🔗 لینک</a>`
       );
     }
   }
@@ -623,8 +623,10 @@ function localGuideCard(p) {
   const phoneText = p.phone
     ? `<p class="card-meta card-phone-text">📞 <span dir="ltr">${escapeHtml(String(p.phone).trim())}</span></p>`
     : "";
+  // ساعت کاری کنار تلفن، داخل بخش توضیحات
   const notesInner = [
     text ? `<p class="card-meta card-notes">📝 ${text}</p>` : "",
+    hoursLine,
     phoneText,
   ].filter(Boolean).join("\n          ");
   const notesBlock = notesInner
@@ -633,11 +635,10 @@ function localGuideCard(p) {
   const moreBtn = notesInner
     ? `<button type="button" class="card-more-btn" aria-expanded="false">اطلاعات بیشتر</button>`
     : "";
-  // دسته و ساعت همیشه بالای دکمه (نه داخل mid جمع‌شونده)
-  const alwaysVisible = [
-    category ? `<p class="card-meta card-local-cat">🏷️ ${category}</p>` : "",
-    hoursLine,
-  ].filter(Boolean).join("\n          ");
+  // دسته همیشه بالای دکمه
+  const alwaysVisible = category
+    ? `<p class="card-meta card-local-cat">🏷️ ${category}</p>`
+    : "";
   const tailBlock = dateLine
     ? `<div class="card-details-tail">${dateLine}</div>`
     : "";

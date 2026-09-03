@@ -338,16 +338,16 @@
       var actions = [];
       if (p.phone) {
         var tel = String(p.phone).replace(/[^\d+۰-۹]/g, "");
-        actions.push('<a class="agent-msg-btn agent-btn-primary" href="tel:' + esc(tel) + '">📞 تماس</a>');
+        actions.push('<a class="agent-call-btn agent-btn-primary" href="tel:' + esc(tel) + '">📞 تماس</a>');
       }
       var kind = linkKind(p.link);
       if (p.link) {
         if (kind === "instagram") {
-          actions.push('<a class="agent-call-btn agent-btn-secondary" href="' + esc(igUrl(p.link)) + '" target="_blank" rel="noopener">📸 اینستاگرام</a>');
+          actions.push('<a class="agent-msg-btn agent-btn-secondary" href="' + esc(igUrl(p.link)) + '" target="_blank" rel="noopener">📸 اینستاگرام</a>');
         } else if (kind === "maps") {
-          actions.push('<a class="agent-call-btn agent-btn-secondary" href="' + esc(p.link) + '" target="_blank" rel="noopener">🗺️ مسیریابی</a>');
+          actions.push('<a class="agent-msg-btn agent-btn-secondary" href="' + esc(p.link) + '" target="_blank" rel="noopener">🗺️ مسیریابی</a>');
         } else {
-          actions.push('<a class="agent-call-btn agent-btn-secondary" href="' + esc(p.link) + '" target="_blank" rel="noopener">🔗 لینک</a>');
+          actions.push('<a class="agent-msg-btn agent-btn-secondary" href="' + esc(p.link) + '" target="_blank" rel="noopener">🔗 لینک</a>');
         }
       }
       var overlay =
@@ -356,14 +356,13 @@
         ? '<div class="card-image-wrap"><img class="card-image" src="' + img + '" alt="' + title + '" loading="lazy" decoding="async" width="400" height="280" onerror="this.closest(\'.card-image-wrap\').classList.add(\'no-image\'); this.remove();"><div class="card-image-fallback"><div class="fallback-icon-circle">🗺️</div><span class="fallback-caption">بدون عکس</span></div>' + overlay + "</div>"
         : '<div class="card-image-wrap no-image"><div class="card-image-fallback"><div class="fallback-icon-circle">🗺️</div><span class="fallback-caption">بدون عکس</span></div>' + overlay + "</div>";
       var hours = p.hours ? '<p class="card-meta card-hours">🕐 ' + esc(p.hours) + "</p>" : "";
-      var always =
-        (category ? '<p class="card-meta card-local-cat">🏷️ ' + category + "</p>" : "") +
-        hours;
+      var always = category ? '<p class="card-meta card-local-cat">🏷️ ' + category + "</p>" : "";
       var phoneText = p.phone
         ? '<p class="card-meta card-phone-text">📞 <span dir="ltr">' + esc(String(p.phone).trim()) + "</span></p>"
         : "";
       var notesInner =
         (text ? '<p class="card-meta card-notes">📝 ' + text + "</p>" : "") +
+        hours +
         phoneText;
       var moreBtn = notesInner
         ? '<button type="button" class="card-more-btn" aria-expanded="false">اطلاعات بیشتر</button>'
