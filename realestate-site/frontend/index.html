@@ -425,22 +425,16 @@
       <select id="dealType" hidden>
         <option value="">همه</option>
         <option value="فروش">خرید</option>
+        <option value="پیش‌فروش">پیش‌فروش</option>
         <option value="رهن و اجاره">رهن و اجاره</option>
+        <option value="محله‌گردی">محله‌گردی</option>
       </select>
-      <div class="filter-chips">
+      <div class="filter-chips filter-chips-deal">
         <button type="button" class="filter-chip active" data-deal="">همه</button>
         <button type="button" class="filter-chip" data-deal="فروش">فروشی</button>
+        <button type="button" class="filter-chip" data-deal="پیش‌فروش">پیش‌فروش</button>
         <button type="button" class="filter-chip" data-deal="رهن و اجاره">رهن و اجاره</button>
-      </div>
-
-      <!-- نوار جستجوی متنی — همیشه در دید کاربر -->
-      <div class="filter-search-bar" id="filterAdvanced">
-        <div class="filter-search-inner">
-          <span class="filter-search-icon" aria-hidden="true">🔍</span>
-          <input type="text" id="citySearch" placeholder="جستجو آدرس، کد یا نوع ملک...">
-          <button type="button" class="filter-clear-btn" id="filterResetBtn" title="پاک کردن" aria-label="پاک کردن">✕</button>
-          <button type="button" class="filter-apply-btn" id="searchBtn">جستجو</button>
-        </div>
+        <button type="button" class="filter-chip filter-chip-local" data-deal="محله‌گردی">محله‌گردی</button>
       </div>
 
       <!-- دکمه «فیلتر پیشرفته» — روی موبایل بسته است، با کلیک باز می‌شود؛ در دسکتاپ همیشه باز است -->
@@ -500,6 +494,16 @@
             <button type="button" class="filter-chip" data-amenity="elevator">🛗 آسانسور</button>
             <button type="button" class="filter-chip" data-amenity="storage">📦 انباری</button>
           </div>
+        </div>
+      </div>
+
+      <!-- جستجو زیر فیلتر پیشرفته -->
+      <div class="filter-search-bar" id="filterAdvanced">
+        <div class="filter-search-inner">
+          <span class="filter-search-icon" aria-hidden="true">🔍</span>
+          <input type="text" id="citySearch" placeholder="جستجو آدرس، کد یا نوع ملک...">
+          <button type="button" class="filter-clear-btn" id="filterResetBtn" title="پاک کردن" aria-label="پاک کردن">✕</button>
+          <button type="button" class="filter-apply-btn" id="searchBtn">جستجو</button>
         </div>
       </div>
     </div>

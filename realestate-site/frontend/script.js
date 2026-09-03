@@ -1119,10 +1119,18 @@ function applyFilters() {
   const needStorage = isAmenityOn("storage");
 
   let filtered = allProperties;
-  // فیلتر فروش / رهن: کارت‌های محله‌گردی کنار گذاشته می‌شوند؛ «همه» = مخلوط
+  // فیلتر نوع: همه = مخلوط؛ فروش بدون پیش‌فروش؛ پیش‌فروش و محله‌گردی جدا
   if (dealType) {
     if (dealType === "فروش") {
-      filtered = filtered.filter((p) => isSaleLike(p));
+      filtered = filtered.filter((p) => isSaleLike(p) && !isPresale(p));
+    } else if (dealType === "پیش‌فروش" || dealType === "پیش فروش") {
+      filtered = filtered.filter((p) => isPresale(p));
+    } else if (dealType === "محله‌گردی") {
+      filtered = filtered.filter((p) => p.is_local || p.deal_type === "محله‌گردی");
+    } else if (dealType === "رهن و اجاره") {
+      filtered = filtered.filter(
+        (p) => !p.is_local && p.deal_type === "رهن و اجاره"
+      );
     } else {
       filtered = filtered.filter((p) => p.deal_type === dealType);
     }
