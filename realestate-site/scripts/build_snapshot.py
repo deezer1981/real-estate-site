@@ -50,9 +50,16 @@ DELETE_STATUSES = {
     "حذف",
 }
 
+# وضعیت‌هایی که هنوز روی سایت در لیست فعال دیده می‌شوند
+PUBLIC_ACTIVE_STATUSES = {
+    "فعال",
+    "در بازدید",
+}
+
 ARCHIVE_STATUS_MAP = {
     "فروخته شده": "واگذار شده",
     "فروخته": "واگذار شده",
+    "فروخته/اجاره رفت": "واگذار شده",
     "واگذار شده": "واگذار شده",
     "واگذار شد": "واگذار شده",
     "رهن داده شده": "رهن داده شده",
@@ -67,23 +74,30 @@ ARCHIVE_STATUS_MAP = {
     "غیرفعال": "غیرفعال",
     "غیر فعال": "غیرفعال",
     "غیرفعال شده": "غیرفعال",
+    "توقف موقت": "توقف موقت",
+    "قولنامه": "قولنامه",
 }
 
 INACTIVE_STATUSES = DELETE_STATUSES | set(ARCHIVE_STATUS_MAP.keys())
 
 
 def normalize_listing_status(raw: str) -> tuple:
-    """برمی‌گرداند (برچسب_نمایش, is_active)."""
-    s = (raw or "").strip()
-    if not s or s == "فعال":
-        return "فعال", True
+    """برمی‌گرداند (برچسب_نمایش, is_active).
+
+    is_active=True → در لیست صفحه اصلی / جستجو نشان داده می‌شود.
+    is_active=False → از لیست اصلی خارج است، ولی صفحهٔ اختصاصی آگهی
+    (agahi/...) برای جلوگیری از ۴۰۴ گوگل باقی می‌ماند.
+    """
+    s = (raw or "").strip().replace("ي", "ی").replace("ك", "ک")
+    if not s or s in PUBLIC_ACTIVE_STATUSES:
+        # «در بازدید» مثل فعال روی سایت می‌ماند
+        return (s or "فعال"), True
     if s in DELETE_STATUSES:
         return "حذف شده", False
     if s in ARCHIVE_STATUS_MAP:
         return ARCHIVE_STATUS_MAP[s], False
-    if s != "فعال":
-        return s, False
-    return "فعال", True
+    # هر وضعیت ناشناختهٔ دیگر → آرشیو (صفحه می‌ماند، لیست اصلی نه)
+    return s, False
 
 # ---------------------------------------------------------------
 # عکس‌های پیش‌فرض وقتی ستون «عکس» در شیت خالی باشد.
@@ -256,6 +270,12 @@ def find_frontend_file(filename: str) -> Path | None:
 
 
 def fetch_sheet(deal_type: str) -> list[dict]:
+    """همهٔ ردیف‌های دارای کد را برمی‌گرداند (حتی منقضی / واگذار / حذف‌شده).
+
+    سیاست سایت: هیچ صفحهٔ agahi/... به‌خاطر عوض شدن وضعیت پاک نمی‌شود
+    تا لینک ایندکس‌شده در گوگل ۴۰۴ نگیرد. فقط از لیست صفحهٔ اصلی
+    (is_active=False) کنار گذاشته می‌شوند.
+    """
     if not SPREADSHEET_ID:
         print("Error: SPREADSHEET_ID تنظیم نشده است")
         return []
@@ -267,8 +287,6 @@ def fetch_sheet(deal_type: str) -> list[dict]:
     for row in rows:
         status_raw = (row.get("وضعیت") or "فعال").strip()
         label, is_active = normalize_listing_status(status_raw)
-        if label == "حذف شده":
-            continue
         code = (row.get("کد") or "").strip()
         if not code:
             continue
