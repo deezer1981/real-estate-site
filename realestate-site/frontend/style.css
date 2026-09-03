@@ -713,6 +713,30 @@ a { color: inherit; text-decoration: none; }
   background: rgba(20, 33, 61, 0.10);
   color: var(--ink);
 }
+.deal-tag.presale {
+  background: rgba(139, 41, 66, 0.14);
+  color: #8B2942;
+}
+.card-presale .card-price {
+  color: #8B2942;
+}
+.card-presale-box {
+  margin-top: 8px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(139, 41, 66, 0.06);
+  border: 1px solid rgba(139, 41, 66, 0.18);
+}
+.card-presale-title {
+  margin: 0 0 6px;
+  font-weight: 800;
+  font-size: 0.9rem;
+  color: #8B2942;
+}
+.card-presale-item {
+  margin: 4px 0;
+}
+
 /* بج پین روی عکس کارت */
 .card-overlay-left {
   display: flex;

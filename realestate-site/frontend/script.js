@@ -198,7 +198,7 @@ function buildCardImage(p, isSale) {
   const overlay = `
     <div class="card-image-overlay">
       <div class="card-overlay-left">
-        <span class="deal-tag ${isSale ? "sale" : "rent"}">${p.deal_type || "آگهی"}</span>
+        <span class="deal-tag ${isPresale(p) ? "presale" : (isSale ? "sale" : "rent")}">${isPresale(p) ? "پیش‌فروش" : (p.deal_type || "آگهی")}</span>
         ${pinBadge}
       </div>
       <button class="share-btn share-btn-card" data-code="${p.code || ""}" type="button" aria-label="اشتراک‌گذاری آگهی">🔗 اشتراک</button>
@@ -248,7 +248,7 @@ function parseRooms(p) {
  * همان منطق formatSaleTotal: عدد >=100 با برچسب میلیارد → تقسیم بر ۱۰۰۰
  */
 function parseSalePriceBillion(p) {
-  if (p.deal_type !== "فروش") return null;
+  if (!isSaleLike(p)) return null;
   let s = cleanPriceText(p.price_total);
   if (!s || s === "-" || /توافقی/.test(s)) return null;
   const m = String(s).match(/([\d,]+(?:\.\d+)?)/);
@@ -262,7 +262,7 @@ function parseSalePriceBillion(p) {
 
 /** رهن نرمال‌شده به «میلیون تومان» برای فیلتر */
 function parseRahnMillion(p) {
-  if (p.deal_type === "فروش") return null;
+  if (isSaleLike(p)) return null;
   let s = cleanPriceText(p.rahn);
   if (!s || s === "-" || /توافقی/.test(s)) return null;
   const m = String(s).match(/([\d,]+(?:\.\d+)?)/);
@@ -301,10 +301,43 @@ function formatRentPrice(p) {
 }
 
 /** عنوان با نوع معامله: آپارتمان فروشی / رهن و اجاره آپارتمان */
+function isSaleLike(p) {
+  return Boolean(
+    p && (p.is_presale || p.deal_type === "فروش" || p.deal_type === "پیش‌فروش" || p.deal_type === "پیش فروش")
+  );
+}
+
+function isPresale(p) {
+  return Boolean(
+    p && (p.is_presale || p.deal_type === "پیش‌فروش" || p.deal_type === "پیش فروش")
+  );
+}
+
 function labeledPropertyType(p) {
   const type = (p.property_type || "ملک").trim();
-  if (p.deal_type === "فروش") return `${type} فروشی`;
+  if (isPresale(p)) return `${type} پیش‌فروش`;
+  if (isSaleLike(p)) return `${type} فروشی`;
   return `رهن و اجاره ${type}`;
+}
+
+/** بلوک جداگانه فیلدهای پیش‌فروش برای بخش «اطلاعات بیشتر» */
+function buildPresaleDetails(p) {
+  if (!isPresale(p)) return "";
+  const rows = [];
+  if (p.presale_delivery) {
+    rows.push(`<p class="card-meta card-presale-item">📅 زمان تحویل: <strong>${escapeHtml(p.presale_delivery)}</strong></p>`);
+  }
+  if (p.presale_payment) {
+    rows.push(`<p class="card-meta card-presale-item">💳 نحوه پرداخت: <strong>${escapeHtml(p.presale_payment)}</strong></p>`);
+  }
+  if (p.presale_stage) {
+    rows.push(`<p class="card-meta card-presale-item">🏗 مرحله ساخت: <strong>${escapeHtml(p.presale_stage)}</strong></p>`);
+  }
+  if (!rows.length) return "";
+  return `<div class="card-presale-box">
+          <p class="card-presale-title">🏗 مشخصات پیش‌فروش</p>
+          ${rows.join("\n          ")}
+        </div>`;
 }
 
 /** متن کوتاه مناسب SMS (حدود ۱ تا ۲ پیامک) */
@@ -665,10 +698,10 @@ function propertyCard(p) {
 
   const saleTotal = formatSaleTotal(p.price_total);
   const saleM2 = formatPricePerM2(p.price_per_m2);
-  const priceMain = p.deal_type === "فروش"
+  const priceMain = isSaleLike(p)
     ? `<p class="card-price">💰 ${saleTotal || "توافقی"}</p>`
     : `<p class="card-price">${formatRentPrice(p)}</p>`;
-  const priceM2Line = (p.deal_type === "فروش" && saleM2)
+  const priceM2Line = (isSaleLike(p) && saleM2)
     ? `<p class="card-meta card-price-m2">قیمت متری: ${saleM2}</p>`
     : "";
 
@@ -718,11 +751,13 @@ function propertyCard(p) {
 
   const titleType = labeledPropertyType(p);
   const titleCode = p.code ? `<span class="card-code">کد ${p.code}</span>` : "";
-  const imageBlock = buildCardImage(p, p.deal_type === "فروش");
+  const imageBlock = buildCardImage(p, isSaleLike(p));
 
   const notesLine = p.description
     ? `<p class="card-meta card-notes">📝 ${escapeHtml(p.description)}</p>`
     : "";
+
+  const presaleBlock = buildPresaleDetails(p);
 
   // جزئیات میانی (موبایل جمع می‌شود؛ دسکتاپ باز)
   const midBits = [
@@ -730,6 +765,7 @@ function propertyCard(p) {
     extras.length ? `<p class="card-meta card-extras">${extras.join(" | ")}</p>` : "",
     p.documents ? `<p class="card-meta card-docs">📄 مدارک: ${escapeHtml(p.documents)}</p>` : "",
     priceM2Line,
+    presaleBlock,
   ].filter(Boolean).join("\n          ");
 
   // توضیحات → بعد «ثبت‌شده توسط» و تاریخ
@@ -749,7 +785,7 @@ function propertyCard(p) {
   return `
     <div style="${wrapperStyle}">
       ${backBanner}
-      <article class="card ${p.deal_type === "فروش" ? "card-sale" : "card-rent"}${expandedClass}" id="card-${p.code || ""}" data-code="${p.code || ""}">
+      <article class="card ${isPresale(p) ? "card-presale" : (isSaleLike(p) ? "card-sale" : "card-rent")}${expandedClass}" id="card-${p.code || ""}" data-code="${p.code || ""}">
         ${imageBlock}
         <div class="card-body">
           <h3 class="card-title">${titleType} ${titleCode}</h3>
@@ -1049,7 +1085,11 @@ function applyFilters() {
   let filtered = allProperties;
   // فیلتر فروش / رهن: کارت‌های محله‌گردی کنار گذاشته می‌شوند؛ «همه» = مخلوط
   if (dealType) {
-    filtered = filtered.filter((p) => p.deal_type === dealType);
+    if (dealType === "فروش") {
+      filtered = filtered.filter((p) => isSaleLike(p));
+    } else {
+      filtered = filtered.filter((p) => p.deal_type === dealType);
+    }
   }
 
   if (keyword) {
