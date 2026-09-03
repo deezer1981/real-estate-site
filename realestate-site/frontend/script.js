@@ -620,17 +620,26 @@ function localGuideCard(p) {
     ? `<div class="card-actions">${actions.join("\n      ")}</div>`
     : "";
 
-  const notesBlock = text
-    ? `<div class="card-details-notes"><p class="card-meta card-notes">📝 ${text}</p></div>`
+  const phoneText = p.phone
+    ? `<p class="card-meta card-phone-text">📞 <span dir="ltr">${escapeHtml(String(p.phone).trim())}</span></p>`
     : "";
-  const moreBtn = text
+  const notesInner = [
+    text ? `<p class="card-meta card-notes">📝 ${text}</p>` : "",
+    phoneText,
+  ].filter(Boolean).join("\n          ");
+  const notesBlock = notesInner
+    ? `<div class="card-details-notes">${notesInner}</div>`
+    : "";
+  const moreBtn = notesInner
     ? `<button type="button" class="card-more-btn" aria-expanded="false">اطلاعات بیشتر</button>`
     : "";
-  const midBlock = category
-    ? `<div class="card-details-mid"><p class="card-meta">🏷️ ${category}</p></div>`
-    : "";
-  const tailBlock = (hoursLine || dateLine)
-    ? `<div class="card-details-tail">${hoursLine}${dateLine}</div>`
+  // دسته و ساعت همیشه بالای دکمه (نه داخل mid جمع‌شونده)
+  const alwaysVisible = [
+    category ? `<p class="card-meta card-local-cat">🏷️ ${category}</p>` : "",
+    hoursLine,
+  ].filter(Boolean).join("\n          ");
+  const tailBlock = dateLine
+    ? `<div class="card-details-tail">${dateLine}</div>`
     : "";
 
   return `
@@ -638,14 +647,14 @@ function localGuideCard(p) {
       <article class="card card-sale card-local" id="card-${escapeHtml(p.code || "")}" data-code="${escapeHtml(p.code || "")}" data-local="1">
         ${imageBlock}
         <div class="card-body">
-                    <h3 class="card-title">
+          <h3 class="card-title">
             <a href="/mahale/${escapeHtml(p.slug || p.code || "")}.html" style="color:inherit;text-decoration:none;">
               ${title} ${codeBadge}
             </a>
           </h3>
           ${shortAddress ? `<p class="card-meta card-address">📍 ${escapeHtml(shortAddress)}</p>` : ""}
+          ${alwaysVisible}
           ${moreBtn}
-          ${midBlock}
           ${notesBlock}
           ${tailBlock}
           ${actionsHtml}

@@ -355,26 +355,33 @@
       var imageBlock = img
         ? '<div class="card-image-wrap"><img class="card-image" src="' + img + '" alt="' + title + '" loading="lazy" decoding="async" width="400" height="280" onerror="this.closest(\'.card-image-wrap\').classList.add(\'no-image\'); this.remove();"><div class="card-image-fallback"><div class="fallback-icon-circle">🗺️</div><span class="fallback-caption">بدون عکس</span></div>' + overlay + "</div>"
         : '<div class="card-image-wrap no-image"><div class="card-image-fallback"><div class="fallback-icon-circle">🗺️</div><span class="fallback-caption">بدون عکس</span></div>' + overlay + "</div>";
-      var moreBtn = text
+      var hours = p.hours ? '<p class="card-meta card-hours">🕐 ' + esc(p.hours) + "</p>" : "";
+      var always =
+        (category ? '<p class="card-meta card-local-cat">🏷️ ' + category + "</p>" : "") +
+        hours;
+      var phoneText = p.phone
+        ? '<p class="card-meta card-phone-text">📞 <span dir="ltr">' + esc(String(p.phone).trim()) + "</span></p>"
+        : "";
+      var notesInner =
+        (text ? '<p class="card-meta card-notes">📝 ' + text + "</p>" : "") +
+        phoneText;
+      var moreBtn = notesInner
         ? '<button type="button" class="card-more-btn" aria-expanded="false">اطلاعات بیشتر</button>'
         : "";
-      var mid = category
-        ? '<div class="card-details-mid"><p class="card-meta">🏷️ ' + category + "</p></div>"
-        : "";
-      var notes = text
-        ? '<div class="card-details-notes"><p class="card-meta card-notes">📝 ' + text + "</p></div>"
+      var notes = notesInner
+        ? '<div class="card-details-notes">' + notesInner + "</div>"
         : "";
       var tail = p.registered_at
         ? '<div class="card-details-tail"><p class="card-date">📅 ثبت: ' + esc(p.registered_at) + "</p></div>"
         : "";
       return (
-        '<article class="card card-sale" data-code="' + esc(p.code || "") + '" data-local="1">' +
+        '<article class="card card-sale card-local" data-code="' + esc(p.code || "") + '" data-local="1">' +
         imageBlock +
         '<div class="card-body">' +
         '<h3 class="card-title">' + title + (p.code ? ' <span class="card-code">کد ' + esc(p.code) + "</span>" : "") + "</h3>" +
         (addr ? '<p class="card-meta card-address">📍 ' + addr + "</p>" : "") +
+        always +
         moreBtn +
-        mid +
         notes +
         tail +
         (actions.length ? '<div class="card-actions">' + actions.join("") + "</div>" : "") +
