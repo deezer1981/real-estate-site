@@ -1888,9 +1888,7 @@ document.querySelectorAll(".quick-card[href='#listings']").forEach((card) => {
       advToggle.classList.toggle("open", open);
       const label = advToggle.querySelector(".toggle-label");
       if (label) {
-        label.textContent = open
-          ? "بستن فیلتر پیشرفته"
-          : "فیلتر پیشرفته (متراژ، خواب، قیمت، امکانات)";
+        label.textContent = open ? "بستن فیلتر" : "فیلتر پیشرفته";
       }
       // بسته شدن = ریست متراژ/خواب/قیمت/امکانات + نمایش مجدد آگهی‌ها
       if (!open) {

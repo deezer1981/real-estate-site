@@ -1602,8 +1602,8 @@ a { color: inherit; text-decoration: none; }
     text-align: center;
   }
   .advanced-filter-toggle {
-    min-height: 56px;
-    padding: 10px 16px;
+    min-height: 40px;
+    padding: 9px 12px;
   }
   .advanced-filters .filter-row-label {
     font-size: 0.92rem;
@@ -2172,44 +2172,53 @@ body.single-ad-mode .card-image-wrap {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 6px;
   width: 100%;
-  background: linear-gradient(135deg, var(--ink) 0%, #1c2c50 100%);
-  border: none;
-  color: #FFFCFA;
+  background: rgba(20, 33, 61, 0.92);
+  border: 1px solid rgba(184, 137, 79, 0.28);
+  color: #F5F1EA;
   font-family: inherit;
-  font-weight: 800;
-  font-size: 0.92rem;
-  padding: 14px 16px;
-  min-height: 50px;
-  border-radius: 12px;
+  font-weight: 700;
+  font-size: 0.88rem;
+  padding: 10px 14px;
+  min-height: 42px;
+  border-radius: 10px;
   cursor: pointer;
-  margin: 8px 0 14px;
-  box-shadow: 0 4px 14px rgba(20,33,61,0.24);
-  transition: filter 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease;
+  margin: 6px 0 10px;
+  box-shadow: 0 2px 8px rgba(20, 33, 61, 0.14);
+  transition: background 0.15s ease, box-shadow 0.15s ease;
+  white-space: nowrap;
 }
-.advanced-filter-toggle:hover { filter: brightness(1.12); box-shadow: 0 6px 18px rgba(20,33,61,0.32); }
-.advanced-filter-toggle:active { transform: scale(0.98); }
+.advanced-filter-toggle:hover {
+  background: rgba(20, 33, 61, 0.98);
+  box-shadow: 0 3px 10px rgba(20, 33, 61, 0.2);
+}
+.advanced-filter-toggle:active { transform: scale(0.99); }
+.advanced-filter-toggle .toggle-label {
+  font-size: inherit;
+  font-weight: inherit;
+  line-height: 1.2;
+}
 .advanced-filter-toggle .toggle-label::before {
-  content: "⚙️";
-  margin-inline-end: 6px;
+  content: none;
 }
 .advanced-filter-toggle .chevron {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 22px;
-  height: 22px;
+  width: 18px;
+  height: 18px;
   border-radius: 50%;
-  background: rgba(255,255,255,0.14);
-  transition: transform 0.2s ease, background 0.15s ease, color 0.15s ease;
-  font-size: 0.75rem;
+  background: transparent;
+  transition: transform 0.2s ease;
+  font-size: 0.7rem;
   color: var(--brass);
+  line-height: 1;
 }
 .advanced-filter-toggle.open .chevron {
   transform: rotate(180deg);
-  background: var(--brass);
-  color: var(--ink);
+  background: transparent;
+  color: var(--brass);
 }
 
 /* موبایل و دسکتاپ یکسان: پنل پیش‌فرض بسته، با کلاس open باز می‌شود */
@@ -2453,43 +2462,11 @@ body.single-ad-mode .card-more-btn { display: none !important; }
 }
 
 
-/* ===== دکمه «فیلتر پیشرفته» در موبایل: دو خط =====
-   روی موبایل، متن کامل ("فیلتر پیشرفته (متراژ، خواب، قیمت، رهن،
-   امکانات)") توی یک خط جا نمی‌شد و دکمه را کش می‌داد. این‌جا متن
-   واقعیِ داخل .toggle-label (که با JS بین حالت باز/بسته عوض می‌شود)
-   نامرئی می‌شود (font-size: 0) و به‌جایش دو خط ثابت با ::before/::after
-   نمایش داده می‌شود: خط اول پررنگ «فیلتر پیشرفته»، خط دوم ریزتر لیست
-   فیلترها. چون این قانون به کلاس «open» (که خودِ اسکریپت روی دکمه
-   می‌گذارد) واکنش نشان می‌دهد، نیازی به تغییر در JS نیست. این بلوک
-   عمداً انتهای فایل است تا از قانون کلی ::before بالاتر (که فقط آیکون
-   ⚙️ اضافه می‌کند) در موبایل جلو بزند؛ دسکتاپ دست‌نخورده و تک‌خط می‌ماند. */
+/* دکمه فیلتر پیشرفته: همیشه یک خط کوتاه */
 @media (max-width: 720px) {
-  .advanced-filter-toggle .toggle-label {
-    font-size: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 2px;
-    line-height: 1.3;
-  }
-  .advanced-filter-toggle .toggle-label::before {
-    content: "⚙️ فیلتر پیشرفته";
-    font-size: 0.94rem;
-    font-weight: 800;
-    display: block;
-  }
-  .advanced-filter-toggle .toggle-label::after {
-    content: "متراژ، خواب، قیمت، رهن، امکانات";
-    font-size: 0.73rem;
-    font-weight: 600;
-    opacity: 0.82;
-    display: block;
-  }
-  .advanced-filter-toggle.open .toggle-label::before {
-    content: "⚙️ بستن فیلتر پیشرفته";
-  }
-  .advanced-filter-toggle.open .toggle-label::after {
-    content: "";
-    display: none;
+  .advanced-filter-toggle {
+    font-size: 0.86rem;
+    padding: 9px 12px;
+    min-height: 40px;
   }
 }
