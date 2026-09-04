@@ -2630,22 +2630,44 @@ body.single-ad-mode .card-more-btn { display: none !important; }
     white-space: nowrap;
   }
 
-  /* فیلد جستجو: تکی، تمام‌عرض، بلندتر */
+  /* فیلد جستجو: تکی، تمام‌عرض، بلندتر — بوردر پررنگ و آیکون توپر
+     به‌جای گرادیان محو قبلی که خفه و کم‌رمق بود */
   .filter-search-inner {
-    background: linear-gradient(180deg, #FFFFFF 0%, #FBF6EC 100%);
-    border: 1.5px solid rgba(184,137,79,0.4);
-    box-shadow: 0 4px 14px rgba(184,137,79,0.16), 0 1px 3px rgba(20,33,61,0.05);
+    background: #FFFFFF;
+    border: 2px solid var(--brass);
+    box-shadow: 0 6px 18px rgba(184,137,79,0.3);
     border-radius: 14px;
-    min-height: 56px;
-    padding: 4px 4px 4px 14px;
+    min-height: 58px;
+    padding: 5px 5px 5px 6px;
   }
   .filter-search-inner:focus-within {
-    box-shadow: 0 0 0 3px rgba(184,137,79,0.22), 0 4px 14px rgba(184,137,79,0.18);
+    border-color: var(--ink);
+    box-shadow: 0 0 0 3px rgba(184,137,79,0.28), 0 6px 18px rgba(184,137,79,0.25);
   }
-  .filter-search-icon { color: var(--brass); opacity: 0.95; font-size: 1.05rem; }
+  .filter-search-icon {
+    background: var(--brass);
+    color: var(--ink);
+    opacity: 1;
+    font-size: 1rem;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 8px;
+    flex-shrink: 0;
+  }
   .filter-search-inner input {
-    font-size: 0.98rem;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--ink);
     padding: 14px 8px;
+  }
+  .filter-search-inner input::placeholder {
+    color: #6B5A3E;
+    opacity: 0.75;
+    font-weight: 600;
   }
   .filter-apply-btn {
     background: linear-gradient(135deg, var(--ink) 0%, #1a2847 100%);
