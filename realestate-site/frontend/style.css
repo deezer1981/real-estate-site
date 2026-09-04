@@ -1073,8 +1073,8 @@ a { color: inherit; text-decoration: none; }
 }
 .footer-inner {
   display: grid;
-  grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr) minmax(0, 1.15fr);
-  gap: 28px 40px;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1.25fr) minmax(0, 1fr);
+  gap: 28px 32px;
   text-align: right;
   align-items: start;
 }
@@ -1095,15 +1095,24 @@ a { color: inherit; text-decoration: none; }
   display: flex;
   flex-direction: column;
   gap: 8px;
+  text-align: right;
 }
-.footer-links a { color: #D4CFC3; font-weight: 600; }
+.footer-links a {
+  color: #D4CFC3;
+  font-weight: 600;
+  text-align: right;
+}
 .footer-links a:hover { color: var(--brass); }
 @media (min-width: 721px) {
-  /* تراز سه ستون فوتر در دسکتاپ */
+  /* تراز سه ستون فوتر در دسکتاپ — لینک‌ها دو ستونه تا ارتفاع کم شود */
   .footer-brand,
   .footer-links { text-align: right; }
   .footer-links {
-    align-items: flex-start;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px 18px;
+    align-items: start;
+    justify-items: stretch;
     padding-top: 2px;
   }
   /* ستون شبکه‌های اجتماعی: آیکون + متن زیرش هم‌مرکز با هم */
@@ -1360,7 +1369,16 @@ a { color: inherit; text-decoration: none; }
     flex-shrink: 0;
   }
 
-  .footer-links { align-items: center; }
+  /* لینک‌های فوتر موبایل: دو ستون و راست‌چین (فارسی) */
+  .footer-links {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px 18px;
+    text-align: right;
+    align-items: start;
+    justify-items: stretch;
+  }
+  .footer-links a { text-align: right; }
   .card-body h3,
   .card-title { font-size: 1.26rem; line-height: 1.55; }
   .card-meta { font-size: 1.02rem; line-height: 1.55; }
