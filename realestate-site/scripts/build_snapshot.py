@@ -1239,6 +1239,65 @@ def update_index_shell_counts(content: str, all_props: list) -> str:
     return content
 
 
+
+def _to_persian_digits_local(n: int) -> str:
+    return str(n).translate(str.maketrans("0123456789", "۰۱۲۳۴۵۶۷۸۹"))
+
+
+def update_category_sale_pages(frontend_dir: Path, all_props: list) -> None:
+    """تزریق آگهی‌های فیلترشده به صفحات sale-*.html تا خالی نمانند."""
+    active = [p for p in all_props if p.get("is_active", True) and not p.get("is_local")]
+
+    def match_any(p, keywords):
+        t = (p.get("property_type") or "")
+        return any(k in t for k in keywords)
+
+    pages = [
+        ("sale-apartment.html", ["آپارتمان"], lambda p: (p.get("deal_type") or "") in ("فروش", "پیش‌فروش", "پیش فروش") or p.get("is_presale")),
+        ("sale-villa.html", ["خانه ویلایی", "ویلایی", "ویلا"], lambda p: "باغ" not in (p.get("property_type") or "") and ((p.get("deal_type") or "") in ("فروش", "پیش‌فروش", "پیش فروش") or p.get("is_presale"))),
+        ("sale-land.html", ["زمین"], lambda p: True),
+        ("sale-zamin.html", ["زمین"], lambda p: True),
+        ("sale-bagh-villa.html", ["باغچه", "باغ ویلا", "باغ"], lambda p: True),
+    ]
+
+    for filename, type_keys, extra in pages:
+        path = frontend_dir / filename
+        if not path.exists():
+            continue
+        filtered = [p for p in active if match_any(p, type_keys) and extra(p)]
+        html = path.read_text(encoding="utf-8")
+        js = json.dumps(filtered, ensure_ascii=False)
+        # replace PRELOADED array with bracket-aware safety via regex on whole script
+        new_html, n = re.subn(
+            r"(<script>window\.__PRELOADED_PROPERTIES__\s*=\s*)(\[.*?\])(;\s*</script>)",
+            lambda m: m.group(1) + js + m.group(3),
+            html,
+            count=1,
+            flags=re.S,
+        )
+        if n == 0:
+            # empty array form
+            new_html, n = re.subn(
+                r"<script>window\.__PRELOADED_PROPERTIES__\s*=\s*\[\s*\];</script>",
+                f"<script>window.__PRELOADED_PROPERTIES__ = {js};</script>",
+                html,
+                count=1,
+            )
+        if n == 0:
+            print(f"⚠️  {filename}: مارکر PRELOADED پیدا نشد")
+            continue
+        count_fa = _to_persian_digits_local(len(filtered))
+        new_html = re.sub(
+            r'(<span class="section-note" id="resultCount">)[^<]*(</span>)',
+            rf"\g<1>{count_fa} آگهی\g<2>",
+            new_html,
+            count=1,
+        )
+        path.write_text(new_html, encoding="utf-8")
+        print(f"✅ {filename}: {len(filtered)} آگهی تزریق شد")
+
+
+
 def update_snapshot():
     print("در حال دریافت داده‌ها از گوگل‌شیت...")
 
@@ -1405,6 +1464,9 @@ def update_snapshot():
         f.write(new_content)
 
     print("✅ اسنپ‌شات با موفقیت به‌روز شد")
+
+    # صفحات دسته‌بندی فروش (آپارتمان / ویلا / زمین / باغ)
+    update_category_sale_pages(index_path.parent, all_props)
 
     # صفحات سبک هر آگهی (سئو + پیش‌نمایش لینک) — فقط آگهی‌های ملکی
     frontend_dir = index_path.parent
