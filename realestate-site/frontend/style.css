@@ -2217,6 +2217,12 @@ body.single-ad-mode .card-image-wrap {
   box-shadow: 0 3px 10px rgba(20, 33, 61, 0.2);
 }
 .advanced-filter-toggle:active { transform: scale(0.99); }
+.advanced-filter-toggle .toggle-icon {
+  font-size: 1.15rem;
+  line-height: 1;
+  flex-shrink: 0;
+  filter: drop-shadow(0 1px 1px rgba(0,0,0,0.25));
+}
 .advanced-filter-toggle .toggle-label {
   font-size: inherit;
   font-weight: inherit;
