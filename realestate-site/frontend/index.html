@@ -284,9 +284,43 @@
       width: 100%;
     }
   }
+
+  /* --- نوار «آخرین فرصت‌ها» بالای صفحه --- */
+  .top-urgency-bar {
+    background: linear-gradient(90deg, #14213D 0%, #1d2f52 100%);
+    color: #F5F1EA;
+    text-align: center;
+    padding: 10px 14px;
+    font-size: 0.88rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .top-urgency-bar a {
+    background: #B8894F;
+    color: #14213D;
+    padding: 5px 14px;
+    border-radius: 20px;
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 0.82rem;
+    white-space: nowrap;
+  }
+  .top-urgency-bar a:hover { filter: brightness(1.08); }
+  @media (max-width: 480px) {
+    .top-urgency-bar { font-size: 0.8rem; padding: 8px 10px; }
+  }
 </style>
 </head>
 <body id="top">
+
+<div class="top-urgency-bar">
+  <a href="tel:+989106943220">همین حالا تماس بگیرید 📞</a>
+</div>
+
 <header class="site-header">
   <div class="wrap header-inner">
     <a href="#top" class="brand" style="text-decoration:none;color:inherit">
@@ -311,6 +345,10 @@
 <div id="drawerBackdrop" class="drawer-backdrop"></div>
 <aside id="mobileDrawer" class="mobile-drawer" aria-hidden="true">
   <div class="drawer-header">
+    <span class="brand-name">منو</span>
+    <button id="drawerClose" class="drawer-close" aria-label="بستن منو">✕</button>
+  </div>
+  <nav class="drawer-nav">
     <a href="#listings" class="drawer-link">آگهی‌ها</a>
     <a href="#contact" class="drawer-link">تماس با ما</a>
     <a href="#office-intro" class="drawer-link">درباره دفتر</a>
@@ -600,6 +638,8 @@
       <a href="bagh-villa.html">پیش‌فروش آپارتمان</a>
       <a href="sale-apartment.html">فروش آپارتمان</a>
       <a href="sale-villa.html">فروش خانه ویلایی</a>
+      <a href="sale-land.html">فروش زمین</a>
+      <a href="sale-bagh-villa.html">فروش باغ ویلا</a>
       <a href="rahn-ejare.html">رهن و اجاره</a>
       <a href="investment.html">سرمایه‌گذاری</a>
       <a href="reviews.html">نظرات مشتریان</a>
