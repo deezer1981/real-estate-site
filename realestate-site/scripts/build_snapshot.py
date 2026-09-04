@@ -2004,12 +2004,10 @@ def render_listing_html(p: dict) -> str:
   }}
   .agahi-bottom-back a:hover {{ background: #B8894F; color: #fff; }}
 
-  /* فوتر این صفحه دیگه سفارشی نیست — از همون .site-footer اصلی سایت
-     استفاده می‌کنه (در style.css تعریف شده) تا با بقیه‌ی سایت یکدست باشه. */
-  .agahi-page .site-footer {{
-    margin: 0 -14px -28px;
-    border-radius: 20px 20px 0 0;
-  }}
+  /* فوتر این صفحه از همون .site-footer اصلی سایت استفاده می‌کنه
+     (در style.css تعریف شده) و بیرون از .agahi-page قرار گرفته،
+     دقیقاً مثل بقیه‌ی صفحات — بدون گردی و مارجین اضافه، تخت و
+     تمام‌عرض، تا با فوتر بقیه‌ی سایت کاملاً یکدست باشد. */
 
   /* دکمه‌های تماس/پیام داخل کارت کمی نرم‌تر روی این صفحه */
   .agahi-page .card-actions {{ gap: 10px; }}
@@ -2061,8 +2059,9 @@ def render_listing_html(p: dict) -> str:
   <div class="agahi-bottom-back">
     <a href="../"><span class="agahi-back-icon">←</span> بازگشت به صفحه اصلی سایت</a>
   </div>
+</main>
 
-  <footer class="site-footer">
+<footer class="site-footer">
     <div class="wrap footer-inner">
       <div class="footer-brand">
         <strong>گروه مشاورین املاک اطلس</strong>
@@ -2112,7 +2111,6 @@ def render_listing_html(p: dict) -> str:
       </div>
     </div>
   </footer>
-</main>
 </body>
 </html>
 """
@@ -2317,12 +2315,10 @@ def render_local_html(p: dict) -> str:
     border: 1.5px solid #B8894F; color: #201C15; font-weight: 700;
     padding: 10px 22px; border-radius: 999px; text-decoration: none;
   }}
-  /* فوتر این صفحه دیگه سفارشی نیست — از همون .site-footer اصلی سایت
-     استفاده می‌کنه (در style.css تعریف شده) تا با بقیه‌ی سایت یکدست باشه. */
-  .agahi-page .site-footer {{
-    margin: 0 -14px -28px;
-    border-radius: 20px 20px 0 0;
-  }}
+  /* فوتر این صفحه از همون .site-footer اصلی سایت استفاده می‌کنه
+     (در style.css تعریف شده) و بیرون از .agahi-page قرار گرفته،
+     دقیقاً مثل بقیه‌ی صفحات — بدون گردی و مارجین اضافه، تخت و
+     تمام‌عرض، تا با فوتر بقیه‌ی سایت کاملاً یکدست باشد. */
 </style>
 <script type="application/ld+json">
 {json.dumps(_build_local_jsonld(p), ensure_ascii=False)}
@@ -2358,8 +2354,9 @@ def render_local_html(p: dict) -> str:
   <div class="agahi-bottom-back">
     <a href="../">← بازگشت به صفحه اصلی سایت</a>
   </div>
+</main>
 
-  <footer class="site-footer">
+<footer class="site-footer">
     <div class="wrap footer-inner">
       <div class="footer-brand">
         <strong>گروه مشاورین املاک اطلس</strong>
@@ -2409,7 +2406,6 @@ def render_local_html(p: dict) -> str:
       </div>
     </div>
   </footer>
-</main>
 </body>
 </html>
 """
