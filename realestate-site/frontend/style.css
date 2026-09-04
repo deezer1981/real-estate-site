@@ -1974,13 +1974,28 @@ a.filter-chip.filter-chip-local {
   justify-content: center;
   flex-shrink: 0;
   opacity: 0.6;
-  transition: opacity 0.15s, background 0.15s;
+  transition: opacity 0.15s, background 0.15s, color 0.15s, border-color 0.15s;
 }
 .filter-clear-label { display: none; }
 .filter-clear-btn:hover {
   opacity: 1;
   background: #F5F0E8;
   color: var(--ink);
+}
+/* حالت فعال — وقتی حداقل یک فیلتر (چیپ متراژ/خواب/قیمت/امکانات، نوع معامله
+   یا متن جستجو) روشن است، دکمه رنگ برنزی می‌گیرد و شمارنده نشان می‌دهد
+   دقیقاً چند مورد پاک خواهد شد؛ حالت خالی همچنان کم‌رنگ و خنثی می‌ماند. */
+.filter-clear-btn .clear-icon {
+  display: inline-block;
+  line-height: 1;
+  transition: transform 0.4s ease;
+}
+.filter-clear-btn:active .clear-icon {
+  transform: rotate(-220deg);
+}
+.filter-clear-btn.is-active {
+  color: #8C6530;
+  opacity: 1;
 }
 .filter-apply-btn {
   background: var(--ink);
@@ -2302,6 +2317,10 @@ body.single-ad-mode .card-image-wrap {
   line-height: 1;
   flex-shrink: 0;
   filter: drop-shadow(0 1px 1px rgba(0,0,0,0.25));
+  transition: transform 0.3s ease;
+}
+.advanced-filter-toggle.open .toggle-icon {
+  transform: rotate(75deg);
 }
 .advanced-filter-toggle .toggle-label {
   font-size: inherit;
@@ -2310,6 +2329,34 @@ body.single-ad-mode .card-image-wrap {
 }
 .advanced-filter-toggle .toggle-label::before {
   content: none;
+}
+
+/* نشان شمارنده — تعداد فیلترهای پیشرفته‌ی فعال، روی خود دکمه.
+   تا بسته بودن پنل هم بگوید همین الان چند فیلتر روشن است. */
+.filter-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: var(--brass);
+  color: #FFFCFA;
+  font-size: 0.68rem;
+  font-weight: 800;
+  line-height: 1;
+  flex-shrink: 0;
+  animation: filterBadgePop 0.25s ease;
+}
+.advanced-filter-toggle.open .filter-badge {
+  background: #F5F1EA;
+  color: var(--ink);
+}
+@keyframes filterBadgePop {
+  0% { transform: scale(0.4); opacity: 0; }
+  70% { transform: scale(1.15); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
 }
 .advanced-filter-toggle .chevron {
   display: inline-flex;
@@ -2616,13 +2663,25 @@ body.single-ad-mode .card-more-btn { display: none !important; }
     padding: 0 14px;
     gap: 5px;
     border-radius: 10px;
-    background: #FFFFFF;
     border: 1.5px solid rgba(184,137,79,0.5);
-    color: #8C6530;
     opacity: 1;
     font-size: 0.9rem;
   }
   .filter-clear-btn:active { background: rgba(184,137,79,0.12); }
+  /* خالی: خنثی و کم‌رنگ، یعنی چیزی برای پاک کردن نیست */
+  .filter-clear-btn.is-empty {
+    background: #FFFFFF;
+    border-color: rgba(20,33,61,0.14);
+    color: #A89F8E;
+    box-shadow: none;
+  }
+  /* فعال: برنزی و گرم، یعنی همین الان چیزی برای پاک کردن هست */
+  .filter-clear-btn.is-active {
+    background: linear-gradient(135deg, #FFF6E9 0%, #FBE9CC 100%);
+    border-color: var(--brass);
+    color: #8C6530;
+    box-shadow: 0 3px 10px rgba(184,137,79,0.28);
+  }
   .filter-clear-label {
     display: inline;
     font-size: 0.82rem;

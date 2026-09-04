@@ -457,9 +457,13 @@
         <button type="button" id="advancedFilterToggle" class="advanced-filter-toggle">
           <span class="toggle-icon" aria-hidden="true">⚙️</span>
           <span class="toggle-label">فیلتر پیشرفته</span>
+          <span class="filter-badge" id="advFilterBadge" hidden>0</span>
           <span class="chevron" aria-hidden="true">▾</span>
         </button>
-        <button type="button" class="filter-clear-btn" id="filterResetBtn" title="بازنشانی همه فیلترها" aria-label="بازنشانی همه فیلترها">✕<span class="filter-clear-label">پاک همه</span></button>
+        <button type="button" class="filter-clear-btn is-empty" id="filterResetBtn" title="بازنشانی همه فیلترها" aria-label="بازنشانی همه فیلترها">
+          <span class="clear-icon" aria-hidden="true">↺</span>
+          <span class="filter-clear-label">پاک همه</span>
+        </button>
       </div>
 
       <div id="advancedFilterPanel" class="advanced-filters">
