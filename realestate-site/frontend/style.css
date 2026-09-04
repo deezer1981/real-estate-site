@@ -2574,3 +2574,86 @@ body.single-ad-mode .card-more-btn { display: none !important; }
     min-height: 44px;
   }
 }
+
+/* =====================================================================
+   بازطراحی نوار «جستجو + فیلتر پیشرفته» — فقط موبایل
+   قبلاً یک باکس سفید ساده کنار یک مربع سرمه‌ای بود؛ هیچ‌کدام رنگ برند
+   (برنزی) نداشتند و کنار پس‌زمینه‌ی روشن صفحه، خنثی و کم‌رمق دیده می‌شدند.
+   حالا دکمه‌ی فیلتر پیشرفته با گرادیان برنزی به‌عنوان یک CTA مجزا دیده
+   می‌شود، باکس جستجو یک قاب برنزی ظریف و سایه‌ی گرم می‌گیرد، و کل نوار
+   به شکل یک «تولبار» یکپارچه با پس‌زمینه‌ی مجزا از صفحه ظاهر می‌شود.
+   ===================================================================== */
+@media (max-width: 720px) {
+  .listings-filter {
+    background: linear-gradient(180deg, rgba(184,137,79,0.06) 0%, rgba(184,137,79,0.02) 100%);
+    border: 1px solid rgba(184,137,79,0.18);
+    border-radius: 16px;
+    padding: 12px 10px 4px;
+  }
+  .filter-chips-deal { padding: 0 2px; }
+
+  /* دکمه فیلتر پیشرفته: از مربع تیره‌ی خنثی به CTA برنزی */
+  .advanced-filter-toggle {
+    background: linear-gradient(135deg, var(--brass) 0%, #A87840 100%);
+    border: 1px solid rgba(20,33,61,0.1);
+    color: var(--ink);
+    box-shadow: 0 4px 12px rgba(184,137,79,0.4);
+  }
+  .advanced-filter-toggle:active { box-shadow: 0 2px 6px rgba(184,137,79,0.35); }
+  .advanced-filter-toggle .toggle-icon { filter: none; }
+  /* حالت باز: معکوس می‌شود تا فیدبک واضح بدهد که فیلتر فعال است */
+  .advanced-filter-toggle.open {
+    background: linear-gradient(135deg, var(--ink) 0%, #1a2847 100%);
+    color: var(--paper);
+    box-shadow: 0 4px 12px rgba(20,33,61,0.35);
+  }
+  .advanced-filter-toggle.open .chevron { color: var(--brass); }
+
+  /* باکس جستجو: قاب برنزی ظریف + سایه‌ی گرم به‌جای خاکستری صاف */
+  .filter-search-inner {
+    background: linear-gradient(180deg, #FFFFFF 0%, #FBF6EC 100%);
+    border: 1.5px solid rgba(184,137,79,0.4);
+    box-shadow: 0 4px 14px rgba(184,137,79,0.16), 0 1px 3px rgba(20,33,61,0.05);
+    border-radius: 14px;
+  }
+  .filter-search-inner:focus-within {
+    box-shadow: 0 0 0 3px rgba(184,137,79,0.22), 0 4px 14px rgba(184,137,79,0.18);
+  }
+  .filter-search-icon { color: var(--brass); opacity: 0.95; }
+  .filter-apply-btn {
+    background: linear-gradient(135deg, var(--ink) 0%, #1a2847 100%);
+    border: 1px solid rgba(184,137,79,0.5);
+    box-shadow: 0 2px 8px rgba(20,33,61,0.28);
+  }
+  .filter-apply-btn:active { box-shadow: 0 1px 4px rgba(20,33,61,0.25); }
+}
+
+/* =====================================================================
+   دکمه «بازگشت به همه آگهی‌ها» — فقط موبایل
+   قبلاً یک پیل کوچک برنزی داخل .section-head بود که با flex-wrap کنار
+   عنوان و شمارنده گم می‌شد و به‌سختی دیده می‌شد. حالا وقتی فعال است
+   (بدون [hidden])، به‌عنوان یک نوار تمام‌عرض و برجسته، بالای عنوان
+   «آخرین آگهی‌ها» می‌نشیند تا واضح باشد که یک فیلتر/لینک خاص فعال است.
+   ===================================================================== */
+@media (max-width: 720px) {
+  .section-head {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+  .section-head h2 { order: 2; }
+  .section-note { order: 3; }
+  .clear-deeplink-btn:not([hidden]) {
+    order: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    width: 100%;
+    font-size: 0.92rem;
+    padding: 13px 16px;
+    min-height: 46px;
+    box-shadow: 0 4px 12px rgba(184,137,79,0.35);
+  }
+  .clear-deeplink-btn:active { box-shadow: 0 2px 6px rgba(184,137,79,0.3); }
+}
