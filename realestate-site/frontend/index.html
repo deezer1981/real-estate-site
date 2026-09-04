@@ -452,12 +452,15 @@
         <a href="baghestan.html#mahale-gardi" class="filter-chip filter-chip-local">محله‌گردی</a>
       </div>
 
-      <!-- دکمه «فیلتر پیشرفته» — روی موبایل بسته است، با کلیک باز می‌شود؛ در دسکتاپ همیشه باز است -->
-      <button type="button" id="advancedFilterToggle" class="advanced-filter-toggle">
-        <span class="toggle-icon" aria-hidden="true">⚙️</span>
-        <span class="toggle-label">فیلتر پیشرفته</span>
-        <span class="chevron" aria-hidden="true">▾</span>
-      </button>
+      <!-- ردیف اول: فیلتر پیشرفته + بازنشانی همه فیلترها کنار هم -->
+      <div class="filter-toolbar-top">
+        <button type="button" id="advancedFilterToggle" class="advanced-filter-toggle">
+          <span class="toggle-icon" aria-hidden="true">⚙️</span>
+          <span class="toggle-label">فیلتر پیشرفته</span>
+          <span class="chevron" aria-hidden="true">▾</span>
+        </button>
+        <button type="button" class="filter-clear-btn" id="filterResetBtn" title="بازنشانی همه فیلترها" aria-label="بازنشانی همه فیلترها">✕<span class="filter-clear-label">پاک همه</span></button>
+      </div>
 
       <div id="advancedFilterPanel" class="advanced-filters">
         <div class="filter-row">
@@ -513,12 +516,11 @@
         </div>
       </div>
 
-      <!-- جستجو زیر فیلتر پیشرفته -->
+      <!-- ردیف دوم: فیلد جستجو، تکی و بلندتر -->
       <div class="filter-search-bar" id="filterAdvanced">
         <div class="filter-search-inner">
           <span class="filter-search-icon" aria-hidden="true">🔍</span>
           <input type="text" id="citySearch" placeholder="جستجو آدرس، کد یا نوع ملک...">
-          <button type="button" class="filter-clear-btn" id="filterResetBtn" title="بازنشانی همه فیلترها" aria-label="بازنشانی همه فیلترها">✕<span class="filter-clear-label">پاک همه</span></button>
           <button type="button" class="filter-apply-btn" id="searchBtn">جستجو</button>
         </div>
       </div>

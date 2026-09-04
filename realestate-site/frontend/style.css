@@ -1401,41 +1401,33 @@ a { color: inherit; text-decoration: none; }
     font-weight: 700;
   }
 
-  /* موبایل: چیپ‌های معامله جمع می‌شوند؛ فقط جستجو + دکمه فیلتر */
+  /* موبایل: ردیف اول = فیلتر پیشرفته + ریست کنار هم، ردیف دوم = فیلد جستجوی تکی و بلندتر */
   .listings-filter {
-    display: grid;
-    grid-template-columns: 1fr auto;
-    gap: 8px;
-    align-items: stretch;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
   }
   .filter-chips-deal {
     display: none !important;
   }
+  .filter-toolbar-top {
+    display: flex;
+    gap: 8px;
+  }
   .filter-search-bar {
-    grid-column: 1;
-    grid-row: 1;
     margin: 0 !important;
-    min-width: 0; /* بدون این، آیتم گرید بر اساس عرض محتوا بزرگ می‌ماند و
-                     دکمه «فیلتر پیشرفته» را از صفحه بیرون می‌راند */
+    min-width: 0;
   }
   .filter-search-inner {
     min-width: 0;
   }
   .advanced-filter-toggle {
-    grid-column: 2;
-    grid-row: 1;
+    flex: 1;
     width: auto;
-    min-width: 48px;
+    min-width: 0;
     margin: 0;
-    padding: 0 12px;
-    min-height: 44px;
-  }
-  .advanced-filter-toggle .toggle-label,
-  .advanced-filter-toggle .chevron {
-    display: none;
-  }
-  .advanced-filters {
-    grid-column: 1 / -1;
+    padding: 0 14px;
+    min-height: 46px;
   }
   .card-body h3,
   .card-title { font-size: 1.26rem; line-height: 1.55; }
@@ -2262,6 +2254,18 @@ body.single-ad-mode .card-image-wrap {
   }
 }
 
+/* ردیف بالایی: دکمه فیلتر پیشرفته + دکمه بازنشانی، کنار هم (موبایل و دسکتاپ) */
+.filter-toolbar-top {
+  display: flex;
+  align-items: stretch;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.filter-toolbar-top .advanced-filter-toggle {
+  width: auto;
+  flex: 1;
+}
+
 /* ===== دکمه/پنل «فیلتر پیشرفته» (جمع‌شونده در موبایل و دسکتاپ) =====
    قبلاً یک دکمه‌ی سفید با border نقطه‌چین کم‌رنگ بود که توی پس‌زمینه‌ی
    روشن صفحه گم می‌شد. حالا دکمه‌ی توپر سرمه‌ای با سایه‌ی محسوس، و پنلِ
@@ -2567,41 +2571,32 @@ body.single-ad-mode .card-more-btn { display: none !important; }
 }
 
 
-/* دکمه فیلتر پیشرفته موبایل: فقط آیکون کنار جستجو */
-@media (max-width: 720px) {
-  .advanced-filter-toggle {
-    font-size: 1.05rem;
-    padding: 0 12px;
-    min-height: 44px;
-  }
-}
-
 /* =====================================================================
-   بازطراحی نوار «جستجو + فیلتر پیشرفته» — فقط موبایل
-   قبلاً یک باکس سفید ساده کنار یک مربع سرمه‌ای بود؛ هیچ‌کدام رنگ برند
-   (برنزی) نداشتند و کنار پس‌زمینه‌ی روشن صفحه، خنثی و کم‌رمق دیده می‌شدند.
-   حالا دکمه‌ی فیلتر پیشرفته با گرادیان برنزی به‌عنوان یک CTA مجزا دیده
-   می‌شود، باکس جستجو یک قاب برنزی ظریف و سایه‌ی گرم می‌گیرد، و کل نوار
-   به شکل یک «تولبار» یکپارچه با پس‌زمینه‌ی مجزا از صفحه ظاهر می‌شود.
+   بازطراحی نوار «فیلتر پیشرفته + ریست + جستجو» — فقط موبایل
+   قبلاً همه‌چیز (آیکون فیلتر پیشرفته، فیلد جستجو، ✕ ریست، دکمه جستجو)
+   توی یک ردیف فشرده جا شده بود. حالا:
+   ردیف اول → دکمه «فیلتر پیشرفته» (برنزی، با برچسب) و دکمه «بازنشانی
+   همه فیلترها» کنار هم؛ ردیف دوم → فیلد جستجو به‌تنهایی، تمام‌عرض و
+   بلندتر، تا نفس بکشد و روی پس‌زمینه‌ی روشن گم نشود.
    ===================================================================== */
 @media (max-width: 720px) {
   .listings-filter {
     background: linear-gradient(180deg, rgba(184,137,79,0.06) 0%, rgba(184,137,79,0.02) 100%);
     border: 1px solid rgba(184,137,79,0.18);
     border-radius: 16px;
-    padding: 12px 10px 4px;
+    padding: 12px 10px;
   }
   .filter-chips-deal { padding: 0 2px; }
 
-  /* دکمه فیلتر پیشرفته: از مربع تیره‌ی خنثی به CTA برنزی */
+  /* دکمه فیلتر پیشرفته: CTA برنزی با برچسب و chevron کاملاً دیده می‌شود */
   .advanced-filter-toggle {
     background: linear-gradient(135deg, var(--brass) 0%, #A87840 100%);
     border: 1px solid rgba(20,33,61,0.1);
     color: var(--ink);
     box-shadow: 0 4px 12px rgba(184,137,79,0.4);
+    font-size: 0.9rem;
   }
   .advanced-filter-toggle:active { box-shadow: 0 2px 6px rgba(184,137,79,0.35); }
-  .advanced-filter-toggle .toggle-icon { filter: none; }
   /* حالت باز: معکوس می‌شود تا فیدبک واضح بدهد که فیلتر فعال است */
   .advanced-filter-toggle.open {
     background: linear-gradient(135deg, var(--ink) 0%, #1a2847 100%);
@@ -2610,44 +2605,56 @@ body.single-ad-mode .card-more-btn { display: none !important; }
   }
   .advanced-filter-toggle.open .chevron { color: var(--brass); }
 
-  /* باکس جستجو: قاب برنزی ظریف + سایه‌ی گرم به‌جای خاکستری صاف */
+  /* دکمه ریست، حالا کنار فیلتر پیشرفته، یه پیل مستقل با برچسب واضح.
+     منطقش در script.js از قبل همه‌چیز (چیپ‌ها + متن جستجو) را ریست
+     می‌کند، فقط دیده نمی‌شد و داخل باکس جستجو گم بود. */
+  .filter-clear-btn {
+    flex: 0 0 auto;
+    width: auto;
+    height: auto;
+    min-height: 46px;
+    padding: 0 14px;
+    gap: 5px;
+    border-radius: 10px;
+    background: #FFFFFF;
+    border: 1.5px solid rgba(184,137,79,0.5);
+    color: #8C6530;
+    opacity: 1;
+    font-size: 0.9rem;
+  }
+  .filter-clear-btn:active { background: rgba(184,137,79,0.12); }
+  .filter-clear-label {
+    display: inline;
+    font-size: 0.82rem;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+
+  /* فیلد جستجو: تکی، تمام‌عرض، بلندتر */
   .filter-search-inner {
     background: linear-gradient(180deg, #FFFFFF 0%, #FBF6EC 100%);
     border: 1.5px solid rgba(184,137,79,0.4);
     box-shadow: 0 4px 14px rgba(184,137,79,0.16), 0 1px 3px rgba(20,33,61,0.05);
     border-radius: 14px;
+    min-height: 56px;
+    padding: 4px 4px 4px 14px;
   }
   .filter-search-inner:focus-within {
     box-shadow: 0 0 0 3px rgba(184,137,79,0.22), 0 4px 14px rgba(184,137,79,0.18);
   }
-  .filter-search-icon { color: var(--brass); opacity: 0.95; }
+  .filter-search-icon { color: var(--brass); opacity: 0.95; font-size: 1.05rem; }
+  .filter-search-inner input {
+    font-size: 0.98rem;
+    padding: 14px 8px;
+  }
   .filter-apply-btn {
     background: linear-gradient(135deg, var(--ink) 0%, #1a2847 100%);
     border: 1px solid rgba(184,137,79,0.5);
     box-shadow: 0 2px 8px rgba(20,33,61,0.28);
+    min-height: 46px;
+    padding: 0 18px;
   }
   .filter-apply-btn:active { box-shadow: 0 1px 4px rgba(20,33,61,0.25); }
-
-  /* دکمه ریست (✕) داخل باکس جستجو: از یه X گمنام به یه دکمه‌ی واضحِ
-     «بازنشانی همه فیلترها» تبدیل می‌شود — منطقش در script.js از قبل
-     همه‌چیز (چیپ‌ها + متن جستجو) را ریست می‌کند، فقط دیده نمی‌شد. */
-  .filter-clear-btn {
-    width: auto;
-    height: 32px;
-    padding: 0 10px;
-    gap: 4px;
-    border-radius: 8px;
-    background: rgba(184,137,79,0.14);
-    color: #8C6530;
-    opacity: 1;
-  }
-  .filter-clear-btn:active { background: rgba(184,137,79,0.24); }
-  .filter-clear-label {
-    display: inline;
-    font-size: 0.76rem;
-    font-weight: 700;
-    white-space: nowrap;
-  }
 }
 
 /* =====================================================================
