@@ -1369,28 +1369,36 @@ a { color: inherit; text-decoration: none; }
     flex-shrink: 0;
   }
 
-  /* لینک‌های فوتر موبایل: دو ستون هم‌عرض، متن وسط‌چین */
+  /* لینک‌های فوتر موبایل: دو ستون هم‌عرض، متن راست‌چین برای خوانایی بهتر فارسی،
+     با جداکنندهٔ ظریف بالای بخش تا از برند/تماس جدا شود */
   .footer-links {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    justify-content: center;
-    column-gap: 12px;
-    row-gap: 8px;
-    text-align: center;
+    column-gap: 18px;
+    row-gap: 12px;
     align-items: start;
-    justify-items: center;
+    justify-items: stretch;
     width: 100%;
-    max-width: 300px;
-    margin: 0 auto;
-    padding: 0 12px;
+    max-width: 340px;
+    margin: 4px auto 0;
+    padding: 16px 6px 0;
+    border-top: 1px solid rgba(255,255,255,0.08);
   }
   .footer-links a {
-    text-align: center;
-    white-space: nowrap;
+    text-align: right;
+    white-space: normal;
+    line-height: 1.5;
     width: 100%;
+    font-size: 0.86rem;
   }
   .footer-links a:last-child {
     grid-column: 1 / -1;
+    text-align: center;
+    margin-top: 4px;
+    padding-top: 10px;
+    border-top: 1px solid rgba(255,255,255,0.08);
+    color: var(--brass);
+    font-weight: 700;
   }
 
   /* موبایل: چیپ‌های معامله جمع می‌شوند؛ فقط جستجو + دکمه فیلتر */
@@ -1904,6 +1912,15 @@ a.filter-chip.filter-chip-local {
   .filter-chips-deal .filter-chip {
     font-size: 0.9rem;
     padding: 9px 12px;
+  }
+}
+/* موبایل: ردیف چیپ‌های نوع معامله بالای «فیلتر پیشرفته» حذف می‌شود؛
+   این چیپ‌ها همان دسترسی‌های سریع بالای صفحه (quick-grid) هستند و روی
+   موبایل تکراری/شلوغ به‌نظر می‌رسیدند. قانون بعدی به‌خاطر ترتیب در فایل
+   نسبت به تعریف بی‌قید-و-شرط بالاتر برنده می‌شود. */
+@media (max-width: 720px) {
+  .filter-chips-deal {
+    display: none !important;
   }
 }
 
