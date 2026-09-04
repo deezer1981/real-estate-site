@@ -148,10 +148,16 @@
   @media (max-width: 720px) {
     .footer-links {
       display: grid !important;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px 18px;
+      grid-template-columns: max-content max-content !important;
+      justify-content: center !important;
+      column-gap: 48px !important;
+      row-gap: 10px !important;
       text-align: right;
+      width: 100%;
+      max-width: 340px;
+      margin: 0 auto;
     }
+    .footer-links a { text-align: right; white-space: nowrap; }
   }
 </style>
 <script type="application/ld+json" id="page-jsonld">
