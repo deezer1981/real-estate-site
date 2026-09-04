@@ -179,6 +179,35 @@
     .footer-socials { gap: 22px; }
   }
 
+  /* --- نوار «آخرین فرصت‌ها» بالای صفحه --- */
+  .top-urgency-bar {
+    background: linear-gradient(90deg, #14213D 0%, #1d2f52 100%);
+    color: #F5F1EA;
+    text-align: center;
+    padding: 10px 14px;
+    font-size: 0.88rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .top-urgency-bar a {
+    background: #B8894F;
+    color: #14213D;
+    padding: 5px 14px;
+    border-radius: 20px;
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 0.82rem;
+    white-space: nowrap;
+  }
+  .top-urgency-bar a:hover { filter: brightness(1.08); }
+  @media (max-width: 480px) {
+    .top-urgency-bar { font-size: 0.8rem; padding: 8px 10px; }
+  }
+
   /* دسکتاپ: فقط اسلاید اول دیده شود، نقطه‌ها مخفی */
   @media (min-width: 721px) {
     #heroCarousel .carousel-slide:not([data-index="0"]) {
@@ -278,6 +307,11 @@
 </head>
 <body id="top">
 
+<div class="top-urgency-bar">
+  <span>⏰ دنبال آخرین فرصت‌های خرید آپارتمان، خانه ویلایی یا پیش‌فروش هستید؟</span>
+  <a href="tel:+989106943220">همین حالا تماس بگیرید 📞</a>
+</div>
+
 <header class="site-header">
   <div class="wrap header-inner">
     <a href="#top" class="brand" style="text-decoration:none;color:inherit">
@@ -355,15 +389,15 @@
     <div class="quick-grid">
       <a id="quickSale" href="sale-apartment-villa.html" class="quick-card" data-key="sale">
         <span class="quick-icon">🏢</span>
-        <span class="quick-label">خانه فروشی (آپارتمان، ویلایی)</span>
+        <span class="quick-label">فروش آپارتمان</span>
+      </a>
+      <a href="sale-apartment-villa.html" class="quick-card" data-key="invest">
+        <span class="quick-icon">🏡</span>
+        <span class="quick-label">فروش خانه ویلایی</span>
       </a>
       <a id="quickRent" href="rahn-ejare.html" class="quick-card" data-key="rent">
         <span class="quick-icon">🔑</span>
         <span class="quick-label">رهن و اجاره</span>
-      </a>
-      <a href="submit-listing.html" class="quick-card" data-key="submit">
-        <span class="quick-icon">📝</span>
-        <span class="quick-label">ثبت آگهی ملک شما</span>
       </a>
       <a href="bagh-villa.html" class="quick-card" data-key="garden">
         <span class="quick-icon">🏗️</span>
@@ -377,9 +411,9 @@
         <span class="quick-icon">🟫</span>
         <span class="quick-label">زمین</span>
       </a>
-      <a href="investment.html" class="quick-card" data-key="invest">
-        <span class="quick-icon">📈</span>
-        <span class="quick-label">سرمایه‌گذاری</span>
+      <a href="submit-listing.html" class="quick-card" data-key="submit">
+        <span class="quick-icon">📝</span>
+        <span class="quick-label">ثبت آگهی ملک شما</span>
       </a>
       <a href="baghestan.html" class="quick-card" data-key="baghestan">
         <span class="quick-icon">🌆</span>
@@ -595,6 +629,7 @@
       <a href="bagh-villa.html">پیش‌فروش آپارتمان</a>
       <a href="sale-apartment-villa.html">فروش آپارتمان و ویلایی</a>
       <a href="rahn-ejare.html">رهن و اجاره</a>
+      <a href="investment.html">سرمایه‌گذاری</a>
       <a href="reviews.html">نظرات مشتریان</a>
       <a href="#listings" class="footer-link-local" data-filter-deal="محله‌گردی">محله‌گردی</a>
     </div>
