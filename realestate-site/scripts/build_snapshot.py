@@ -1256,7 +1256,6 @@ def update_category_sale_pages(frontend_dir: Path, all_props: list) -> None:
         ("sale-apartment.html", ["آپارتمان"], lambda p: (p.get("deal_type") or "") in ("فروش", "پیش‌فروش", "پیش فروش") or p.get("is_presale")),
         ("sale-villa.html", ["خانه ویلایی", "ویلایی", "ویلا"], lambda p: "باغ" not in (p.get("property_type") or "") and ((p.get("deal_type") or "") in ("فروش", "پیش‌فروش", "پیش فروش") or p.get("is_presale"))),
         ("sale-land.html", ["زمین"], lambda p: True),
-        ("sale-zamin.html", ["زمین"], lambda p: True),
         ("sale-bagh-villa.html", ["باغچه", "باغ ویلا", "باغ"], lambda p: True),
     ]
 
@@ -2544,6 +2543,11 @@ def write_sitemap(frontend_dir: Path, props: list[dict], local_props: list[dict]
         ("https://atlas-amlak.ir/about.html", "monthly", "0.6"),
         ("https://atlas-amlak.ir/baghestan.html", "weekly", "0.8"),
         ("https://atlas-amlak.ir/bagh-villa.html", "weekly", "0.7"),
+        ("https://atlas-amlak.ir/sale-apartment.html", "daily", "0.8"),
+        ("https://atlas-amlak.ir/sale-villa.html", "daily", "0.7"),
+        ("https://atlas-amlak.ir/sale-land.html", "daily", "0.7"),
+        ("https://atlas-amlak.ir/sale-bagh-villa.html", "daily", "0.7"),
+        ("https://atlas-amlak.ir/rahn-ejare.html", "daily", "0.7"),
         ("https://atlas-amlak.ir/investment.html", "monthly", "0.5"),
         ("https://atlas-amlak.ir/reviews.html", "monthly", "0.5"),
     ]
