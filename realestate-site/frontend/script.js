@@ -1786,15 +1786,6 @@ document.querySelectorAll(".quick-card[href='#listings']").forEach((card) => {
   });
 });
 
-document.querySelectorAll("a.footer-link-local[data-filter-deal]").forEach((link) => {
-  link.addEventListener("click", (e) => {
-    e.preventDefault();
-    const deal = link.getAttribute("data-filter-deal") || "";
-    filterListings(deal, "");
-    const listings = document.getElementById("listings");
-    if (listings) listings.scrollIntoView({ behavior: "smooth", block: "start" });
-  });
-});
 
 
 

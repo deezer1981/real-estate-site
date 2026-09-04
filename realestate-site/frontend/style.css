@@ -1851,16 +1851,12 @@ a { color: inherit; text-decoration: none; }
   font-size: 0.86rem;
   box-sizing: border-box;
 }
-/* موبایل: چیپ محله‌گردی مخفی — لینک در فوتر */
-.footer-link-local { display: none; }
-@media (max-width: 720px) {
-  .filter-chips-deal .filter-chip-local {
-    display: none !important;
-  }
-  .footer-link-local {
-    display: block !important;
-  }
+/* محله‌گردی: چیپ صفحه اصلی لینک است؛ لینک فوتر در موبایل و دسکتاپ دیده می‌شود */
+a.filter-chip.filter-chip-local {
+  text-decoration: none;
+  box-sizing: border-box;
 }
+.footer-link-local { display: block; }
 @media (min-width: 721px) {
   .filter-chips-deal {
     grid-template-columns: repeat(5, minmax(0, 1fr));
@@ -1869,12 +1865,6 @@ a { color: inherit; text-decoration: none; }
   .filter-chips-deal .filter-chip {
     font-size: 0.9rem;
     padding: 9px 12px;
-  }
-  .filter-chips-deal .filter-chip-local {
-    display: inline-flex !important;
-  }
-  .footer-link-local {
-    display: none !important;
   }
 }
 
