@@ -284,9 +284,43 @@
       width: 100%;
     }
   }
+
+  /* --- نوار «آخرین فرصت‌ها» بالای صفحه --- */
+  .top-urgency-bar {
+    background: linear-gradient(90deg, #14213D 0%, #1d2f52 100%);
+    color: #F5F1EA;
+    text-align: center;
+    padding: 10px 14px;
+    font-size: 0.88rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .top-urgency-bar a {
+    background: #B8894F;
+    color: #14213D;
+    padding: 5px 14px;
+    border-radius: 20px;
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 0.82rem;
+    white-space: nowrap;
+  }
+  .top-urgency-bar a:hover { filter: brightness(1.08); }
+  @media (max-width: 480px) {
+    .top-urgency-bar { font-size: 0.8rem; padding: 8px 10px; }
+  }
 </style>
 </head>
 <body id="top">
+
+<div class="top-urgency-bar">
+  <span>⏰ دنبال آخرین فرصت‌های خرید آپارتمان، خانه ویلایی یا پیش‌فروش هستید؟</span>
+  <a href="tel:+989106943220">همین حالا تماس بگیرید 📞</a>
+</div>
 
 <header class="site-header">
   <div class="wrap header-inner">
@@ -379,11 +413,11 @@
         <span class="quick-icon">🏗️</span>
         <span class="quick-label">پیش‌فروش آپارتمان</span>
       </a>
-      <a href="sale-bagh-villa.html" class="quick-card" data-key="garden_ads">
+      <a href="#listings" class="quick-card" data-key="garden_ads" data-filter-deal="فروش" data-filter-q="باغ">
         <span class="quick-icon">🏡</span>
         <span class="quick-label">باغ، باغچه و ویلا</span>
       </a>
-      <a href="sale-zamin.html" class="quick-card" data-key="land">
+      <a href="#listings" class="quick-card" data-key="land" data-filter-deal="فروش" data-filter-q="زمین">
         <span class="quick-icon">🟫</span>
         <span class="quick-label">زمین</span>
       </a>
@@ -605,8 +639,6 @@
       <a href="bagh-villa.html">پیش‌فروش آپارتمان</a>
       <a href="sale-apartment.html">فروش آپارتمان</a>
       <a href="sale-villa.html">فروش خانه ویلایی</a>
-      <a href="sale-bagh-villa.html">فروش باغ ویلا و باغچه</a>
-      <a href="sale-zamin.html">فروش زمین</a>
       <a href="rahn-ejare.html">رهن و اجاره</a>
       <a href="investment.html">سرمایه‌گذاری</a>
       <a href="reviews.html">نظرات مشتریان</a>

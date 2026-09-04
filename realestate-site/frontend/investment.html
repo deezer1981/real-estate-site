@@ -76,9 +76,160 @@
     margin: 0 0 20px;
   }
   .page-content .page-list li { margin-bottom: 10px; }
+
+  /* --- ردیف آیکون‌های فوتر: تلگرام + اینستاگرام + ایمیل، دسکتاپ و موبایل ---
+       نکته مهم: استایل قبلی سایت روی «.footer-socials a» یه باکس ثابت
+       34x34 می‌ذاره که با آیکون+برچسب ما تداخل می‌کرد و باعث رو‌هم‌افتادن
+       متن‌ها می‌شد؛ این‌جا مشخصاً همون رو خنثی می‌کنیم. */
+  .footer-socials a.footer-social-item {
+    width: auto;
+    height: auto;
+    background: transparent;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+    transition: transform 0.15s ease, opacity 0.15s ease;
+  }
+  .footer-socials a.footer-social-item:hover {
+    background: transparent;
+    transform: translateY(-2px);
+    opacity: 0.9;
+  }
+  .footer-socials {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    flex-wrap: nowrap;
+    gap: 30px;
+    margin: 18px 0 10px;
+  }
+  .footer-social-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.22);
+    flex-shrink: 0;
+  }
+  .footer-social-icon svg { width: 16px; height: 16px; }
+  .footer-social-icon.telegram,
+  .footer-social-icon.instagram,
+  .footer-social-icon.email {
+    background: #B8894F;
+  }
+  .footer-social-label {
+    font-size: 0.74rem;
+    font-weight: 700;
+    color: #F3EDE0;
+    white-space: nowrap;
+    line-height: 1.3;
+    text-align: center;
+  }
+
+  .footer-social-note {
+    font-size: 0.78rem;
+    color: #C9C2B3;
+    text-align: center;
+    line-height: 1.7;
+    max-width: 300px;
+    margin: 10px auto 0;
+  }
+  .footer-social-note a {
+    color: #D9B67D;
+    font-weight: 700;
+    text-decoration: underline;
+  }
+
+  .footer-brand-phone,
+  .footer-brand-hours {
+    margin-top: 8px !important;
+  }
+  .footer-brand-hours { opacity: 0.85; }
+
+  /* --- برچسب‌های تب‌بار موبایل: کمی بزرگ‌تر و خواناتر --- */
+  .mobile-tabbar .tab-item span:last-child {
+    font-size: 0.78rem;
+    font-weight: 600;
+  }
+  .mobile-tabbar .tab-icon {
+    font-size: 1.2rem;
+  }
+
+  /* --- متن دکمه‌های تماس/پیام هدر دسکتاپ: کمی بزرگ‌تر و خواناتر --- */
+  @media (min-width: 721px) {
+    .bot-cta-small { font-size: 1rem; padding: 10px 20px; }
+    .main-nav a:not(.bot-cta-small) { font-size: 1rem; }
+  }
+
+  /* --- دکمه نصب اپلیکیشن (PWA) --- */
+  .install-app-btn {
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+    background: #14213D;
+    color: #F5F1EA !important;
+  }
+  .install-app-btn:hover { filter: brightness(1.08); }
+  .mobile-tabbar .install-app-btn {
+    background: transparent;
+    color: #2B2B2B !important;
+    padding: 0;
+  }
+
+  @media (max-width: 480px) {
+    .footer-socials { gap: 22px; }
+  }
+
+  /* --- فوتر: دو ستونی در موبایل --- */
+  @media (max-width: 720px) {
+    .footer-links {
+      display: grid !important;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px 18px;
+      text-align: center;
+    }
+  }
+
+  /* --- نوار «آخرین فرصت‌ها» بالای صفحه --- */
+  .top-urgency-bar {
+    background: linear-gradient(90deg, #14213D 0%, #1d2f52 100%);
+    color: #F5F1EA;
+    text-align: center;
+    padding: 10px 14px;
+    font-size: 0.88rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .top-urgency-bar a {
+    background: #B8894F;
+    color: #14213D;
+    padding: 5px 14px;
+    border-radius: 20px;
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 0.82rem;
+    white-space: nowrap;
+  }
+  .top-urgency-bar a:hover { filter: brightness(1.08); }
+  @media (max-width: 480px) {
+    .top-urgency-bar { font-size: 0.8rem; padding: 8px 10px; }
+  }
 </style>
 </head>
 <body id="top">
+
+<div class="top-urgency-bar">
+  <span>⏰ دنبال آخرین فرصت‌های خرید آپارتمان، خانه ویلایی یا پیش‌فروش هستید؟</span>
+  <a href="tel:+989106943220">همین حالا تماس بگیرید 📞</a>
+</div>
 
 <header class="site-header">
   <div class="wrap header-inner">
@@ -176,9 +327,11 @@
       <a href="index.html#contact">تماس با ما</a>
       <a href="about.html">درباره دفتر</a>
       <a href="baghestan.html">معرفی باغستان</a>
-      <a href="bagh-villa.html">باغ و ویلا</a>
-      <a href="sale-bagh-villa.html">فروش باغ ویلا و باغچه</a>
-      <a href="sale-zamin.html">فروش زمین</a>
+      <a href="bagh-villa.html">پیش‌فروش آپارتمان</a>
+      <a href="sale-apartment.html">فروش آپارتمان</a>
+      <a href="sale-villa.html">فروش خانه ویلایی</a>
+      <a href="rahn-ejare.html">رهن و اجاره</a>
+      <a href="investment.html">سرمایه‌گذاری</a>
       <a href="reviews.html">نظرات مشتریان</a>
     </div>
     <div class="footer-meta">
