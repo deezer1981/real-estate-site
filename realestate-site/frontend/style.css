@@ -1369,22 +1369,61 @@ a { color: inherit; text-decoration: none; }
     flex-shrink: 0;
   }
 
-  /* لینک‌های فوتر موبایل: دو ستون جمع‌شده در وسط، متن راست‌چین */
+  /* لینک‌های فوتر موبایل: دو ستون هم‌عرض، متن وسط‌چین */
   .footer-links {
     display: grid;
-    grid-template-columns: max-content max-content;
+    grid-template-columns: 1fr 1fr;
     justify-content: center;
-    column-gap: 48px;
-    row-gap: 10px;
-    text-align: right;
+    column-gap: 12px;
+    row-gap: 8px;
+    text-align: center;
     align-items: start;
-    justify-items: stretch;
+    justify-items: center;
     width: 100%;
-    max-width: 340px;
+    max-width: 300px;
     margin: 0 auto;
-    padding: 0 8px;
+    padding: 0 12px;
   }
-  .footer-links a { text-align: right; white-space: nowrap; }
+  .footer-links a {
+    text-align: center;
+    white-space: nowrap;
+    width: 100%;
+  }
+  .footer-links a:last-child {
+    grid-column: 1 / -1;
+  }
+
+  /* موبایل: چیپ‌های معامله جمع می‌شوند؛ فقط جستجو + دکمه فیلتر */
+  .listings-filter {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 8px;
+    align-items: stretch;
+  }
+  .filter-chips-deal {
+    display: none !important;
+  }
+  .filter-search-bar {
+    grid-column: 1;
+    grid-row: 1;
+    margin: 0 !important;
+  }
+  .advanced-filter-toggle {
+    grid-column: 2;
+    grid-row: 1;
+    width: auto;
+    min-width: 48px;
+    margin: 0;
+    padding: 0 12px;
+    min-height: 44px;
+  }
+  .advanced-filter-toggle .toggle-label,
+  .advanced-filter-toggle .chevron {
+    display: none;
+  }
+  .advanced-filters {
+    grid-column: 1 / -1;
+  }
   .card-body h3,
   .card-title { font-size: 1.26rem; line-height: 1.55; }
   .card-meta { font-size: 1.02rem; line-height: 1.55; }
@@ -2505,11 +2544,11 @@ body.single-ad-mode .card-more-btn { display: none !important; }
 }
 
 
-/* دکمه فیلتر پیشرفته: همیشه یک خط کوتاه */
+/* دکمه فیلتر پیشرفته موبایل: فقط آیکون کنار جستجو */
 @media (max-width: 720px) {
   .advanced-filter-toggle {
-    font-size: 0.86rem;
-    padding: 9px 12px;
-    min-height: 40px;
+    font-size: 1.05rem;
+    padding: 0 12px;
+    min-height: 44px;
   }
 }

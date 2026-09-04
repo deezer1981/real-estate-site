@@ -195,16 +195,17 @@
   @media (max-width: 720px) {
     .footer-links {
       display: grid !important;
-      grid-template-columns: max-content max-content !important;
+      grid-template-columns: 1fr 1fr !important;
       justify-content: center !important;
-      column-gap: 48px !important;
-      row-gap: 10px !important;
-      text-align: right;
+      column-gap: 12px !important;
+      row-gap: 8px !important;
+      text-align: center;
       width: 100%;
-      max-width: 340px;
+      max-width: 300px;
       margin: 0 auto;
     }
-    .footer-links a { text-align: right; white-space: nowrap; }
+    .footer-links a { text-align: center; white-space: nowrap; width: 100%; }
+    .footer-links a:last-child { grid-column: 1 / -1; }
   }
 </style>
 </head>
