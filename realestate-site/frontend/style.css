@@ -1951,7 +1951,30 @@ a.filter-chip.filter-chip-local {
   opacity: 0.55;
   flex-shrink: 0;
   margin-left: 4px;
+  color: var(--ink);
+  display: flex;
+  align-items: center;
 }
+.filter-search-icon svg { width: 16px; height: 16px; display: block; }
+.filter-apply-btn .apply-btn-icon svg { width: 16px; height: 16px; display: block; }
+.filter-apply-btn { display: inline-flex; align-items: center; gap: 6px; }
+.search-clear-btn {
+  border: none;
+  background: transparent;
+  color: #A89F8E;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.05rem;
+  line-height: 1;
+  flex-shrink: 0;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+.search-clear-btn:hover { background: #F5F0E8; color: var(--ink); }
 .filter-search-inner input {
   flex: 1;
   min-width: 0;
@@ -2696,53 +2719,61 @@ body.single-ad-mode .card-more-btn { display: none !important; }
     white-space: nowrap;
   }
 
-  /* فیلد جستجو: تکی، تمام‌عرض، بلندتر — بوردر پررنگ و آیکون توپر
-     به‌جای گرادیان محو قبلی که خفه و کم‌رمق بود */
+  /* فیلد جستجو: یک نوار یکپارچه و مینیمال — پیل سفید با بوردر نازک و
+     سایه‌ی خیلی سبک، آیکون خطی (نه ایموجی/دایره‌ی توپر) و دکمه‌ی جستجوی
+     دایره‌ای کوچک در انتها؛ به‌جای بوردر ضخیم برنزی و گرادیان قبلی که
+     بیشتر شبیه بنر تبلیغاتی بود تا یک فیلد جستجوی حرفه‌ای. */
   .filter-search-inner {
     background: #FFFFFF;
-    border: 2px solid var(--brass);
-    box-shadow: 0 6px 18px rgba(184,137,79,0.3);
-    border-radius: 14px;
-    min-height: 58px;
-    padding: 5px 5px 5px 6px;
+    border: 1.5px solid #E4DFD3;
+    box-shadow: 0 1px 3px rgba(20,33,61,0.06);
+    border-radius: 999px;
+    min-height: 52px;
+    padding: 5px 5px 5px 16px;
+    gap: 2px;
   }
   .filter-search-inner:focus-within {
-    border-color: var(--ink);
-    box-shadow: 0 0 0 3px rgba(184,137,79,0.28), 0 6px 18px rgba(184,137,79,0.25);
+    border-color: var(--brass);
+    box-shadow: 0 0 0 3px rgba(184,137,79,0.14);
   }
   .filter-search-icon {
-    background: var(--brass);
-    color: var(--ink);
+    background: transparent;
+    color: #8C6530;
     opacity: 1;
-    font-size: 1rem;
-    width: 34px;
-    height: 34px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-left: 8px;
-    flex-shrink: 0;
+    width: auto;
+    height: auto;
+    border-radius: 0;
+    margin-left: 0;
+    margin-right: 2px;
   }
+  .filter-search-icon svg { width: 18px; height: 18px; }
   .filter-search-inner input {
-    font-size: 1rem;
-    font-weight: 700;
+    font-size: 0.95rem;
+    font-weight: 500;
     color: var(--ink);
-    padding: 14px 8px;
+    padding: 13px 4px;
   }
   .filter-search-inner input::placeholder {
-    color: #6B5A3E;
-    opacity: 0.75;
-    font-weight: 600;
+    color: #A89F8E;
+    opacity: 1;
+    font-weight: 400;
   }
+  .search-clear-btn { width: 30px; height: 30px; font-size: 1.15rem; }
   .filter-apply-btn {
-    background: linear-gradient(135deg, var(--ink) 0%, #1a2847 100%);
-    border: 1px solid rgba(184,137,79,0.5);
-    box-shadow: 0 2px 8px rgba(20,33,61,0.28);
-    min-height: 46px;
-    padding: 0 18px;
+    background: var(--ink);
+    border: none;
+    box-shadow: none;
+    min-height: 42px;
+    width: 42px;
+    height: 42px;
+    padding: 0;
+    border-radius: 50%;
+    justify-content: center;
+    flex-shrink: 0;
   }
-  .filter-apply-btn:active { box-shadow: 0 1px 4px rgba(20,33,61,0.25); }
+  .filter-apply-btn:active { background: #0d1830; }
+  .filter-apply-btn .apply-btn-icon svg { width: 18px; height: 18px; color: #FFFCFA; }
+  .filter-apply-btn .apply-btn-label { display: none; }
 }
 
 /* =====================================================================
