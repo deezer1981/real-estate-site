@@ -2015,10 +2015,10 @@ a.filter-chip.filter-chip-local {
    یا متن جستجو) روشن است، دکمه رنگ برنزی می‌گیرد و شمارنده نشان می‌دهد
    دقیقاً چند مورد پاک خواهد شد؛ حالت خالی همچنان کم‌رنگ و خنثی می‌ماند. */
 .filter-clear-btn .clear-icon {
-  display: inline-block;
-  line-height: 1;
+  display: inline-flex;
   transition: transform 0.4s ease;
 }
+.filter-clear-btn .clear-icon svg { width: 16px; height: 16px; display: block; }
 .filter-clear-btn:active .clear-icon {
   transform: rotate(-220deg);
 }
@@ -2310,6 +2310,9 @@ body.single-ad-mode .card-image-wrap {
 .filter-toolbar-top .advanced-filter-toggle {
   width: auto;
   flex: 1;
+}
+.filter-toolbar-top .filter-clear-btn {
+  align-self: center;
 }
 
 /* ===== دکمه/پنل «فیلتر پیشرفته» (جمع‌شونده در موبایل و دسکتاپ) =====
@@ -2687,19 +2690,18 @@ body.single-ad-mode .card-more-btn { display: none !important; }
     color: #FFFCFA;
   }
 
-  /* دکمه ریست — هم‌قد دکمه‌ی فیلتر پیشرفته (۴۲px)، بدون سایه یا گرادیان،
-     تا کنارش سنگین‌تر یا سبک‌تر دیده نشود؛ فقط رنگ فرق می‌کند نه حجم. */
+  /* دکمه ریست — فقط آیکون، دایره‌ی کوچک، بدون متن؛ عرض کمتر و کاملاً
+     گرد به‌جای مستطیل‌گونه‌ی قبلی که کنار «فیلتر پیشرفته» سنگین بود. */
   .filter-clear-btn {
     flex: 0 0 auto;
-    width: auto;
-    height: auto;
-    min-height: 42px;
-    padding: 0 13px;
-    gap: 5px;
-    border-radius: 10px;
+    width: 38px;
+    height: 38px;
+    min-height: 0;
+    padding: 0;
+    gap: 0;
+    border-radius: 50%;
     border: 1px solid rgba(20,33,61,0.14);
     opacity: 1;
-    font-size: 0.86rem;
     box-shadow: none;
   }
   .filter-clear-btn:active { background: rgba(184,137,79,0.1); }
@@ -2718,12 +2720,8 @@ body.single-ad-mode .card-more-btn { display: none !important; }
     color: #8C6530;
     box-shadow: none;
   }
-  .filter-clear-label {
-    display: inline;
-    font-size: 0.8rem;
-    font-weight: 600;
-    white-space: nowrap;
-  }
+  .filter-clear-btn .clear-icon svg { width: 17px; height: 17px; }
+  .filter-clear-label { display: none; }
 
   /* فیلد جستجو: یک نوار یکپارچه و مینیمال — پیل سفید با بوردر نازک و
      سایه‌ی خیلی سبک، آیکون خطی (نه ایموجی/دایره‌ی توپر) و دکمه‌ی جستجوی
