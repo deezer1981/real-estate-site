@@ -23,7 +23,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,600;1,700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=24">
+<link rel="stylesheet" href="style.css?v=26">
 
 <!-- لوگو برای گوگل و مرورگر -->
 <link rel="icon" type="image/png" href="https://atlas-amlak.ir/assets/icon-512.png">
@@ -165,7 +165,7 @@
 {"@context": "https://schema.org", "@graph": [{"@type": "WebPage", "@id": "https://atlas-amlak.ir/sale-bagh-villa.html#webpage", "url": "https://atlas-amlak.ir/sale-bagh-villa.html", "name": "باغ، باغچه و ویلا در خادم‌آباد و باغستان", "description": "فایل‌های فعال باغ، باغچه و ویلا در خادم‌آباد، باغستان و شهریار.", "isPartOf": {"@type": "WebSite", "name": "اطلس املاک", "url": "https://atlas-amlak.ir/"}, "about": {"@type": "RealEstateAgent", "name": "گروه مشاورین املاک اطلس", "url": "https://atlas-amlak.ir/", "telephone": "+989106943220"}, "inLanguage": "fa-IR"}, {"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "صفحه اصلی", "item": "https://atlas-amlak.ir/"}, {"@type": "ListItem", "position": 2, "name": "باغ، باغچه و ویلا", "item": "https://atlas-amlak.ir/sale-bagh-villa.html"}]}]}
 </script>
 </head>
-<body id="top">
+<body class="page-category" id="top">
 <header class="site-header">
   <div class="wrap header-inner">
     <a href="index.html" class="brand" style="text-decoration:none;color:inherit">
@@ -227,54 +227,81 @@
 
 <section class="listings" id="listings">
   <div class="wrap">
-    <div class="listings-filter page-listings-filter" id="listingsFilter">
-      <div class="filter-page-head">
-        <span class="filter-page-title">فیلتر باغ، باغچه و ویلا</span>
+        <div class="listings-filter" id="listingsFilter">
+      <!-- ردیف اول: فیلتر پیشرفته + بازنشانی — عین صفحه اصلی -->
+      <div class="filter-toolbar-top">
+        <button type="button" id="advancedFilterToggle" class="advanced-filter-toggle">
+          <span class="toggle-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h13M21 18h0" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+              <circle cx="14" cy="6" r="2" fill="currentColor"/>
+              <circle cx="8" cy="12" r="2" fill="currentColor"/>
+              <circle cx="17" cy="18" r="2" fill="currentColor"/>
+            </svg>
+          </span>
+          <span class="toggle-label">فیلتر پیشرفته</span>
+          <span class="filter-badge" id="advFilterBadge" hidden>0</span>
+          <span class="chevron" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="m6 9 6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </span>
+        </button>
+        <button type="button" class="filter-clear-btn is-empty" id="filterResetBtn" title="بازنشانی همه فیلترها" aria-label="بازنشانی همه فیلترها">
+          <span class="clear-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M4 4v5h5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M4.6 15a8 8 0 1 0 1.7-8.4L4 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </span>
+          <span class="filter-clear-label">بازنشانی</span>
+        </button>
       </div>
-      <div class="advanced-filters open page-advanced-filters" id="advancedFilterPanel">
-        <div class="filter-row open">
-          <span class="filter-row-label">متراژ <span class="row-selected"></span></span>
-          <div class="filter-chips filter-chips-scroll">
-              <button type="button" class="filter-chip active" data-filter-group="area" data-value="">همه</button>
-              <button type="button" class="filter-chip" data-filter-group="area" data-value="0-70">تا ۷۰</button>
-              <button type="button" class="filter-chip" data-filter-group="area" data-value="70-100">۷۰–۱۰۰</button>
-              <button type="button" class="filter-chip" data-filter-group="area" data-value="100-150">۱۰۰–۱۵۰</button>
-              <button type="button" class="filter-chip" data-filter-group="area" data-value="150+">۱۵۰+</button>
-          </div>
-        </div>
 
-        <div class="filter-row open">
-          <span class="filter-row-label">بودجه / قیمت کل <span class="row-selected"></span></span>
-          <div class="filter-chips filter-chips-scroll">
+      <div id="advancedFilterPanel" class="advanced-filters">
+          <div class="filter-row">
+            <span class="filter-row-label">بودجه / قیمت کل <span class="row-selected"></span></span>
+            <div class="filter-chips filter-chips-scroll">
               <button type="button" class="filter-chip active" data-filter-group="price" data-value="">همه</button>
               <button type="button" class="filter-chip" data-filter-group="price" data-value="0-5">تا ۵ میلیارد</button>
               <button type="button" class="filter-chip" data-filter-group="price" data-value="5-8">۵–۸ میلیارد</button>
               <button type="button" class="filter-chip" data-filter-group="price" data-value="8-11">۸–۱۱ میلیارد</button>
               <button type="button" class="filter-chip" data-filter-group="price" data-value="11+">۱۱ میلیارد+</button>
+            </div>
           </div>
-        </div>
-
-        <div class="filter-row open">
-          <span class="filter-row-label">قیمت متری <span class="row-selected"></span></span>
-          <div class="filter-chips filter-chips-scroll">
+          <div class="filter-row">
+            <span class="filter-row-label">قیمت متری <span class="row-selected"></span></span>
+            <div class="filter-chips filter-chips-scroll">
               <button type="button" class="filter-chip active" data-filter-group="pricem2" data-value="">همه</button>
               <button type="button" class="filter-chip" data-filter-group="pricem2" data-value="0-50">تا ۵۰ میلیون</button>
               <button type="button" class="filter-chip" data-filter-group="pricem2" data-value="50-80">۵۰–۸۰ میلیون</button>
               <button type="button" class="filter-chip" data-filter-group="pricem2" data-value="80-120">۸۰–۱۲۰ میلیون</button>
               <button type="button" class="filter-chip" data-filter-group="pricem2" data-value="120+">۱۲۰ میلیون+</button>
+            </div>
           </div>
-        </div>
-
-        <div class="filter-row open">
-          <span class="filter-row-label">امکانات <span class="row-selected"></span></span>
-          <div class="filter-chips filter-chips-scroll">
-              <button type="button" class="filter-chip" data-amenity="parking">🅿️ پارکینگ</button>
-              <button type="button" class="filter-chip" data-amenity="storage">📦 انباری</button>
+          <div class="filter-row">
+            <span class="filter-row-label">متراژ <span class="row-selected"></span></span>
+            <div class="filter-chips filter-chips-scroll">
+              <button type="button" class="filter-chip active" data-filter-group="area" data-value="">همه</button>
+              <button type="button" class="filter-chip" data-filter-group="area" data-value="0-70">تا ۷۰</button>
+              <button type="button" class="filter-chip" data-filter-group="area" data-value="70-100">۷۰–۱۰۰</button>
+              <button type="button" class="filter-chip" data-filter-group="area" data-value="100-150">۱۰۰–۱۵۰</button>
+              <button type="button" class="filter-chip" data-filter-group="area" data-value="150+">۱۵۰+</button>
+            </div>
           </div>
-        </div>
+          <div class="filter-row">
+            <span class="filter-row-label">امکانات <span class="row-selected"></span></span>
+            <div class="filter-chips filter-chips-scroll">
+              <button type="button" class="filter-chip" data-amenity="parking">
+                <svg class="wizard-chip-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="3" stroke="currentColor" stroke-width="1.6"/><path d="M9.5 16V8h3a2.5 2.5 0 0 1 0 5h-3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                پارکینگ
+              </button>
+              <button type="button" class="filter-chip" data-amenity="storage">
+                <svg class="wizard-chip-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M4 8.5 12 5l8 3.5-8 3.5-8-3.5Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M4 8.5V16l8 3.5 8-3.5V8.5" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M12 12v7.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+                انباری
+              </button>
+            </div>
+          </div>
       </div>
 
-      <!-- جستجو زیر فیلتر — همان استایل صفحه اصلی -->
       <div class="filter-search-bar" id="filterAdvanced">
         <div class="filter-search-inner">
           <span class="filter-search-icon" aria-hidden="true">
@@ -296,7 +323,9 @@
           </button>
         </div>
       </div>
+
     </div>
+
     <div class="section-head">
       <h2>فایل‌های باغ، باغچه و ویلا</h2>
       <span class="section-note" id="resultCount">۳ آگهی</span>

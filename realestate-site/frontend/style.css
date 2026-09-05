@@ -3532,3 +3532,19 @@ body.single-ad-mode .card-more-btn { display: none !important; }
   margin-inline-start: auto;
 }
 
+
+/* صفحات تخصصی: پنل فیلتر پیشرفته همان استایل صفحه اصلی */
+body.page-category .advanced-filters.open {
+  display: block;
+}
+body.page-category .advanced-filters .filter-row.open .filter-chips-scroll {
+  max-height: 160px;
+  padding-bottom: 12px;
+  overflow-x: auto;
+}
+@media (min-width: 720px) {
+  body.page-category .advanced-filters .filter-row.open .filter-chips-scroll {
+    max-height: 280px;
+  }
+}
+
