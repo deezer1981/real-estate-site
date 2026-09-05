@@ -3298,8 +3298,10 @@ body.single-ad-mode .card-more-btn { display: none !important; }
 .wizard-chip-icon { opacity: 0.7; }
 .filter-chip.active .wizard-chip-icon { opacity: 1; }
 .wizard-category-chips .filter-chip {
-  min-height: 46px;
   border-radius: 11px;
+}
+@media (min-width: 721px) {
+  .wizard-category-chips .filter-chip { min-height: 46px; }
 }
 
 .wizard-back-btn {

@@ -2196,6 +2196,24 @@ document.querySelectorAll(".quick-card[href='#listings']").forEach((card) => {
     zamin: "zamin",
   };
 
+  // دسته‌هایی که «تعداد خواب» برایشان بی‌معنی است (زمین، باغ، باغچه)
+  const NO_ROOMS_CATEGORIES = ["zamin", "bagh", "baghcheh"];
+  function updateRoomsRowVisibility(cat) {
+    if (!stepDetails) return;
+    const roomsChip = stepDetails.querySelector('[data-filter-group="rooms"]');
+    const roomsRow = roomsChip ? roomsChip.closest(".filter-row") : null;
+    if (!roomsRow) return;
+    const hide = NO_ROOMS_CATEGORIES.includes(cat);
+    roomsRow.hidden = hide;
+    if (hide) {
+      stepDetails.querySelectorAll('[data-filter-group="rooms"]').forEach((c) => {
+        c.classList.toggle("active", (c.getAttribute("data-value") || "") === "");
+      });
+      const span = roomsRow.querySelector(".row-selected");
+      if (span) span.textContent = "";
+    }
+  }
+
   if (stepCategory) {
     stepCategory.querySelectorAll("[data-category]").forEach((chip) => {
       chip.addEventListener("click", () => {
@@ -2209,6 +2227,7 @@ document.querySelectorAll(".quick-card[href='#listings']").forEach((card) => {
           setPtypeValue(CATEGORY_PTYPE[cat] || "");
           setDealTypeValue("فروش");
         }
+        updateRoomsRowVisibility(cat);
         showStep("sale-details", "forward");
         setProgress(3, 3, PROGRESS_LABELS.sale);
         refresh();
