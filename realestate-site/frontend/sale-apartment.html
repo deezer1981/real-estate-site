@@ -23,7 +23,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,600;1,700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="style.css?v=24">
 
 <!-- لوگو برای گوگل و مرورگر -->
 <link rel="icon" type="image/png" href="https://atlas-amlak.ir/assets/icon-512.png">
@@ -227,57 +227,84 @@
 
 <section class="listings" id="listings">
   <div class="wrap">
-    <div class="listings-filter" id="listingsFilter">
-      <div class="advanced-filters open" id="advancedFilterPanel">
-        <div class="filter-row">
-          <span class="filter-row-label">متراژ</span>
+    <div class="listings-filter page-listings-filter" id="listingsFilter">
+      <div class="filter-page-head">
+        <span class="filter-page-title">فیلتر فروش آپارتمان</span>
+      </div>
+      <div class="advanced-filters open page-advanced-filters" id="advancedFilterPanel">
+        <div class="filter-row open">
+          <span class="filter-row-label">متراژ <span class="row-selected"></span></span>
           <div class="filter-chips filter-chips-scroll">
-            <button type="button" class="filter-chip active" data-filter-group="area" data-value="">همه</button>
-            <button type="button" class="filter-chip" data-filter-group="area" data-value="0-70">تا ۷۰</button>
-            <button type="button" class="filter-chip" data-filter-group="area" data-value="70-100">۷۰–۱۰۰</button>
-            <button type="button" class="filter-chip" data-filter-group="area" data-value="100-150">۱۰۰–۱۵۰</button>
-            <button type="button" class="filter-chip" data-filter-group="area" data-value="150+">۱۵۰+</button>
+              <button type="button" class="filter-chip active" data-filter-group="area" data-value="">همه</button>
+              <button type="button" class="filter-chip" data-filter-group="area" data-value="0-70">تا ۷۰</button>
+              <button type="button" class="filter-chip" data-filter-group="area" data-value="70-100">۷۰–۱۰۰</button>
+              <button type="button" class="filter-chip" data-filter-group="area" data-value="100-150">۱۰۰–۱۵۰</button>
+              <button type="button" class="filter-chip" data-filter-group="area" data-value="150+">۱۵۰+</button>
           </div>
         </div>
 
-        <div class="filter-row">
-          <span class="filter-row-label">خواب</span>
+        <div class="filter-row open">
+          <span class="filter-row-label">تعداد خواب <span class="row-selected"></span></span>
           <div class="filter-chips filter-chips-scroll">
-            <button type="button" class="filter-chip active" data-filter-group="rooms" data-value="">همه</button>
-            <button type="button" class="filter-chip" data-filter-group="rooms" data-value="1">۱ خواب</button>
-            <button type="button" class="filter-chip" data-filter-group="rooms" data-value="2">۲ خواب</button>
-            <button type="button" class="filter-chip" data-filter-group="rooms" data-value="3+">۳ خواب+</button>
+              <button type="button" class="filter-chip active" data-filter-group="rooms" data-value="">همه</button>
+              <button type="button" class="filter-chip" data-filter-group="rooms" data-value="1">۱ خواب</button>
+              <button type="button" class="filter-chip" data-filter-group="rooms" data-value="2">۲ خواب</button>
+              <button type="button" class="filter-chip" data-filter-group="rooms" data-value="3+">۳ خواب+</button>
           </div>
         </div>
 
-        <div class="filter-row">
-          <span class="filter-row-label">قیمت فروش</span>
+        <div class="filter-row open">
+          <span class="filter-row-label">بودجه / قیمت کل <span class="row-selected"></span></span>
           <div class="filter-chips filter-chips-scroll">
-            <button type="button" class="filter-chip active" data-filter-group="price" data-value="">همه</button>
-            <button type="button" class="filter-chip" data-filter-group="price" data-value="0-5">تا ۵ میلیارد</button>
-            <button type="button" class="filter-chip" data-filter-group="price" data-value="5-8">۵–۸ میلیارد</button>
-            <button type="button" class="filter-chip" data-filter-group="price" data-value="8-11">۸–۱۱ میلیارد</button>
-            <button type="button" class="filter-chip" data-filter-group="price" data-value="11+">۱۱ میلیارد+</button>
+              <button type="button" class="filter-chip active" data-filter-group="price" data-value="">همه</button>
+              <button type="button" class="filter-chip" data-filter-group="price" data-value="0-5">تا ۵ میلیارد</button>
+              <button type="button" class="filter-chip" data-filter-group="price" data-value="5-8">۵–۸ میلیارد</button>
+              <button type="button" class="filter-chip" data-filter-group="price" data-value="8-11">۸–۱۱ میلیارد</button>
+              <button type="button" class="filter-chip" data-filter-group="price" data-value="11+">۱۱ میلیارد+</button>
           </div>
         </div>
 
-        <div class="filter-row">
-          <span class="filter-row-label">امکانات</span>
+        <div class="filter-row open">
+          <span class="filter-row-label">قیمت متری <span class="row-selected"></span></span>
           <div class="filter-chips filter-chips-scroll">
-            <button type="button" class="filter-chip" data-amenity="parking">🅿️ پارکینگ</button>
-            <button type="button" class="filter-chip" data-amenity="elevator">🛗 آسانسور</button>
-            <button type="button" class="filter-chip" data-amenity="storage">📦 انباری</button>
+              <button type="button" class="filter-chip active" data-filter-group="pricem2" data-value="">همه</button>
+              <button type="button" class="filter-chip" data-filter-group="pricem2" data-value="0-50">تا ۵۰ میلیون</button>
+              <button type="button" class="filter-chip" data-filter-group="pricem2" data-value="50-80">۵۰–۸۰ میلیون</button>
+              <button type="button" class="filter-chip" data-filter-group="pricem2" data-value="80-120">۸۰–۱۲۰ میلیون</button>
+              <button type="button" class="filter-chip" data-filter-group="pricem2" data-value="120+">۱۲۰ میلیون+</button>
+          </div>
+        </div>
+
+        <div class="filter-row open">
+          <span class="filter-row-label">امکانات <span class="row-selected"></span></span>
+          <div class="filter-chips filter-chips-scroll">
+              <button type="button" class="filter-chip" data-amenity="parking">🅿️ پارکینگ</button>
+              <button type="button" class="filter-chip" data-amenity="elevator">🛗 آسانسور</button>
+              <button type="button" class="filter-chip" data-amenity="storage">📦 انباری</button>
           </div>
         </div>
       </div>
 
-      <!-- جستجو زیر فیلتر -->
+      <!-- جستجو زیر فیلتر — همان استایل صفحه اصلی -->
       <div class="filter-search-bar" id="filterAdvanced">
         <div class="filter-search-inner">
-          <span class="filter-search-icon" aria-hidden="true">🔍</span>
+          <span class="filter-search-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/>
+              <path d="M21 21l-4.3-4.3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          </span>
           <input type="text" id="citySearch" placeholder="جستجو آدرس، کد یا نوع ملک...">
-          <button type="button" class="filter-clear-btn" id="filterResetBtn" title="پاک کردن" aria-label="پاک کردن">✕</button>
-          <button type="button" class="filter-apply-btn" id="searchBtn">جستجو</button>
+          <button type="button" class="search-clear-btn" id="citySearchClear" hidden aria-label="پاک کردن متن جستجو">×</button>
+          <button type="button" class="filter-apply-btn" id="searchBtn">
+            <span class="apply-btn-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/>
+                <path d="M21 21l-4.3-4.3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+            </span>
+            <span class="apply-btn-label">جستجو</span>
+          </button>
         </div>
       </div>
     </div>

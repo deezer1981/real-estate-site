@@ -3468,3 +3468,67 @@ body.single-ad-mode .card-more-btn { display: none !important; }
   .wizard-progress-step.active .wizard-progress-label { color: #8C6530; }
   .advanced-filters.open { background: #FFFCF6; }
 }
+
+
+/* ===== فیلتر صفحات تخصصی (آپارتمان / ویلا / زمین / رهن / پیش‌فروش) =====
+   همان کارت سفید و چیپ‌های صفحه اصلی، بدون ویزارد معامله */
+.page-listings-filter {
+  margin-bottom: 18px;
+}
+.filter-page-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  padding-inline: 2px;
+}
+.filter-page-title {
+  font-size: 0.92rem;
+  font-weight: 800;
+  color: var(--ink);
+  letter-spacing: -0.01em;
+}
+.page-advanced-filters.advanced-filters,
+.page-advanced-filters.advanced-filters.open {
+  display: block !important;
+  background: #FFFFFF;
+  border: 1px solid #ECE0C8;
+  border-radius: 14px;
+  padding: 6px 16px 4px;
+  margin: 0 0 12px;
+  box-shadow: 0 8px 24px rgba(20,33,61,0.08);
+}
+/* ردیف‌ها در صفحات تخصصی همیشه باز */
+.page-advanced-filters .filter-row {
+  border-bottom: 1px solid rgba(20,33,61,0.08);
+  margin: 0;
+  padding: 0;
+  gap: 0;
+}
+.page-advanced-filters .filter-row:last-child { border-bottom: none; }
+.page-advanced-filters .filter-row-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 2px 6px;
+  font-size: 0.9rem;
+  font-weight: 800;
+  color: var(--ink);
+  cursor: default;
+}
+.page-advanced-filters .filter-row-label::after {
+  display: none !important; /* بدون فلش آکاردئون */
+}
+.page-advanced-filters .filter-chips-scroll {
+  max-height: none !important;
+  overflow-x: auto;
+  padding-bottom: 12px !important;
+  flex-wrap: wrap;
+}
+.page-advanced-filters .filter-row-label .row-selected {
+  font-weight: 700;
+  color: var(--brass);
+  font-size: 0.82rem;
+  margin-inline-start: auto;
+}
+
