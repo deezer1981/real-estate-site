@@ -2482,6 +2482,136 @@ body.single-ad-mode .card-image-wrap {
   }
 }
 
+/* ===============================================================
+   ===== ویزارد فیلتر پله‌ای (جایگزین چیپ‌های بالای قبلی) =====
+   منطق: هر مرحله فقط گزینه‌های همون مرحله رو نشون می‌ده. با انتخاب،
+   مرحله قبل به یک «چیپ خلاصه» (wizard-crumb) توی ردیف بالا جمع
+   می‌شه — نه پاک می‌شه نه رو صفحه شلوغ می‌مونه — و با کلیک روی همون
+   چیپ دوباره باز و قابل تغییره. صفحه‌ی موبایل همیشه فقط یک ردیف
+   گزینه‌ی «باز» می‌بینه، نه انباشتِ همه‌ی مراحل روی هم.
+   =============================================================== */
+.filter-wizard {
+  margin: 4px 0 12px;
+}
+
+/* --- ردیف چیپ‌های خلاصه‌ی مراحلِ طی‌شده --- */
+.wizard-trail {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.wizard-trail:empty { margin-bottom: 0; }
+.wizard-crumb {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: rgba(20, 33, 61, 0.9);
+  color: #F5F1EA;
+  border: 1px solid rgba(20, 33, 61, 0.9);
+  border-radius: 999px;
+  padding: 7px 8px 7px 12px;
+  font-family: inherit;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s ease, transform 0.1s ease;
+  animation: wizardCrumbPop 0.2s ease;
+}
+.wizard-crumb:hover { background: rgba(20, 33, 61, 1); }
+.wizard-crumb:active { transform: scale(0.97); }
+.wizard-crumb-icon { font-size: 0.95rem; line-height: 1; }
+.wizard-crumb-edit {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: rgba(245, 241, 234, 0.16);
+  font-size: 0.66rem;
+  flex-shrink: 0;
+}
+@keyframes wizardCrumbPop {
+  0% { transform: scale(0.9); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* --- محتوای مرحله‌ی جاری --- */
+.wizard-step { animation: wizardStepIn 0.18s ease; }
+@keyframes wizardStepIn {
+  0% { opacity: 0; transform: translateY(4px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+/* --- کارت‌های بزرگِ انتخابِ مرحله (نوع معامله / نوع ملک) — مینیمال،
+       آیکون روی متن، شبکه‌ی دوستونه در موبایل --- */
+.wizard-options {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+.wizard-option-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: #FFFFFF;
+  border: 1px solid #ECE0C8;
+  border-radius: 14px;
+  padding: 16px 10px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease;
+  box-shadow: 0 2px 8px rgba(20,33,61,0.04);
+}
+.wizard-option-btn:hover {
+  border-color: var(--brass, #B8894F);
+  box-shadow: 0 6px 16px rgba(184,137,79,0.16);
+}
+.wizard-option-btn:active { transform: scale(0.98); }
+.wizard-option-icon { font-size: 1.6rem; line-height: 1; }
+.wizard-option-label {
+  font-size: 0.86rem;
+  font-weight: 700;
+  color: var(--ink, #201C15);
+  text-align: center;
+}
+@media (min-width: 480px) {
+  .wizard-options { grid-template-columns: repeat(3, 1fr); }
+}
+@media (min-width: 720px) {
+  .wizard-options { grid-template-columns: repeat(5, 1fr); }
+}
+
+/* --- ردیف‌های فیلد نهایی (متراژ/خواب/قیمت/...) بعد از رسیدن به آخرین
+       مرحله — بدون آکاردئون؛ همه با هم و کوتاه، چون فقط ۱-۲ تپ لازم
+       بوده تا اینجا برسیم و دیگه شلوغ نیست --- */
+.wizard-field-row {
+  border-bottom: 1px solid rgba(20,33,61,0.08);
+  padding: 10px 2px;
+  margin: 0;
+}
+.wizard-field-row:last-child { border-bottom: none; }
+.wizard-field-row .filter-row-label {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 800;
+  color: var(--sage, #5C6B5A);
+  margin-bottom: 6px;
+}
+
+/* --- ردیف پایینی: محله‌گردی + بازنشانی، بدون دکمه‌ی «فیلتر پیشرفته»‌ی
+       قبلی (چون خودِ ویزارد از همون اول باز و در دسترسه) --- */
+.filter-toolbar-top-solo {
+  justify-content: space-between;
+}
+.filter-toolbar-top-solo .filter-chip-local {
+  flex: 0 0 auto;
+}
+
 
 /* ===== اطلاعات بیشتر ===== */
 .card-more-btn {

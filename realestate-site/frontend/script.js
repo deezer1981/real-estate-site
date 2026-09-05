@@ -296,6 +296,56 @@ function parseRahnMillion(p) {
   return num;
 }
 
+/** قیمت هر متر نرمال‌شده به «میلیون تومان» برای فیلتر (فقط فروش/پیش‌فروش) */
+function parsePricePerM2Million(p) {
+  if (!isSaleLike(p)) return null;
+  let s = cleanPriceText(p.price_per_m2);
+  if (!s || s === "-" || /توافقی/.test(s)) return null;
+  const m = String(s).match(/([\d,]+(?:\.\d+)?)/);
+  if (!m) return null;
+  let num = parseFloat(m[1].replace(/,/g, ""));
+  if (!Number.isFinite(num)) return null;
+  if (/میلیارد/.test(s)) num = num * 1000;
+  return num;
+}
+
+/** اجاره نرمال‌شده به «میلیون تومان» برای فیلتر (فقط رهن و اجاره) */
+function parseEjareMillion(p) {
+  if (isSaleLike(p)) return null;
+  let s = cleanPriceText(p.ejare);
+  if (!s || s === "-" || /توافقی/.test(s)) return null;
+  const m = String(s).match(/([\d,]+(?:\.\d+)?)/);
+  if (!m) return null;
+  let num = parseFloat(m[1].replace(/,/g, ""));
+  if (!Number.isFinite(num)) return null;
+  if (/میلیارد/.test(s)) num = num * 1000;
+  return num;
+}
+
+/**
+ * تطبیقِ عمومیِ یک عدد با یک رشته‌ی بازه، برای هر گروه فیلتر عددی
+ * (متراژ/خواب/قیمت/رهن/اجاره/قیمت متری). فرمت‌های پشتیبانی‌شده:
+ *   "A+"   → num >= A
+ *   "A-B"  → num > A و num <= B (به‌جز وقتی A صفره: num >= 0)
+ *   "A"    → num === A (برای خواب دقیق مثل "1"/"2")
+ * این تابع جایگزینِ چندین بلوکِ if/else هاردکد شده‌ی قبلی شد تا بشه
+ * برای هر نوع ملک (آپارتمان/زمین/باغ/...) بازه‌های متفاوت تعریف کرد
+ * بدون این‌که لازم باشه هر بار منطق فیلتر رو هم عوض کرد.
+ */
+function matchRange(num, rangeStr) {
+  if (!rangeStr) return true;
+  if (num == null || !Number.isFinite(num)) return false;
+  const s = String(rangeStr);
+  if (s.endsWith("+")) return num >= parseFloat(s);
+  if (s.includes("-")) {
+    const parts = s.split("-");
+    const a = parseFloat(parts[0]);
+    const b = parseFloat(parts[1]);
+    return (a === 0 ? num >= a : num > a) && num <= b;
+  }
+  return num === parseFloat(s);
+}
+
 function getActiveFilterValue(group) {
   const el = document.querySelector(`[data-filter-group="${group}"].active, .filter-chip.active[data-filter-group="${group}"]`);
   // chips use class on button
@@ -1111,11 +1161,15 @@ function applyFilters() {
   const keyword = citySearchEl ? citySearchEl.value.trim() : "";
   const dealType = dealTypeEl ? dealTypeEl.value : "";
 
-  const ptypeVal = (document.querySelector('.filter-chip[data-filter-group="ptype"].active') || {}).getAttribute?.("data-value") || "";
-  const areaVal = (document.querySelector('.filter-chip[data-filter-group="area"].active') || {}).getAttribute?.("data-value") || "";
-  const roomsVal = (document.querySelector('.filter-chip[data-filter-group="rooms"].active') || {}).getAttribute?.("data-value") || "";
-  const priceVal = (document.querySelector('.filter-chip[data-filter-group="price"].active') || {}).getAttribute?.("data-value") || "";
-  const rahnVal = (document.querySelector('.filter-chip[data-filter-group="rahn"].active') || {}).getAttribute?.("data-value") || "";
+  const ptypeVal = getActiveFilterValue("ptype");
+  const areaVal = getActiveFilterValue("area");
+  const roomsVal = getActiveFilterValue("rooms");
+  const priceVal = getActiveFilterValue("price");
+  const pricem2Val = getActiveFilterValue("pricem2");
+  const rahnVal = getActiveFilterValue("rahn");
+  const ejareVal = getActiveFilterValue("ejare");
+  const landuseVal = getActiveFilterValue("landuse");
+  const docsVal = getActiveFilterValue("docs");
   const needParking = isAmenityOn("parking");
   const needElevator = isAmenityOn("elevator");
   const needStorage = isAmenityOn("storage");
@@ -1138,12 +1192,12 @@ function applyFilters() {
     }
   }
 
-  // نوع ملک — آپارتمان/ویلایی/باغ/باغچه (بر اساس همون slug نوع ملک)
+  // نوع ملک — آپارتمان/ویلایی/باغ/باغچه/زمین (بر اساس همون slug نوع ملک)
   if (ptypeVal) {
     filtered = filtered.filter((p) => {
       if (p.is_local || p.deal_type === "محله‌گردی") return false;
       const slug = PROPERTY_TYPE_SLUGS[(p.property_type || "").trim()] || "";
-      if (ptypeVal === "bagh") return slug === "bagh" || slug === "bagh-villa";
+      if (ptypeVal === "bagh") return slug === "bagh" || slug === "bagh-villa" || slug === "baghcheh";
       return slug === ptypeVal;
     });
   }
@@ -1176,17 +1230,14 @@ function applyFilters() {
     });
   }
 
-  // متراژ
+  // متراژ — بازه‌ها بسته به نوع ملک انتخابی توی ویزارد فرق می‌کنن،
+  // اما همه از همین یک مسیر (matchRange) رد می‌شن
   if (areaVal) {
     filtered = filtered.filter((p) => {
       if (p.is_local || p.deal_type === "محله‌گردی") return false;
       const a = parseAreaM2(p);
       if (!a) return false;
-      if (areaVal === "0-70") return a <= 70;
-      if (areaVal === "70-100") return a > 70 && a <= 100;
-      if (areaVal === "100-150") return a > 100 && a <= 150;
-      if (areaVal === "150+") return a > 150;
-      return true;
+      return matchRange(a, areaVal);
     });
   }
 
@@ -1194,39 +1245,57 @@ function applyFilters() {
   if (roomsVal) {
     filtered = filtered.filter((p) => {
       if (p.is_local || p.deal_type === "محله‌گردی") return false;
-      const r = parseRooms(p);
-      if (roomsVal === "3+") return r >= 3;
-      return r === parseInt(roomsVal, 10);
+      return matchRange(parseRooms(p), roomsVal);
     });
   }
 
-  // قیمت فروش (میلیارد) — با فعال شدن، فقط فایل‌های فروشیِ داخل بازه می‌مانند
-  if (priceVal && dealType !== "رهن و اجاره") {
+  // قیمت کل فروش/پیش‌فروش (میلیارد)
+  if (priceVal) {
     filtered = filtered.filter((p) => {
       if (p.is_local || p.deal_type === "محله‌گردی") return false;
-      if (p.deal_type !== "فروش") return false;
-      const bil = parseSalePriceBillion(p);
-      if (bil == null) return false;
-      if (priceVal === "0-5") return bil < 5;
-      if (priceVal === "5-8") return bil >= 5 && bil < 8;
-      if (priceVal === "8-11") return bil >= 8 && bil < 11;
-      if (priceVal === "11+") return bil >= 11;
-      return true;
+      return matchRange(parseSalePriceBillion(p), priceVal);
+    });
+  }
+
+  // قیمت متری فروش/پیش‌فروش (میلیون تومان)
+  if (pricem2Val) {
+    filtered = filtered.filter((p) => {
+      if (p.is_local || p.deal_type === "محله‌گردی") return false;
+      return matchRange(parsePricePerM2Million(p), pricem2Val);
     });
   }
 
   // مبلغ رهن (میلیون تومان) — فقط فایل‌های رهن و اجاره
-  if (rahnVal && dealType !== "فروش") {
+  if (rahnVal) {
     filtered = filtered.filter((p) => {
       if (p.is_local || p.deal_type === "محله‌گردی") return false;
-      if (p.deal_type === "فروش") return false;
-      const mil = parseRahnMillion(p);
-      if (mil == null) return false;
-      if (rahnVal === "0-200") return mil < 200;
-      if (rahnVal === "200-500") return mil >= 200 && mil < 500;
-      if (rahnVal === "500-1000") return mil >= 500 && mil < 1000;
-      if (rahnVal === "1000+") return mil >= 1000;
-      return true;
+      return matchRange(parseRahnMillion(p), rahnVal);
+    });
+  }
+
+  // مبلغ اجاره (میلیون تومان) — فقط فایل‌های رهن و اجاره
+  if (ejareVal) {
+    filtered = filtered.filter((p) => {
+      if (p.is_local || p.deal_type === "محله‌گردی") return false;
+      return matchRange(parseEjareMillion(p), ejareVal);
+    });
+  }
+
+  // نوع کاربری — چون فیلد ساختاریافته‌ی جدایی توی داده نیست، روی متنِ
+  // نوع ملک/توضیحات/عنوان جستجو می‌شه (زمین/باغ)
+  if (landuseVal) {
+    filtered = filtered.filter((p) => {
+      if (p.is_local || p.deal_type === "محله‌گردی") return false;
+      const hay = [p.property_type, p.description, p.title].map((x) => String(x || "")).join(" ");
+      return hay.includes(landuseVal);
+    });
+  }
+
+  // اسناد — روی فیلد مدارک (زمین/باغ)
+  if (docsVal) {
+    filtered = filtered.filter((p) => {
+      if (p.is_local || p.deal_type === "محله‌گردی") return false;
+      return String(p.documents || "").includes(docsVal);
     });
   }
 
@@ -1801,136 +1870,278 @@ document.querySelectorAll(".quick-card[href='#listings']").forEach((card) => {
 
 
 
-(function initListingsFilter() {
-  const chips = document.querySelectorAll(".filter-chip[data-deal]");
-  const moreBtn = document.getElementById("filterMoreBtn");
-  const advanced = document.getElementById("filterAdvanced");
+// ===================================================================
+// ویزارد فیلتر پله‌ای: به‌جای نمایش همزمان همه‌ی فیلترها، هر مرحله فقط
+// گزینه‌های مرتبط با انتخاب قبلی رو نشون می‌ده. مراحل طی‌شده به یک
+// چیپ خلاصه (wizard-crumb) توی ردیف بالا جمع می‌شن که با کلیک دوباره
+// باز و قابل تغییرن — نه پاک می‌شن، نه رو صفحه انباشته می‌مونن.
+// ===================================================================
+const AMENITY_OPTIONS = [
+  ["parking", "🅿️ پارکینگ"],
+  ["elevator", "🛗 آسانسور"],
+  ["storage", "📦 انباری"],
+];
+
+// فیلدهای مرحله‌ی آخر برای هر «نوع ملکِ» خرید و فروش
+const WIZARD_PTYPES = {
+  aparteman: {
+    label: "آپارتمان",
+    icon: "🏢",
+    dealType: "فروش",
+    fields: [
+      { group: "area", label: "متراژ", options: [["0-70", "تا ۷۰ متر"], ["70-100", "۷۰–۱۰۰ متر"], ["100-150", "۱۰۰–۱۵۰ متر"], ["150+", "۱۵۰ متر+"]] },
+      { group: "rooms", label: "خواب", options: [["1", "۱ خواب"], ["2", "۲ خواب"], ["3+", "۳ خواب+"]] },
+      { group: "amenity", label: "امکانات", amenity: true, options: AMENITY_OPTIONS },
+      { group: "pricem2", label: "قیمت متری", options: [["0-15", "تا ۱۵ میلیون"], ["15-25", "۱۵–۲۵ میلیون"], ["25-40", "۲۵–۴۰ میلیون"], ["40+", "۴۰ میلیون+"]] },
+      { group: "price", label: "قیمت کل", options: [["0-5", "تا ۵ میلیارد"], ["5-8", "۵–۸ میلیارد"], ["8-11", "۸–۱۱ میلیارد"], ["11+", "۱۱ میلیارد+"]] },
+    ],
+  },
+  villa: {
+    label: "خانه ویلایی",
+    icon: "🏡",
+    dealType: "فروش",
+    fields: [
+      { group: "area", label: "متراژ", options: [["0-150", "تا ۱۵۰ متر"], ["150-250", "۱۵۰–۲۵۰ متر"], ["250-400", "۲۵۰–۴۰۰ متر"], ["400+", "۴۰۰ متر+"]] },
+      { group: "rooms", label: "خواب", options: [["1", "۱ خواب"], ["2", "۲ خواب"], ["3+", "۳ خواب+"]] },
+      { group: "amenity", label: "امکانات", amenity: true, options: AMENITY_OPTIONS },
+      { group: "price", label: "قیمت کل", options: [["0-8", "تا ۸ میلیارد"], ["8-15", "۸–۱۵ میلیارد"], ["15-25", "۱۵–۲۵ میلیارد"], ["25+", "۲۵ میلیارد+"]] },
+    ],
+  },
+  bagh: {
+    label: "باغ و باغچه",
+    icon: "🌳",
+    dealType: "فروش",
+    fields: [
+      { group: "area", label: "متراژ", options: [["0-300", "تا ۳۰۰ متر"], ["300-600", "۳۰۰–۶۰۰ متر"], ["600-1000", "۶۰۰–۱۰۰۰ متر"], ["1000+", "۱۰۰۰ متر+"]] },
+      { group: "landuse", label: "نوع کاربری", text: true, options: [["مسکونی", "مسکونی"], ["کشاورزی", "کشاورزی"], ["باغی", "باغی"]] },
+      { group: "docs", label: "اسناد", text: true, options: [["سند شش‌دانگ", "سند شش‌دانگ"], ["قولنامه", "قولنامه‌ای"], ["منگوله‌دار", "منگوله‌دار"]] },
+      { group: "price", label: "قیمت کل", options: [["0-5", "تا ۵ میلیارد"], ["5-10", "۵–۱۰ میلیارد"], ["10-20", "۱۰–۲۰ میلیارد"], ["20+", "۲۰ میلیارد+"]] },
+    ],
+  },
+  zamin: {
+    label: "زمین",
+    icon: "🟫",
+    dealType: "فروش",
+    fields: [
+      { group: "area", label: "متراژ", options: [["0-200", "تا ۲۰۰ متر"], ["200-500", "۲۰۰–۵۰۰ متر"], ["500-1000", "۵۰۰–۱۰۰۰ متر"], ["1000+", "۱۰۰۰ متر+"]] },
+      { group: "landuse", label: "نوع کاربری", text: true, options: [["مسکونی", "مسکونی"], ["تجاری", "تجاری"], ["کشاورزی", "کشاورزی"]] },
+      { group: "docs", label: "اسناد", text: true, options: [["سند شش‌دانگ", "سند شش‌دانگ"], ["قولنامه", "قولنامه‌ای"], ["منگوله‌دار", "منگوله‌دار"]] },
+      { group: "price", label: "قیمت کل", options: [["0-3", "تا ۳ میلیارد"], ["3-6", "۳–۶ میلیارد"], ["6-12", "۶–۱۲ میلیارد"], ["12+", "۱۲ میلیارد+"]] },
+    ],
+  },
+  presale: {
+    label: "پیش‌فروش",
+    icon: "🏗️",
+    dealType: "پیش‌فروش",
+    fields: [
+      { group: "area", label: "متراژ", options: [["0-70", "تا ۷۰ متر"], ["70-100", "۷۰–۱۰۰ متر"], ["100-150", "۱۰۰–۱۵۰ متر"], ["150+", "۱۵۰ متر+"]] },
+      { group: "rooms", label: "خواب", options: [["1", "۱ خواب"], ["2", "۲ خواب"], ["3+", "۳ خواب+"]] },
+      { group: "pricem2", label: "قیمت متری", options: [["0-15", "تا ۱۵ میلیون"], ["15-25", "۱۵–۲۵ میلیون"], ["25-40", "۲۵–۴۰ میلیون"], ["40+", "۴۰ میلیون+"]] },
+      { group: "price", label: "قیمت کل", options: [["0-5", "تا ۵ میلیارد"], ["5-8", "۵–۸ میلیارد"], ["8-11", "۸–۱۱ میلیارد"], ["11+", "۱۱ میلیارد+"]] },
+    ],
+  },
+};
+
+// فیلدهای مسیر «رهن و اجاره» — مستقیم، بدون مرحله‌ی نوع ملک
+const RENT_FIELDS = [
+  { group: "area", label: "متراژ", options: [["0-70", "تا ۷۰ متر"], ["70-100", "۷۰–۱۰۰ متر"], ["100-150", "۱۰۰–۱۵۰ متر"], ["150+", "۱۵۰ متر+"]] },
+  { group: "rooms", label: "خواب", options: [["1", "۱ خواب"], ["2", "۲ خواب"], ["3+", "۳ خواب+"]] },
+  { group: "rahn", label: "مبلغ رهن", options: [["0-200", "تا ۲۰۰ میلیون"], ["200-500", "۲۰۰–۵۰۰ میلیون"], ["500-1000", "۵۰۰ میلیون–۱ میلیارد"], ["1000+", "۱ میلیارد+"]] },
+  { group: "ejare", label: "مبلغ اجاره", options: [["0-10", "تا ۱۰ میلیون"], ["10-20", "۱۰–۲۰ میلیون"], ["20-40", "۲۰–۴۰ میلیون"], ["40+", "۴۰ میلیون+"]] },
+  { group: "amenity", label: "امکانات", amenity: true, options: AMENITY_OPTIONS },
+];
+
+(function initFilterWizard() {
+  const trailEl = document.getElementById("wizardTrail");
+  const stepEl = document.getElementById("wizardStep");
   const dealTypeEl = document.getElementById("dealType");
   const resetBtn = document.getElementById("filterResetBtn");
   const cityInput = document.getElementById("citySearch");
   const citySearchClear = document.getElementById("citySearchClear");
   const searchBtn = document.getElementById("searchBtn");
+  if (!trailEl || !stepEl) return;
 
-  // --- شمارنده‌ی فیلترهای فعال: روی دکمه «فیلتر پیشرفته» (فقط پیشرفته‌ها)
-  // و روی دکمه «پاک همه» (پیشرفته + نوع معامله + متن جستجو) نشان داده می‌شود
-  // تا کاربر همیشه دقیقاً ببیند چند فیلتر روشن است و پاک‌کردن چه اثری دارد. ---
-  function getActiveFilterCounts() {
-    const advancedCount =
-      document.querySelectorAll('.filter-chip[data-filter-group].active:not([data-value=""])').length +
-      document.querySelectorAll(".filter-chip[data-amenity].active").length;
-    const dealActive = document.querySelector('.filter-chip[data-deal].active:not([data-deal=""])');
-    const searchActive = cityInput && cityInput.value.trim() !== "";
-    const totalCount = advancedCount + (dealActive ? 1 : 0) + (searchActive ? 1 : 0);
-    return { advancedCount, totalCount };
+  // state.deal: "" | "فروش" | "پیش‌فروش" | "رهن و اجاره"
+  // state.ptype: کلید WIZARD_PTYPES وقتی state.deal === "فروش"/"پیش‌فروش"
+  let state = { deal: "", ptype: "" };
+
+  function setDealType(v) {
+    if (dealTypeEl) dealTypeEl.value = v || "";
+  }
+
+  function makeCrumb(icon, label, onEdit) {
+    const crumb = document.createElement("button");
+    crumb.type = "button";
+    crumb.className = "wizard-crumb";
+    crumb.innerHTML =
+      `<span class="wizard-crumb-icon">${icon}</span>` +
+      `<span class="wizard-crumb-label">${label}</span>` +
+      `<span class="wizard-crumb-edit">✎</span>`;
+    crumb.addEventListener("click", onEdit);
+    return crumb;
+  }
+
+  function makeOptionButton(icon, label, onClick) {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "wizard-option-btn";
+    btn.innerHTML = `<span class="wizard-option-icon">${icon}</span><span class="wizard-option-label">${label}</span>`;
+    btn.addEventListener("click", onClick);
+    return btn;
+  }
+
+  function renderTrail() {
+    trailEl.innerHTML = "";
+    if (state.deal) {
+      const dealLabel = state.deal === "رهن و اجاره" ? "رهن و اجاره" : "خرید و فروش";
+      const dealIcon = state.deal === "رهن و اجاره" ? "🔑" : "🏷️";
+      trailEl.appendChild(makeCrumb(dealIcon, dealLabel, goToStep1));
+    }
+    if (state.deal !== "رهن و اجاره" && state.ptype && WIZARD_PTYPES[state.ptype]) {
+      const cfg = WIZARD_PTYPES[state.ptype];
+      trailEl.appendChild(makeCrumb(cfg.icon, cfg.label, goToStep2));
+    }
+  }
+
+  function goToStep1() {
+    state = { deal: "", ptype: "" };
+    setDealType("");
+    renderStep1();
+  }
+
+  function goToStep2() {
+    state.ptype = "";
+    setDealType("فروش");
+    renderStep2();
+  }
+
+  function renderStep1() {
+    renderTrail();
+    stepEl.innerHTML = "";
+    stepEl.className = "wizard-step wizard-step-options";
+    const grid = document.createElement("div");
+    grid.className = "wizard-options";
+    grid.appendChild(makeOptionButton("📋", "همه آگهی‌ها", () => {
+      state = { deal: "", ptype: "" };
+      setDealType("");
+      renderTrail();
+      stepEl.innerHTML = "";
+      applyFiltersAndBadges();
+    }));
+    grid.appendChild(makeOptionButton("🏷️", "خرید و فروش", () => {
+      state.deal = "فروش";
+      goToStep2();
+    }));
+    grid.appendChild(makeOptionButton("🔑", "رهن و اجاره", () => {
+      state.deal = "رهن و اجاره";
+      setDealType("رهن و اجاره");
+      renderTrail();
+      renderFieldsStep(RENT_FIELDS);
+    }));
+    stepEl.appendChild(grid);
+    applyFiltersAndBadges();
+  }
+
+  function renderStep2() {
+    renderTrail();
+    stepEl.innerHTML = "";
+    stepEl.className = "wizard-step wizard-step-options";
+    const grid = document.createElement("div");
+    grid.className = "wizard-options";
+    Object.keys(WIZARD_PTYPES).forEach((key) => {
+      const cfg = WIZARD_PTYPES[key];
+      grid.appendChild(makeOptionButton(cfg.icon, cfg.label, () => {
+        state.ptype = key;
+        setDealType(cfg.dealType);
+        renderTrail();
+        renderFieldsStep(cfg.fields);
+      }));
+    });
+    stepEl.appendChild(grid);
+    applyFiltersAndBadges();
+  }
+
+  function renderFieldsStep(fields) {
+    stepEl.innerHTML = "";
+    stepEl.className = "wizard-step wizard-step-fields";
+    fields.forEach((f) => {
+      const row = document.createElement("div");
+      row.className = "filter-row wizard-field-row";
+      const labelWrap = document.createElement("span");
+      labelWrap.className = "filter-row-label";
+      labelWrap.textContent = f.label;
+      row.appendChild(labelWrap);
+      const chipsWrap = document.createElement("div");
+      chipsWrap.className = "filter-chips filter-chips-scroll";
+      f.options.forEach(([val, lbl]) => {
+        const chip = document.createElement("button");
+        chip.type = "button";
+        chip.className = "filter-chip";
+        chip.textContent = lbl;
+        if (f.amenity) {
+          chip.setAttribute("data-amenity", val);
+        } else {
+          chip.setAttribute("data-filter-group", f.group);
+          chip.setAttribute("data-value", val);
+        }
+        chip.addEventListener("click", () => {
+          if (f.amenity) {
+            chip.classList.toggle("active");
+          } else {
+            chipsWrap.querySelectorAll(`.filter-chip[data-filter-group="${f.group}"]`).forEach((c) => c.classList.remove("active"));
+            chip.classList.add("active");
+          }
+          applyFiltersAndBadges();
+        });
+        chipsWrap.appendChild(chip);
+      });
+      row.appendChild(chipsWrap);
+      stepEl.appendChild(row);
+    });
+    applyFiltersAndBadges();
+  }
+
+  function getActiveFieldCount() {
+    return stepEl.querySelectorAll('.filter-chip[data-filter-group].active, .filter-chip[data-amenity].active').length;
+  }
+
+  function getTotalActiveCount() {
+    let n = getActiveFieldCount();
+    if (state.deal) n += 1;
+    if (state.deal !== "رهن و اجاره" && state.ptype) n += 1;
+    if (cityInput && cityInput.value.trim()) n += 1;
+    return n;
   }
 
   function updateFilterBadges() {
-    const { advancedCount, totalCount } = getActiveFilterCounts();
-
-    const advBadge = document.getElementById("advFilterBadge");
-    if (advBadge) {
-      advBadge.textContent = String(advancedCount);
-      advBadge.hidden = advancedCount === 0;
-    }
-
+    const total = getTotalActiveCount();
     if (resetBtn) {
-      resetBtn.classList.toggle("is-active", totalCount > 0);
-      resetBtn.classList.toggle("is-empty", totalCount === 0);
+      resetBtn.classList.toggle("is-active", total > 0);
+      resetBtn.classList.toggle("is-empty", total === 0);
       const label = resetBtn.querySelector(".filter-clear-label");
-      if (label) label.textContent = totalCount > 0 ? `بازنشانی (${totalCount})` : "بازنشانی";
+      if (label) label.textContent = total > 0 ? `بازنشانی (${total})` : "بازنشانی";
     }
-
     if (citySearchClear) citySearchClear.hidden = !cityInput || cityInput.value.trim() === "";
   }
   window.updateFilterBadges = updateFilterBadges;
 
-  // --- بازنشانی کامل فیلتر پیشرفته: مقدار چیپ‌ها + برچسب انتخابی هر ردیف +
-  // آکاردئون بازشده + پنل باز + متن دکمه «فیلتر پیشرفته» — همه با هم،
-  // نه فقط مقدار چیپ‌ها (که قبلاً باعث می‌شد بعد از «پاک همه»، دکمه و
-  // برچسب ردیف‌ها همچنان حالت قبلی را نشان بدهند). ---
-  function resetAdvancedFilterUI() {
-    document.querySelectorAll(".filter-chip[data-filter-group], .filter-chip[data-amenity]").forEach((c) => {
-      c.classList.remove("active");
-    });
-    document.querySelectorAll('.filter-chip[data-filter-group][data-value=""]').forEach((c) => {
-      c.classList.add("active");
-    });
-
-    document.querySelectorAll("#advancedFilterPanel .filter-row").forEach((row) => {
-      row.classList.remove("open");
-      const span = row.querySelector(".row-selected");
-      if (span) span.textContent = "";
-    });
-
-    const advPanel = document.getElementById("advancedFilterPanel");
-    const advToggle = document.getElementById("advancedFilterToggle");
-    if (advPanel) advPanel.classList.remove("open");
-    if (advToggle) {
-      advToggle.classList.remove("open");
-      const label = advToggle.querySelector(".toggle-label");
-      if (label) label.textContent = "فیلتر پیشرفته";
-    }
-
+  function applyFiltersAndBadges() {
     updateFilterBadges();
-  }
-  window.resetAdvancedFilterUI = resetAdvancedFilterUI;
-
-  function setActiveChip(deal) {
-    chips.forEach((c) => {
-      c.classList.toggle("active", (c.getAttribute("data-deal") || "") === deal);
-    });
-    if (dealTypeEl) dealTypeEl.value = deal;
+    if (typeof applyFilters === "function") applyFilters();
   }
 
-  chips.forEach((chip) => {
-    chip.addEventListener("click", () => {
-      const deal = chip.getAttribute("data-deal") || "";
-      setActiveChip(deal);
-      // وقتی «همه» انتخاب می‌شود، کلمه جستجو هم پاک شود تا به همه آگهی‌ها برگردد
-      if (!deal && cityInput) cityInput.value = "";
-      updateFilterBadges();
-      if (typeof applyFilters === "function") applyFilters();
-    });
-  });
-
-  if (moreBtn && advanced) {
-    moreBtn.addEventListener("click", () => {
-      const open = advanced.classList.toggle("open");
-      moreBtn.classList.toggle("open", open);
-      moreBtn.textContent = open ? "بستن فیلتر ▴" : "فیلتر بیشتر ▾";
-      if (open && cityInput) cityInput.focus();
-    });
+  function resetAll() {
+    state = { deal: "", ptype: "" };
+    if (cityInput) cityInput.value = "";
+    renderStep1();
   }
+  // نام تابع برای سازگاری با کدهای قدیمی (مثلاً دکمه‌ی «نمایش همه آگهی‌ها»
+  // توی حالت خالی) که هنوز window.resetAdvancedFilterUI رو صدا می‌زنن
+  window.resetAdvancedFilterUI = resetAll;
 
   if (resetBtn) {
-    resetBtn.addEventListener("click", () => {
-      setActiveChip("");
-      if (cityInput) cityInput.value = "";
-      // بازنشانی کامل: مقدار چیپ‌ها + برچسب ردیف‌ها + پنل + متن دکمه فیلتر پیشرفته
-      resetAdvancedFilterUI();
-      if (typeof applyFilters === "function") applyFilters();
-    });
+    resetBtn.addEventListener("click", resetAll);
   }
-
-  // چیپ‌های متراژ / خواب / قیمت — تک‌انتخابی در هر گروه
-  document.querySelectorAll(".filter-chip[data-filter-group]").forEach((chip) => {
-    chip.addEventListener("click", () => {
-      const group = chip.getAttribute("data-filter-group");
-      document.querySelectorAll(`.filter-chip[data-filter-group="${group}"]`).forEach((c) => c.classList.remove("active"));
-      chip.classList.add("active");
-      updateFilterBadges();
-      if (typeof applyFilters === "function") applyFilters();
-    });
-  });
-
-  // امکانات — چندانتخابی (toggle)
-  document.querySelectorAll(".filter-chip[data-amenity]").forEach((chip) => {
-    chip.addEventListener("click", () => {
-      chip.classList.toggle("active");
-      updateFilterBadges();
-      if (typeof applyFilters === "function") applyFilters();
-    });
-  });
 
   if (searchBtn && !searchBtn.dataset.bound) {
     searchBtn.dataset.bound = "1";
@@ -1946,9 +2157,8 @@ document.querySelectorAll(".quick-card[href='#listings']").forEach((card) => {
         if (typeof applyFilters === "function") applyFilters();
       }
     });
-    // تایپ زنده هم روی دکمه «پاک همه»/دکمه‌ی × اثر بگذارد و هم با یه
-    // تأخیر کوتاه لیست آگهی‌ها رو زنده فیلتر کنه، تا همون‌جور که تایپ
-    // می‌کنی جابجایی نتایج رو زیر کادر جستجو ببینی (نه فقط با زدن اینتر)
+    // تایپ زنده هم روی دکمه «بازنشانی»/دکمه‌ی × اثر بگذارد و هم با یه
+    // تأخیر کوتاه لیست آگهی‌ها رو زنده فیلتر کنه
     let citySearchDebounce = null;
     cityInput.addEventListener("input", () => {
       updateFilterBadges();
@@ -1971,8 +2181,7 @@ document.querySelectorAll(".quick-card[href='#listings']").forEach((card) => {
     }
 
     // --- وقتی کیبورد گوشی باز می‌شود، کادر جستجو را کمی بالاتر از کیبورد
-    // نگه دار (نه چسبیده به لبه‌اش) تا لیست آگهی‌ها زیرش هم دیده بشه و
-    // کاربر حین تایپ، جابجایی نتایج رو ببینه. ---
+    // نگه دار (نه چسبیده به لبه‌اش) تا لیست آگهی‌ها زیرش هم دیده بشه ---
     function scrollSearchAboveKeyboard() {
       const header = document.querySelector(".site-header");
       const headerH = header ? header.getBoundingClientRect().height : 0;
@@ -1982,7 +2191,6 @@ document.querySelectorAll(".quick-card[href='#listings']").forEach((card) => {
       window.scrollTo({ top: Math.max(targetY, 0), behavior: "smooth" });
     }
     cityInput.addEventListener("focus", () => {
-      // به کیبورد گوشی فرصت بده تا باز و viewport ری‌سایز بشه، بعد اسکرول کن
       setTimeout(scrollSearchAboveKeyboard, 350);
     });
     if (window.visualViewport) {
@@ -1992,65 +2200,8 @@ document.querySelectorAll(".quick-card[href='#listings']").forEach((card) => {
     }
   }
 
-  // دکمه/پنل «فیلتر پیشرفته» — روی موبایل جمع‌شده، با کلیک باز می‌شود.
-  // با بستن پنل: فیلترهای پیشرفته کامل ریست می‌شوند (چیپ‌ها + برچسب ردیف‌ها +
-  // متن دکمه) و لیست به حالت پایه برمی‌گردد.
-  const advToggle = document.getElementById("advancedFilterToggle");
-  const advPanel = document.getElementById("advancedFilterPanel");
-  if (advToggle && advPanel) {
-    advToggle.addEventListener("click", () => {
-      const open = !advPanel.classList.contains("open");
-      if (open) {
-        advPanel.classList.add("open");
-        advToggle.classList.add("open");
-        const label = advToggle.querySelector(".toggle-label");
-        if (label) label.textContent = "بستن فیلتر";
-      } else {
-        resetAdvancedFilterUI();
-        if (typeof applyFilters === "function") applyFilters();
-      }
-    });
-  }
-
-  // مقداردهی اولیه‌ی نشان‌ها (همه صفر، دکمه «پاک همه» کم‌رنگ)
-  updateFilterBadges();
-})();
-
-// --- آکاردئون هر ردیف فیلتر پیشرفته (متراژ / خواب / قیمت / رهن / امکانات) ---
-(function initFilterRowAccordion() {
-  const rows = document.querySelectorAll("#advancedFilterPanel .filter-row");
-
-  function updateSelectedLabel(row) {
-    let span = row.querySelector(".row-selected");
-    if (!span) {
-      span = document.createElement("span");
-      span.className = "row-selected";
-      row.querySelector(".filter-row-label").appendChild(span);
-    }
-    const activeGroupChip = row.querySelector('.filter-chip[data-filter-group].active:not([data-value=""])');
-    const activeAmenities = row.querySelectorAll(".filter-chip[data-amenity].active");
-    if (activeGroupChip) {
-      span.textContent = activeGroupChip.textContent.trim();
-    } else if (activeAmenities.length) {
-      span.textContent = Array.from(activeAmenities).map((c) => c.textContent.trim()).join(" · ");
-    } else {
-      span.textContent = "";
-    }
-  }
-
-  rows.forEach((row) => {
-    const label = row.querySelector(".filter-row-label");
-    if (!label) return;
-    label.addEventListener("click", () => {
-      const willOpen = !row.classList.contains("open");
-      rows.forEach((r) => r.classList.remove("open"));
-      if (willOpen) row.classList.add("open");
-    });
-    row.querySelectorAll(".filter-chip").forEach((chip) => {
-      chip.addEventListener("click", () => updateSelectedLabel(row));
-    });
-    updateSelectedLabel(row);
-  });
+  // شروع از مرحله‌ی اول
+  renderStep1();
 })();
 
 applyMenuOverrides();
