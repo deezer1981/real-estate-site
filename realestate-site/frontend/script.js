@@ -282,6 +282,19 @@ function parseSalePriceBillion(p) {
   return num;
 }
 
+/** قیمت متری نرمال‌شده به «میلیون تومان» برای فیلتر */
+function parsePricePerM2(p) {
+  if (!isSaleLike(p)) return null;
+  let s = cleanPriceText(p.price_per_m2);
+  if (!s || s === "-" || /توافقی/.test(s)) return null;
+  const m = String(s).match(/([\d,]+(?:\.\d+)?)/);
+  if (!m) return null;
+  let num = parseFloat(m[1].replace(/,/g, ""));
+  if (!Number.isFinite(num)) return null;
+  if (/میلیارد/.test(s)) num = num * 1000; // به میلیون تبدیل شود
+  return num;
+}
+
 /** رهن نرمال‌شده به «میلیون تومان» برای فیلتر */
 function parseRahnMillion(p) {
   if (isSaleLike(p)) return null;
@@ -1115,6 +1128,7 @@ function applyFilters() {
   const areaVal = (document.querySelector('.filter-chip[data-filter-group="area"].active') || {}).getAttribute?.("data-value") || "";
   const roomsVal = (document.querySelector('.filter-chip[data-filter-group="rooms"].active') || {}).getAttribute?.("data-value") || "";
   const priceVal = (document.querySelector('.filter-chip[data-filter-group="price"].active') || {}).getAttribute?.("data-value") || "";
+  const pricem2Val = (document.querySelector('.filter-chip[data-filter-group="pricem2"].active') || {}).getAttribute?.("data-value") || "";
   const rahnVal = (document.querySelector('.filter-chip[data-filter-group="rahn"].active') || {}).getAttribute?.("data-value") || "";
   const needParking = isAmenityOn("parking");
   const needElevator = isAmenityOn("elevator");
@@ -1200,17 +1214,32 @@ function applyFilters() {
     });
   }
 
-  // قیمت فروش (میلیارد) — با فعال شدن، فقط فایل‌های فروشیِ داخل بازه می‌مانند
+  // بودجه خرید / قیمت کل (میلیارد) — فروش و پیش‌فروش را هم شامل می‌شود
   if (priceVal && dealType !== "رهن و اجاره") {
     filtered = filtered.filter((p) => {
       if (p.is_local || p.deal_type === "محله‌گردی") return false;
-      if (p.deal_type !== "فروش") return false;
+      if (!isSaleLike(p)) return false;
       const bil = parseSalePriceBillion(p);
       if (bil == null) return false;
       if (priceVal === "0-5") return bil < 5;
       if (priceVal === "5-8") return bil >= 5 && bil < 8;
       if (priceVal === "8-11") return bil >= 8 && bil < 11;
       if (priceVal === "11+") return bil >= 11;
+      return true;
+    });
+  }
+
+  // قیمت متری (میلیون تومان) — فروش و پیش‌فروش
+  if (pricem2Val && dealType !== "رهن و اجاره") {
+    filtered = filtered.filter((p) => {
+      if (p.is_local || p.deal_type === "محله‌گردی") return false;
+      if (!isSaleLike(p)) return false;
+      const m2p = parsePricePerM2(p);
+      if (m2p == null) return false;
+      if (pricem2Val === "0-50") return m2p < 50;
+      if (pricem2Val === "50-80") return m2p >= 50 && m2p < 80;
+      if (pricem2Val === "80-120") return m2p >= 80 && m2p < 120;
+      if (pricem2Val === "120+") return m2p >= 120;
       return true;
     });
   }
@@ -1871,6 +1900,8 @@ document.querySelectorAll(".quick-card[href='#listings']").forEach((card) => {
       if (label) label.textContent = "فیلتر پیشرفته";
     }
 
+    if (typeof window.resetAdvancedFilterWizard === "function") window.resetAdvancedFilterWizard();
+
     updateFilterBadges();
   }
   window.resetAdvancedFilterUI = resetAdvancedFilterUI;
@@ -2050,6 +2081,111 @@ document.querySelectorAll(".quick-card[href='#listings']").forEach((card) => {
       chip.addEventListener("click", () => updateSelectedLabel(row));
     });
     updateSelectedLabel(row);
+  });
+})();
+
+// --- ویزارد پله‌ای فیلتر پیشرفته: نوع معامله → (رهن و اجاره) یا (دسته ملک → جزئیات) ---
+(function initAdvancedFilterWizard() {
+  const panel = document.getElementById("advancedFilterPanel");
+  if (!panel) return;
+
+  const stepRent = panel.querySelector('[data-wizard-step="rent"]');
+  const stepCategory = panel.querySelector('[data-wizard-step="sale-category"]');
+  const stepDetails = panel.querySelector('[data-wizard-step="sale-details"]');
+
+  function setDealTypeValue(value) {
+    const dealTypeEl = document.getElementById("dealType");
+    if (dealTypeEl) dealTypeEl.value = value;
+    document.querySelectorAll('.filter-chip[data-deal]').forEach((c) => {
+      c.classList.toggle("active", (c.getAttribute("data-deal") || "") === value);
+    });
+  }
+
+  function setPtypeValue(value) {
+    document.querySelectorAll('.filter-chip[data-filter-group="ptype"]').forEach((c) => {
+      c.classList.toggle("active", (c.getAttribute("data-value") || "") === value);
+    });
+  }
+
+  function showStep(step) {
+    [stepRent, stepCategory, stepDetails].forEach((el) => {
+      if (el) el.hidden = true;
+    });
+    if (step && panel.querySelector(`[data-wizard-step="${step}"]`)) {
+      panel.querySelector(`[data-wizard-step="${step}"]`).hidden = false;
+    }
+  }
+
+  function resetWizard() {
+    showStep(null);
+    panel.querySelectorAll(".wizard-deal-btn").forEach((b) => b.classList.remove("active"));
+    panel.querySelectorAll("[data-category]").forEach((b) => b.classList.remove("active"));
+  }
+  window.resetAdvancedFilterWizard = resetWizard;
+
+  function refresh() {
+    if (typeof window.updateFilterBadges === "function") window.updateFilterBadges();
+    if (typeof applyFilters === "function") applyFilters();
+  }
+
+  // پله ۱ → انتخاب نوع معامله
+  panel.querySelectorAll(".wizard-deal-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      panel.querySelectorAll(".wizard-deal-btn").forEach((b) => b.classList.remove("active"));
+      btn.classList.add("active");
+      const kind = btn.getAttribute("data-wizard-deal");
+      if (kind === "rent") {
+        setPtypeValue("");
+        setDealTypeValue("رهن و اجاره");
+        showStep("rent");
+      } else {
+        panel.querySelectorAll("[data-category]").forEach((c) => c.classList.remove("active"));
+        showStep("sale-category");
+      }
+      refresh();
+    });
+  });
+
+  // پله ۲ (خرید و فروش) → انتخاب دسته/نوع ملک
+  const CATEGORY_PTYPE = {
+    aparteman: "aparteman",
+    villa: "villa",
+    bagh: "bagh",
+    baghcheh: "baghcheh",
+    "bagh-villa": "bagh-villa",
+    zamin: "zamin",
+  };
+
+  if (stepCategory) {
+    stepCategory.querySelectorAll("[data-category]").forEach((chip) => {
+      chip.addEventListener("click", () => {
+        stepCategory.querySelectorAll("[data-category]").forEach((c) => c.classList.remove("active"));
+        chip.classList.add("active");
+        const cat = chip.getAttribute("data-category");
+        if (cat === "presale") {
+          setPtypeValue("");
+          setDealTypeValue("پیش‌فروش");
+        } else {
+          setPtypeValue(CATEGORY_PTYPE[cat] || "");
+          setDealTypeValue("فروش");
+        }
+        showStep("sale-details");
+        refresh();
+      });
+    });
+  }
+
+  // دکمه‌های بازگشت به پله‌ی قبل
+  panel.querySelectorAll("[data-wizard-back]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const target = btn.getAttribute("data-wizard-back");
+      if (target === "1") {
+        showStep(null);
+        panel.querySelectorAll(".wizard-deal-btn").forEach((b) => b.classList.remove("active"));
+      } else {
+        showStep(target);
+      }
+    });
   });
 })();
 
