@@ -2661,25 +2661,31 @@ body.single-ad-mode .card-more-btn { display: none !important; }
   }
   .filter-chips-deal { padding: 0 2px; }
 
-  /* دکمه فیلتر پیشرفته: پرکاربردترین دکمه، اما با پرشدگی تخت و سایه‌ی
-     سبک — نه گرادیان و سایه‌ی سنگین که آن را به‌اندازه‌ی یک بنر بزرگ می‌کرد. */
+  /* دکمه فیلتر پیشرفته: هم‌خانواده با پیل سفید و مینیمالِ نوار جستجو —
+     بدون پرشدگی توپر و سایه‌ی سنگین قبلی، فقط بوردر نازک و رنگ متن. */
   .advanced-filter-toggle {
-    background: var(--ink);
-    border: 1px solid var(--ink);
-    color: #F5F1EA;
-    box-shadow: 0 2px 6px rgba(20,33,61,0.18);
+    background: #FFFFFF;
+    border: 1.5px solid #E4DFD3;
+    color: var(--ink);
+    box-shadow: 0 1px 3px rgba(20,33,61,0.06);
     font-size: 0.86rem;
     min-height: 42px;
   }
-  .advanced-filter-toggle:active { box-shadow: 0 1px 3px rgba(20,33,61,0.18); }
-  /* حالت باز: برنزی، همان وزن بصری دکمه‌ی بسته — فقط رنگ عوض می‌شود */
+  .advanced-filter-toggle:active { background: #F7F3EA; }
+  /* حالت باز: همون تینت برنزیِ کم‌رنگ دکمه‌ی «بازنشانی» فعال، برای یکدستی */
   .advanced-filter-toggle.open {
-    background: var(--brass);
+    background: #FFF9F0;
     border-color: var(--brass);
-    color: var(--ink);
-    box-shadow: 0 2px 6px rgba(184,137,79,0.3);
+    color: #8C6530;
+    box-shadow: none;
   }
-  .advanced-filter-toggle.open .chevron { color: var(--ink); }
+  .advanced-filter-toggle.open .chevron { color: #8C6530; }
+  /* نشان شمارنده روی حالت باز هم برنزی/سفید بماند، چون پس‌زمینه‌ی
+     دکمه دیگر تیره نیست و نسخه‌ی کرم‌رنگ قبلی روش محو می‌شد */
+  .advanced-filter-toggle.open .filter-badge {
+    background: var(--brass);
+    color: #FFFCFA;
+  }
 
   /* دکمه ریست — هم‌قد دکمه‌ی فیلتر پیشرفته (۴۲px)، بدون سایه یا گرادیان،
      تا کنارش سنگین‌تر یا سبک‌تر دیده نشود؛ فقط رنگ فرق می‌کند نه حجم. */
