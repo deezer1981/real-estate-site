@@ -2009,6 +2009,61 @@ def render_listing_html(p: dict) -> str:
      دقیقاً مثل بقیه‌ی صفحات — بدون گردی و مارجین اضافه، تخت و
      تمام‌عرض، تا با فوتر بقیه‌ی سایت کاملاً یکدست باشد. */
 
+  /* فوتر آگهی: دو ستون لینک دقیقاً وسط‌چین مثل صفحه هوم */
+  .site-footer .footer-inner {{
+    text-align: center !important;
+  }}
+  .site-footer .footer-brand {{
+    text-align: center !important;
+  }}
+  .site-footer .footer-brand .phone-row {{
+    justify-content: center !important;
+  }}
+  .site-footer .footer-links {{
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    column-gap: 18px !important;
+    row-gap: 12px !important;
+    align-items: start !important;
+    justify-items: stretch !important;
+    width: 100% !important;
+    max-width: 340px !important;
+    margin: 4px auto 0 !important;
+    padding: 16px 6px 0 !important;
+    border-top: 1px solid rgba(255,255,255,0.08) !important;
+    text-align: center !important;
+  }}
+  .site-footer .footer-links a {{
+    text-align: center !important;
+    white-space: normal !important;
+    line-height: 1.5 !important;
+    width: 100% !important;
+    font-size: 0.86rem !important;
+  }}
+  .site-footer .footer-links a:last-child {{
+    grid-column: 1 / -1 !important;
+    text-align: center !important;
+    margin-top: 4px !important;
+    padding-top: 10px !important;
+    border-top: 1px solid rgba(255,255,255,0.08) !important;
+    color: var(--brass, #B8894F) !important;
+    font-weight: 700 !important;
+  }}
+  .site-footer .footer-meta {{
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    text-align: center !important;
+  }}
+  .site-footer .footer-socials {{
+    justify-content: center !important;
+  }}
+  .site-footer .footer-copy {{
+    text-align: center !important;
+    width: 100% !important;
+  }}
+
+
   /* دکمه‌های تماس/پیام داخل کارت کمی نرم‌تر روی این صفحه */
   .agahi-page .card-actions {{ gap: 10px; }}
   .agahi-page .agent-call-btn,
@@ -2330,6 +2385,61 @@ def render_local_html(p: dict) -> str:
      (در style.css تعریف شده) و بیرون از .agahi-page قرار گرفته،
      دقیقاً مثل بقیه‌ی صفحات — بدون گردی و مارجین اضافه، تخت و
      تمام‌عرض، تا با فوتر بقیه‌ی سایت کاملاً یکدست باشد. */
+
+  /* فوتر آگهی: دو ستون لینک دقیقاً وسط‌چین مثل صفحه هوم */
+  .site-footer .footer-inner {{
+    text-align: center !important;
+  }}
+  .site-footer .footer-brand {{
+    text-align: center !important;
+  }}
+  .site-footer .footer-brand .phone-row {{
+    justify-content: center !important;
+  }}
+  .site-footer .footer-links {{
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    column-gap: 18px !important;
+    row-gap: 12px !important;
+    align-items: start !important;
+    justify-items: stretch !important;
+    width: 100% !important;
+    max-width: 340px !important;
+    margin: 4px auto 0 !important;
+    padding: 16px 6px 0 !important;
+    border-top: 1px solid rgba(255,255,255,0.08) !important;
+    text-align: center !important;
+  }}
+  .site-footer .footer-links a {{
+    text-align: center !important;
+    white-space: normal !important;
+    line-height: 1.5 !important;
+    width: 100% !important;
+    font-size: 0.86rem !important;
+  }}
+  .site-footer .footer-links a:last-child {{
+    grid-column: 1 / -1 !important;
+    text-align: center !important;
+    margin-top: 4px !important;
+    padding-top: 10px !important;
+    border-top: 1px solid rgba(255,255,255,0.08) !important;
+    color: var(--brass, #B8894F) !important;
+    font-weight: 700 !important;
+  }}
+  .site-footer .footer-meta {{
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    text-align: center !important;
+  }}
+  .site-footer .footer-socials {{
+    justify-content: center !important;
+  }}
+  .site-footer .footer-copy {{
+    text-align: center !important;
+    width: 100% !important;
+  }}
+
 </style>
 <script type="application/ld+json">
 {json.dumps(_build_local_jsonld(p), ensure_ascii=False)}
