@@ -3719,3 +3719,40 @@ body.page-category .advanced-filters .filter-row.open .filter-chips-scroll {
   }
 }
 
+
+/* دکمه «فیلتر پیشرفته»: برگشت به استایل اصلی سایت (بدون وزن سرمه‌ای سنگین) */
+.advanced-filter-toggle {
+  background: rgba(20, 33, 61, 0.9) !important;
+  border: 1px solid rgba(20, 33, 61, 0.9) !important;
+  box-shadow: 0 2px 8px rgba(20, 33, 61, 0.14) !important;
+  letter-spacing: normal;
+  filter: none !important;
+}
+.advanced-filter-toggle:hover {
+  background: rgba(20, 33, 61, 0.98) !important;
+  filter: none !important;
+  box-shadow: 0 3px 10px rgba(20, 33, 61, 0.2) !important;
+}
+.advanced-filter-toggle:active {
+  transform: scale(0.99) !important;
+  box-shadow: 0 2px 8px rgba(20, 33, 61, 0.14) !important;
+}
+.advanced-filter-toggle.open {
+  background: rgba(20, 33, 61, 0.95) !important;
+  border-color: rgba(20, 33, 61, 0.95) !important;
+  box-shadow: 0 2px 8px rgba(20, 33, 61, 0.16) !important;
+}
+.advanced-filter-toggle .chevron {
+  background: transparent !important;
+  color: var(--brass) !important;
+}
+.advanced-filter-toggle .toggle-icon svg {
+  filter: none;
+}
+
+@media (max-width: 720px) {
+  .advanced-filter-toggle {
+    box-shadow: 0 2px 8px rgba(20, 33, 61, 0.14) !important;
+  }
+}
+
