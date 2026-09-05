@@ -3418,3 +3418,19 @@ body.single-ad-mode .card-more-btn { display: none !important; }
     max-height: 420px !important;
   }
 }
+
+/* =====================================================================
+   نرم‌تر و هارمونیک‌تر شدن دکمه‌های ویزارد فیلتر پیشرفته — فقط موبایل
+   دکمه‌های «نوع معامله» و «نوع/دسته ملک» با border-radius: 11px/12px
+   نسبت به نوار جستجو و بقیه‌ی چیپ‌ها (که پیل نرم با border-radius:999px
+   دارند) گوشه‌دارتر و ناهماهنگ به‌نظر می‌رسیدند. این‌جا فقط زیر
+   720px گردی‌شان را بیشتر می‌کنیم تا با حس نرم نوار جستجو هماهنگ شود؛
+   نسخه‌ی دسکتاپ (۱۱px/۱۲px) دست‌نخورده می‌ماند. */
+@media (max-width: 720px) {
+  .wizard-deal-chips .filter-chip {
+    border-radius: 18px;
+  }
+  .wizard-category-chips .filter-chip {
+    border-radius: 14px;
+  }
+}
