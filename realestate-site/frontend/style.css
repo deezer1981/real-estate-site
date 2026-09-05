@@ -3048,3 +3048,330 @@ body.single-ad-mode .card-more-btn { display: none !important; }
   }
 }
 
+
+
+/* =====================================================================
+   بازطراحی «فیلتر پیشرفته» — نسخه‌ی مینیمال و پریمیوم (۲۰۲۶)
+   این بخش عمداً در انتهای فایل قرار گرفته تا با اولویت آبشاری، جای
+   سبک‌های شلوغ/قدیمی فیلتر (گرادیان‌ها، سایه‌های چندلایه، انیمیشن‌های
+   پرش‌دار) را با یک زبان بصری آرام و یکدست بگیرد؛ بدون تغییر در
+   ساختار HTML/کلاس‌ها/شناسه‌هایی که اسکریپت به آن‌ها وابسته است.
+   اصول: یک رنگ لهجه (برنز) فقط در چند نقطه‌ی مشخص، بدون گرادیان،
+   بوردرهای مویی به‌جای بوردر ضخیم، سایه‌ی نرم فقط روی پنل شناور.
+   ===================================================================== */
+
+:root {
+  --f-line: rgba(20, 33, 61, 0.12);
+  --f-line-soft: rgba(20, 33, 61, 0.08);
+  --f-muted: #8A8171;
+}
+
+.listings-filter {
+  margin-bottom: 22px;
+  background: none;
+  border: none;
+  padding: 0;
+  display: block;
+}
+
+/* ---------- چیپ‌ها: زبان بصری واحد برای همه‌ی انواع ---------- */
+.filter-chip {
+  border: 1px solid var(--f-line);
+  background: #FFFFFF;
+  color: var(--ink);
+  font-family: inherit;
+  font-weight: 600;
+  font-size: 0.88rem;
+  padding: 9px 18px;
+  min-height: 40px;
+  border-radius: 999px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  line-height: 1.2;
+  min-width: 0;
+  box-shadow: none;
+  transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+}
+.filter-chip:hover { background: #FFFFFF; border-color: rgba(20, 33, 61, 0.32); }
+.filter-chip:active { transform: scale(0.98); }
+.filter-chip.active,
+.wizard-deal-chips .filter-chip.active,
+.wizard-category-chips .filter-chip.active {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: #FFFFFF;
+  box-shadow: none;
+}
+.filter-chip[data-amenity].active {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: #FFFFFF;
+}
+
+/* چیپ محله‌گردی — تنها لهجه‌ی برنزی روی ردیف اول، برای تمایز آگاهانه */
+.filter-chip.filter-chip-local {
+  border-color: rgba(184, 137, 79, 0.4);
+  background: #FFFFFF;
+  color: #8C6530;
+  font-weight: 600;
+}
+.filter-chip.filter-chip-local:hover { border-color: var(--brass); background: #FDF9F1; }
+.filter-chip.filter-chip-local.active {
+  background: var(--brass);
+  color: #FFFFFF;
+  border-color: var(--brass);
+}
+
+.filter-chips-deal { margin-bottom: 12px; }
+.filter-chips-deal .filter-chip { padding: 9px 10px; font-size: 0.85rem; }
+
+/* ---------- ردیف بالا: دکمه فیلتر پیشرفته + بازنشانی ---------- */
+.filter-toolbar-top { gap: 8px; margin-bottom: 12px; }
+
+.advanced-filter-toggle {
+  background: #FFFFFF;
+  border: 1px solid var(--f-line);
+  color: var(--ink);
+  font-weight: 600;
+  font-size: 0.88rem;
+  padding: 10px 16px;
+  min-height: 44px;
+  border-radius: 10px;
+  box-shadow: none;
+  margin: 0;
+  transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
+}
+.advanced-filter-toggle:hover { border-color: rgba(20, 33, 61, 0.32); }
+.advanced-filter-toggle:active { transform: none; background: #FAF8F3; }
+.advanced-filter-toggle.open {
+  background: #FAF8F3;
+  border-color: var(--ink);
+  color: var(--ink);
+  box-shadow: none;
+}
+.advanced-filter-toggle .toggle-icon {
+  display: inline-flex;
+  width: 17px;
+  height: 17px;
+  color: var(--sage);
+  transition: color 0.15s ease;
+}
+.advanced-filter-toggle .toggle-icon svg { width: 100%; height: 100%; display: block; }
+.advanced-filter-toggle.open .toggle-icon { color: var(--ink); transform: none; }
+.advanced-filter-toggle .toggle-label { font-size: inherit; font-weight: inherit; }
+
+.filter-badge {
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: var(--brass);
+  color: #FFFFFF;
+  font-size: 0.68rem;
+  font-weight: 700;
+  box-shadow: none;
+  animation: none;
+}
+.advanced-filter-toggle.open .filter-badge { background: var(--ink); color: #FFFFFF; }
+
+.advanced-filter-toggle .chevron {
+  width: 16px;
+  height: 16px;
+  color: var(--f-muted);
+  background: none;
+  transition: transform 0.2s ease, color 0.15s ease;
+}
+.advanced-filter-toggle .chevron svg { width: 100%; height: 100%; display: block; }
+.advanced-filter-toggle.open .chevron { transform: rotate(180deg); background: none; color: var(--ink); }
+
+/* دکمه بازنشانی — دایره‌ی ساده، لهجه‌ی برنزی فقط وقتی فعال است */
+.filter-clear-btn {
+  border: 1px solid var(--f-line);
+  color: var(--f-muted);
+  opacity: 1;
+  border-radius: 10px;
+}
+.filter-clear-btn:hover { background: #FAF8F3; color: var(--ink); opacity: 1; }
+.filter-clear-btn .clear-icon { transition: none; }
+.filter-clear-btn:active .clear-icon { transform: none; }
+.filter-clear-btn.is-empty { border-color: var(--f-line); color: var(--f-muted); background: #FFFFFF; }
+.filter-clear-btn.is-active { border-color: var(--brass); color: #8C6530; background: #FDF9F1; }
+@media (min-width: 721px) {
+  .filter-clear-label { display: inline; margin-inline-start: 2px; }
+  .filter-clear-btn { width: auto; padding: 0 14px; gap: 6px; }
+}
+
+/* ---------- نوار جستجو ---------- */
+.filter-search-inner {
+  border: 1px solid var(--f-line);
+  border-radius: 12px;
+  box-shadow: none;
+}
+.filter-search-inner:focus-within {
+  border-color: var(--brass);
+  box-shadow: 0 0 0 3px rgba(184, 137, 79, 0.12);
+}
+.filter-apply-btn {
+  background: var(--ink);
+  border-radius: 9px;
+  box-shadow: none;
+}
+.filter-apply-btn:hover { background: #1E2E52; }
+
+/* ---------- پنل فیلتر پیشرفته ---------- */
+.advanced-filters.open {
+  background: #FFFFFF;
+  border: 1px solid var(--f-line-soft);
+  border-radius: 14px;
+  padding: 6px 16px 4px;
+  box-shadow: 0 10px 30px rgba(20, 33, 61, 0.07);
+  animation: advPanelInSoft 0.18s ease;
+}
+@keyframes advPanelInSoft {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.advanced-filters .filter-row { border-bottom: 1px solid var(--f-line-soft); }
+.advanced-filters .filter-row:last-child { border-bottom: none; }
+
+.advanced-filters .filter-row-label {
+  padding: 15px 2px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--ink);
+}
+.advanced-filters .filter-row-label::after {
+  content: "";
+  width: 16px;
+  height: 16px;
+  border-radius: 0;
+  background: none;
+  color: var(--f-muted);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238A8171' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+.advanced-filters .filter-row.open .filter-row-label::after { transform: rotate(180deg); }
+.advanced-filters .filter-row-label .row-selected {
+  color: #8C6530;
+  font-weight: 600;
+  font-size: 0.82rem;
+}
+
+.advanced-filters .filter-chips-scroll { padding-bottom: 0; }
+.advanced-filters .filter-row.open .filter-chips-scroll { padding-bottom: 14px; }
+
+/* ---------- ویزارد: نوار پیشرفت ---------- */
+.wizard-step { animation: none; }
+.wizard-step.wizard-step-back { animation: none; }
+
+.wizard-progress { padding: 8px 2px 16px; }
+.wizard-progress-dot {
+  background: #FFFFFF;
+  border: 1.5px solid var(--f-line);
+  color: var(--f-muted);
+  box-shadow: none;
+}
+.wizard-progress-label { color: var(--f-muted); }
+.wizard-progress-line { background: var(--f-line); }
+.wizard-progress-step.active .wizard-progress-dot {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: #FFFFFF;
+  box-shadow: none;
+}
+.wizard-progress-step.active .wizard-progress-label { color: var(--ink); }
+.wizard-progress-step.done .wizard-progress-dot { background: #FFFFFF; border-color: var(--ink); color: var(--ink); }
+.wizard-progress-step.done .wizard-progress-label { color: var(--sage); }
+
+/* ---------- ویزارد: چیپ‌های نوع معامله / دسته ملک ---------- */
+.wizard-deal-chips .filter-chip {
+  min-height: 50px;
+  font-size: 0.92rem;
+  border-radius: 12px;
+}
+.wizard-chip-icon { opacity: 0.7; }
+.filter-chip.active .wizard-chip-icon { opacity: 1; }
+.wizard-category-chips .filter-chip {
+  min-height: 46px;
+  border-radius: 11px;
+}
+
+.wizard-back-btn {
+  background: none;
+  border: none;
+  color: var(--sage);
+  font-weight: 600;
+  padding: 6px 2px;
+  border-radius: 0;
+}
+.wizard-back-btn:hover { background: none; border-color: transparent; color: var(--ink); }
+
+/* ---------- موبایل ---------- */
+@media (max-width: 720px) {
+  .listings-filter { background: none; border: none; border-radius: 0; padding: 0; }
+
+  .advanced-filter-toggle {
+    background: #FFFFFF;
+    border: 1px solid var(--f-line);
+    color: var(--ink);
+    box-shadow: none;
+    font-size: 0.86rem;
+    min-height: 44px;
+  }
+  .advanced-filter-toggle:active { background: #FAF8F3; }
+  .advanced-filter-toggle.open {
+    background: #FAF8F3;
+    border-color: var(--ink);
+    color: var(--ink);
+    box-shadow: none;
+  }
+  .advanced-filter-toggle.open .chevron { color: var(--ink); }
+  .advanced-filter-toggle.open .filter-badge { background: var(--ink); color: #FFFFFF; }
+
+  .filter-clear-btn {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    border: 1px solid var(--f-line);
+    box-shadow: none;
+  }
+  .filter-clear-btn:active { background: #FAF8F3; }
+  .filter-clear-btn.is-empty { background: #FFFFFF; border-color: var(--f-line); color: var(--f-muted); box-shadow: none; }
+  .filter-clear-btn.is-active { background: #FDF9F1; border-color: var(--brass); color: #8C6530; box-shadow: none; }
+
+  .filter-search-inner {
+    background: #FFFFFF;
+    border: 1px solid var(--f-line);
+    box-shadow: none;
+    border-radius: 999px;
+    min-height: 50px;
+  }
+  .filter-search-inner:focus-within {
+    border-color: var(--brass);
+    box-shadow: 0 0 0 3px rgba(184, 137, 79, 0.12);
+  }
+  .filter-search-icon { color: var(--sage); }
+  .filter-apply-btn { background: var(--ink); box-shadow: none; }
+  .filter-apply-btn:active { background: #14213D; }
+
+  .advanced-filters.open { padding: 4px 14px 2px; border-radius: 14px; box-shadow: 0 8px 24px rgba(20, 33, 61, 0.07); }
+  .advanced-filters .filter-row-label { padding: 13px 2px; font-size: 0.88rem; }
+
+  .wizard-progress { padding: 8px 2px 14px; }
+  .wizard-progress-dot { width: 20px; height: 20px; font-size: 0.66rem; }
+
+  .wizard-deal-chips { gap: 8px; }
+  .wizard-deal-chips .filter-chip { min-height: 46px; font-size: 0.88rem; }
+
+  .wizard-category-chips .filter-chip {
+    border-width: 1px;
+    box-shadow: none;
+    font-weight: 600;
+  }
+}

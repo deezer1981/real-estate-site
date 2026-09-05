@@ -455,10 +455,19 @@
       <!-- ردیف اول: فیلتر پیشرفته + بازنشانی همه فیلترها کنار هم -->
       <div class="filter-toolbar-top">
         <button type="button" id="advancedFilterToggle" class="advanced-filter-toggle">
-          <span class="toggle-icon" aria-hidden="true">⚙️</span>
+          <span class="toggle-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h13M21 18h0" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+              <circle cx="14" cy="6" r="2" fill="currentColor"/>
+              <circle cx="8" cy="12" r="2" fill="currentColor"/>
+              <circle cx="17" cy="18" r="2" fill="currentColor"/>
+            </svg>
+          </span>
           <span class="toggle-label">فیلتر پیشرفته</span>
           <span class="filter-badge" id="advFilterBadge" hidden>0</span>
-          <span class="chevron" aria-hidden="true">▾</span>
+          <span class="chevron" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="m6 9 6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </span>
         </button>
         <button type="button" class="filter-clear-btn is-empty" id="filterResetBtn" title="بازنشانی همه فیلترها" aria-label="بازنشانی همه فیلترها">
           <span class="clear-icon" aria-hidden="true">
@@ -523,9 +532,18 @@
           <div class="filter-row open">
             <span class="filter-row-label">امکانات</span>
             <div class="filter-chips filter-chips-scroll">
-              <button type="button" class="filter-chip" data-amenity="parking">🅿️ پارکینگ</button>
-              <button type="button" class="filter-chip" data-amenity="elevator">🛗 آسانسور</button>
-              <button type="button" class="filter-chip" data-amenity="storage">📦 انباری</button>
+              <button type="button" class="filter-chip" data-amenity="parking">
+                <svg class="wizard-chip-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="3" stroke="currentColor" stroke-width="1.6"/><path d="M9.5 16V8h3a2.5 2.5 0 0 1 0 5h-3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                پارکینگ
+              </button>
+              <button type="button" class="filter-chip" data-amenity="elevator">
+                <svg class="wizard-chip-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><rect x="6" y="3.5" width="12" height="17" rx="1.5" stroke="currentColor" stroke-width="1.6"/><path d="M10 9.5 12 7l2 2.5M10 14.5 12 17l2-2.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                آسانسور
+              </button>
+              <button type="button" class="filter-chip" data-amenity="storage">
+                <svg class="wizard-chip-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M4 8.5 12 5l8 3.5-8 3.5-8-3.5Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M4 8.5V16l8 3.5 8-3.5V8.5" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M12 12v7.5" stroke="currentColor" stroke-width="1.6"/></svg>
+                انباری
+              </button>
             </div>
           </div>
           <button type="button" class="wizard-back-btn" data-wizard-back="1">← برگشت</button>
