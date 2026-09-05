@@ -2072,17 +2072,13 @@ document.querySelectorAll(".quick-card[href='#listings']").forEach((card) => {
   rows.forEach((row) => {
     const label = row.querySelector(".filter-row-label");
     if (!label) return;
-    // ردیف‌های داخل پله‌های ویزارد همیشه باز می‌مانند
-    const inWizardStep = Boolean(row.closest("[data-wizard-step]"));
-    if (inWizardStep) {
-      row.classList.add("open");
-    }
     label.addEventListener("click", () => {
-      if (inWizardStep) return; // در ویزارد آکاردئون غیرفعال
       const willOpen = !row.classList.contains("open");
-      rows.forEach((r) => {
-        if (!r.closest("[data-wizard-step]")) r.classList.remove("open");
-      });
+      // فقط ردیف‌های هم‌سطح (داخل همان پله‌ی ویزارد یا همان پنل) بسته می‌شوند
+      const group = row.parentElement
+        ? row.parentElement.querySelectorAll(":scope > .filter-row")
+        : [row];
+      group.forEach((r) => r.classList.remove("open"));
       if (willOpen) row.classList.add("open");
     });
     row.querySelectorAll(".filter-chip").forEach((chip) => {
@@ -2148,6 +2144,9 @@ document.querySelectorAll(".quick-card[href='#listings']").forEach((card) => {
       const target = panel.querySelector(`[data-wizard-step="${step}"]`);
       target.classList.toggle("wizard-step-back", direction === "back");
       target.hidden = false;
+      const stepRows = target.querySelectorAll(":scope > .filter-row");
+      stepRows.forEach((r) => r.classList.remove("open"));
+      if (stepRows[0]) stepRows[0].classList.add("open");
     } else {
       const dealStep = panel.querySelector(".wizard-step-deal");
       if (dealStep) dealStep.classList.toggle("wizard-step-back", direction === "back");

@@ -3375,3 +3375,30 @@ body.single-ad-mode .card-more-btn { display: none !important; }
     font-weight: 600;
   }
 }
+
+/* ---------- آکاردئون واقعی برای پله‌های چندردیفی ویزارد ----------
+   قانون قدیمی، همه‌ی ردیف‌های داخل هر پله‌ی ویزارد را همیشه باز نگه
+   می‌داشت (بودجه، قیمت متری، متراژ، خواب هم‌زمان باز = شلوغ). این‌جا
+   با هم‌سنگ کردن ویژگی‌بودگی (specificity) با قانون قدیمی و قرارگیری
+   بعد از آن در فایل، فقط ردیفی که کلاس open دارد باز می‌ماند؛ پله‌های
+   تک‌ردیفی (نوع معامله/دسته ملک) دست‌نخورده و همیشه باز می‌مانند،
+   چون چیپ‌های آن‌ها کلاس‌های اختصاصی wizard-deal-chips/
+   wizard-category-chips دارند که از این قانون مستثنا هستند. */
+.advanced-filters .wizard-step[data-wizard-step="rent"] .filter-row .filter-chips-scroll,
+.advanced-filters .wizard-step[data-wizard-step="sale-details"] .filter-row .filter-chips-scroll {
+  max-height: 0 !important;
+  padding-bottom: 0 !important;
+  overflow: hidden;
+}
+.advanced-filters .wizard-step[data-wizard-step="rent"] .filter-row.open .filter-chips-scroll,
+.advanced-filters .wizard-step[data-wizard-step="sale-details"] .filter-row.open .filter-chips-scroll {
+  max-height: 240px !important;
+  padding-bottom: 14px !important;
+  overflow-x: auto;
+}
+@media (min-width: 721px) {
+  .advanced-filters .wizard-step[data-wizard-step="rent"] .filter-row.open .filter-chips-scroll,
+  .advanced-filters .wizard-step[data-wizard-step="sale-details"] .filter-row.open .filter-chips-scroll {
+    max-height: 420px !important;
+  }
+}
