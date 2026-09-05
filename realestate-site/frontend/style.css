@@ -1858,10 +1858,19 @@ a { color: inherit; text-decoration: none; }
 .filter-chip:hover { background: #F3E4C8; box-shadow: 0 3px 10px rgba(184, 137, 79, 0.22); }
 .filter-chip:active { transform: scale(0.97); }
 .filter-chip.active {
-  background: var(--ink);
+  background: linear-gradient(135deg, var(--ink) 0%, #1a2847 100%);
   color: #FFFCFA;
   border-color: var(--ink);
-  box-shadow: 0 3px 10px rgba(20,33,61,0.28);
+  box-shadow: 0 3px 12px rgba(20,33,61,0.3);
+}
+/* چیپ‌های ویزارد (نوع معامله/دسته ملک) و چیپ‌های داخل قدم‌ها: انتخاب با
+   گرادیان برنزی هماهنگ با برند، تا حس «انتخاب گرم من» به‌جای رنگ خنثی */
+.wizard-deal-chips .filter-chip.active,
+.wizard-category-chips .filter-chip.active {
+  background: linear-gradient(135deg, #C99A5D, var(--brass));
+  border-color: var(--brass);
+  color: #FFFCFA;
+  box-shadow: 0 4px 14px rgba(184,137,79,0.38);
 }
 
 /* چیپ محله‌گردی — هماهنگ با تم، کمی متمایز */
@@ -2324,7 +2333,7 @@ body.single-ad-mode .card-image-wrap {
   justify-content: center;
   gap: 6px;
   width: 100%;
-  background: rgba(20, 33, 61, 0.9);
+  background: linear-gradient(135deg, var(--ink) 0%, #1a2847 100%);
   border: 1px solid rgba(20, 33, 61, 0.9);
   color: #F5F1EA;
   font-family: inherit;
@@ -2335,12 +2344,13 @@ body.single-ad-mode .card-image-wrap {
   border-radius: 10px;
   cursor: pointer;
   margin: 6px 0 10px;
-  box-shadow: none;
-  transition: background 0.15s ease, box-shadow 0.15s ease;
+  box-shadow: 0 3px 10px rgba(20,33,61,0.18);
+  transition: background 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
   white-space: nowrap;
 }
 .advanced-filter-toggle:hover {
-  background: rgba(20, 33, 61, 1);
+  filter: brightness(1.08);
+  box-shadow: 0 4px 14px rgba(20,33,61,0.24);
 }
 .advanced-filter-toggle:active { transform: scale(0.99); }
 .advanced-filter-toggle .toggle-icon {
@@ -2371,12 +2381,13 @@ body.single-ad-mode .card-image-wrap {
   height: 16px;
   padding: 0 4px;
   border-radius: 999px;
-  background: var(--brass);
+  background: linear-gradient(135deg, #C99A5D, var(--brass));
   color: #FFFCFA;
   font-size: 0.64rem;
   font-weight: 700;
   line-height: 1;
   flex-shrink: 0;
+  box-shadow: 0 0 0 3px rgba(184,137,79,0.16);
   animation: filterBadgePop 0.2s ease;
 }
 .advanced-filter-toggle.open .filter-badge {
@@ -2412,10 +2423,15 @@ body.single-ad-mode .card-image-wrap {
   display: block;
   background: #FFFFFF;
   border: 1px solid #ECE0C8;
-  border-radius: 14px;
-  padding: 2px 16px 6px;
+  border-radius: 16px;
+  padding: 12px 16px 8px;
   margin: 0 0 16px;
-  box-shadow: 0 8px 24px rgba(20,33,61,0.08);
+  box-shadow: 0 8px 28px rgba(20,33,61,0.1);
+  animation: advPanelIn 0.2s ease;
+}
+@keyframes advPanelIn {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
 /* --- فیلتر پیشرفته: هر ردیف آکاردئونی (فقط یکی هم‌زمان باز) --- */
@@ -2813,11 +2829,79 @@ body.single-ad-mode .card-more-btn { display: none !important; }
 
 /* ===== فیلتر پیشرفته پله‌ای (ویزارد) ===== */
 .wizard-step {
-  animation: wizardStepIn 0.22s ease;
+  animation: wizardStepIn 0.24s ease;
 }
 @keyframes wizardStepIn {
-  from { opacity: 0; transform: translateY(8px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from { opacity: 0; transform: translateX(16px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+.wizard-step.wizard-step-back {
+  animation: wizardStepInBack 0.24s ease;
+}
+@keyframes wizardStepInBack {
+  from { opacity: 0; transform: translateX(-16px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+/* ===== نوار پیشرفت ویزارد ===== */
+.wizard-progress {
+  display: flex;
+  align-items: center;
+  padding: 10px 2px 14px;
+  margin-bottom: 2px;
+}
+.wizard-progress-step {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+.wizard-progress-dot {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #F0EAE0;
+  color: #A89F8E;
+  font-size: 0.7rem;
+  font-weight: 800;
+  flex-shrink: 0;
+  transition: background 0.25s ease, color 0.25s ease, box-shadow 0.25s ease;
+}
+.wizard-progress-label {
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: #A89F8E;
+  white-space: nowrap;
+  transition: color 0.25s ease;
+}
+.wizard-progress-line {
+  flex: 1 1 auto;
+  height: 2px;
+  min-width: 12px;
+  margin: 0 6px;
+  background: #F0EAE0;
+  border-radius: 2px;
+  transition: background 0.25s ease;
+}
+.wizard-progress-step.active .wizard-progress-dot {
+  background: linear-gradient(135deg, #C99A5D, var(--brass));
+  color: #FFFCFA;
+  box-shadow: 0 0 0 3px rgba(184,137,79,0.16);
+}
+.wizard-progress-step.active .wizard-progress-label { color: var(--ink); }
+.wizard-progress-step.done .wizard-progress-dot {
+  background: var(--ink);
+  color: #FFFCFA;
+}
+.wizard-progress-step.done .wizard-progress-label { color: var(--sage); }
+.wizard-progress-step[hidden],
+.wizard-progress-line[hidden] { display: none; }
+@media (max-width: 480px) {
+  .wizard-progress-label { display: none; }
+  .wizard-progress { padding: 8px 2px 12px; }
 }
 
 .wizard-deal-chips {
@@ -2835,7 +2919,15 @@ body.single-ad-mode .card-more-btn { display: none !important; }
   font-size: 0.95rem;
   justify-content: center;
   box-sizing: border-box;
+  gap: 8px;
 }
+.wizard-chip-icon {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  opacity: 0.85;
+}
+.filter-chip.active .wizard-chip-icon { opacity: 1; }
 
 .wizard-category-chips {
   display: flex !important;
@@ -2850,6 +2942,7 @@ body.single-ad-mode .card-more-btn { display: none !important; }
   min-width: 0;
   justify-content: center;
   min-height: 44px;
+  gap: 6px;
 }
 
 .wizard-back-btn {

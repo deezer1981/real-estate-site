@@ -2101,6 +2101,31 @@ document.querySelectorAll(".quick-card[href='#listings']").forEach((card) => {
   const stepCategory = panel.querySelector('[data-wizard-step="sale-category"]');
   const stepDetails = panel.querySelector('[data-wizard-step="sale-details"]');
 
+  // --- نوار پیشرفت ویزارد ---
+  const progress = document.getElementById("wizardProgress");
+  const PROGRESS_LABELS = {
+    rent: ["نوع معامله", "بودجه و امکانات"],
+    sale: ["نوع معامله", "دسته ملک", "جزئیات"],
+  };
+  function setProgress(activeIndex, totalSteps, labels) {
+    if (!progress) return;
+    progress.querySelectorAll("[data-progress-step]").forEach((el) => {
+      const idx = Number(el.getAttribute("data-progress-step"));
+      el.hidden = idx > totalSteps;
+      el.classList.toggle("active", idx === activeIndex);
+      el.classList.toggle("done", idx < activeIndex);
+      const labelEl = el.querySelector(".wizard-progress-label");
+      if (labelEl && labels && labels[idx - 1]) labelEl.textContent = labels[idx - 1];
+    });
+    progress.querySelectorAll("[data-progress-line]").forEach((line) => {
+      const idx = Number(line.getAttribute("data-progress-line"));
+      line.hidden = idx + 1 > totalSteps;
+    });
+  }
+  window.resetWizardProgress = function () {
+    setProgress(1, 3, PROGRESS_LABELS.sale);
+  };
+
   function setDealTypeValue(value) {
     const dealTypeEl = document.getElementById("dealType");
     if (dealTypeEl) dealTypeEl.value = value;
@@ -2115,12 +2140,17 @@ document.querySelectorAll(".quick-card[href='#listings']").forEach((card) => {
     });
   }
 
-  function showStep(step) {
+  function showStep(step, direction) {
     [stepRent, stepCategory, stepDetails].forEach((el) => {
       if (el) el.hidden = true;
     });
     if (step && panel.querySelector(`[data-wizard-step="${step}"]`)) {
-      panel.querySelector(`[data-wizard-step="${step}"]`).hidden = false;
+      const target = panel.querySelector(`[data-wizard-step="${step}"]`);
+      target.classList.toggle("wizard-step-back", direction === "back");
+      target.hidden = false;
+    } else {
+      const dealStep = panel.querySelector(".wizard-step-deal");
+      if (dealStep) dealStep.classList.toggle("wizard-step-back", direction === "back");
     }
   }
 
@@ -2128,6 +2158,7 @@ document.querySelectorAll(".quick-card[href='#listings']").forEach((card) => {
     showStep(null);
     panel.querySelectorAll(".wizard-deal-btn").forEach((b) => b.classList.remove("active"));
     panel.querySelectorAll("[data-category]").forEach((b) => b.classList.remove("active"));
+    if (typeof window.resetWizardProgress === "function") window.resetWizardProgress();
   }
   window.resetAdvancedFilterWizard = resetWizard;
 
@@ -2145,10 +2176,12 @@ document.querySelectorAll(".quick-card[href='#listings']").forEach((card) => {
       if (kind === "rent") {
         setPtypeValue("");
         setDealTypeValue("رهن و اجاره");
-        showStep("rent");
+        showStep("rent", "forward");
+        setProgress(2, 2, PROGRESS_LABELS.rent);
       } else {
         panel.querySelectorAll("[data-category]").forEach((c) => c.classList.remove("active"));
-        showStep("sale-category");
+        showStep("sale-category", "forward");
+        setProgress(2, 3, PROGRESS_LABELS.sale);
       }
       refresh();
     });
@@ -2177,7 +2210,8 @@ document.querySelectorAll(".quick-card[href='#listings']").forEach((card) => {
           setPtypeValue(CATEGORY_PTYPE[cat] || "");
           setDealTypeValue("فروش");
         }
-        showStep("sale-details");
+        showStep("sale-details", "forward");
+        setProgress(3, 3, PROGRESS_LABELS.sale);
         refresh();
       });
     });
@@ -2188,10 +2222,12 @@ document.querySelectorAll(".quick-card[href='#listings']").forEach((card) => {
     btn.addEventListener("click", () => {
       const target = btn.getAttribute("data-wizard-back");
       if (target === "1") {
-        showStep(null);
+        showStep(null, "back");
         panel.querySelectorAll(".wizard-deal-btn").forEach((b) => b.classList.remove("active"));
+        setProgress(1, 3, PROGRESS_LABELS.sale);
       } else {
-        showStep(target);
+        showStep(target, "back");
+        setProgress(2, 3, PROGRESS_LABELS.sale);
       }
     });
   });
