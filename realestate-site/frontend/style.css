@@ -2995,20 +2995,28 @@ body.single-ad-mode .card-more-btn { display: none !important; }
 }
 .filter-chip.active .wizard-chip-icon { opacity: 1; }
 
-.wizard-category-chips {
-  display: flex !important;
-  flex-wrap: wrap !important;
-  gap: 8px;
-  overflow: visible !important;
-  max-height: none !important;
-  padding-bottom: 10px !important;
-}
-.wizard-category-chips .filter-chip {
-  flex: 1 1 calc(50% - 8px);
-  min-width: 0;
-  justify-content: center;
-  min-height: 44px;
-  gap: 6px;
+/* این چیدمان flex فقط مخصوص دسکتاپ است. قبلاً بدون شرط عرض نوشته شده بود
+   و چون هم‌زمان !important داشت و بعد از قانون گرید موبایل (بالاتر، داخل
+   @media max-width:720px) می‌آمد، طبق ترتیب کد در فایل روی موبایل هم
+   برنده می‌شد و چیدمان گرید ۳ستونه‌ی موبایل (و تمام‌عرض شدن «پیش‌فروش»
+   با grid-column) را بی‌اثر می‌کرد — همین باعث به‌هم‌ریختگی/روی‌هم‌افتادن
+   دکمه‌ها با «برگشت» در نسخه‌ی موبایل می‌شد. */
+@media (min-width: 721px) {
+  .wizard-category-chips {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 8px;
+    overflow: visible !important;
+    max-height: none !important;
+    padding-bottom: 10px !important;
+  }
+  .wizard-category-chips .filter-chip {
+    flex: 1 1 calc(50% - 8px);
+    min-width: 0;
+    justify-content: center;
+    min-height: 44px;
+    gap: 6px;
+  }
 }
 
 .wizard-back-btn {
