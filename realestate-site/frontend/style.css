@@ -3685,23 +3685,30 @@ body.page-category .advanced-filters .filter-row.open .filter-chips-scroll {
     0 4px 14px rgba(20, 33, 61, 0.08) !important;
 }
 
-/* دکمه جستجو داخل نوار */
+/* دکمه جستجو داخل نوار — سرمه‌ای با آیکون ذره‌بین */
 .filter-apply-btn {
-  background: #FFFCFA !important;
-  border: 1px solid rgba(184, 137, 79, 0.25) !important;
-  box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.06) inset,
-    0 2px 8px rgba(20, 33, 61, 0.2) !important;
-  transition: filter 0.15s ease, transform 0.12s ease, box-shadow 0.15s ease !important;
+  background: var(--ink, #14213D) !important;
+  color: #FFFCFA !important;
+  border: none !important;
+  box-shadow: 0 2px 8px rgba(20, 33, 61, 0.22) !important;
+  transition: background 0.15s ease, filter 0.15s ease, transform 0.12s ease !important;
 }
 .filter-apply-btn:hover {
-  filter: brightness(1.07);
-  box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.08) inset,
-    0 4px 12px rgba(20, 33, 61, 0.28) !important;
+  background: #1a2a4a !important;
+  filter: brightness(1.05);
+  box-shadow: 0 3px 12px rgba(20, 33, 61, 0.28) !important;
 }
 .filter-apply-btn:active {
   transform: scale(0.97);
+  background: #0d1830 !important;
+}
+.filter-apply-btn .apply-btn-icon,
+.filter-apply-btn .apply-btn-label {
+  color: #FFFCFA !important;
+}
+.filter-apply-btn .apply-btn-icon svg {
+  stroke: #FFFCFA;
+  color: #FFFCFA;
 }
 
 /* چیپ‌های نوع معامله بالای صفحه — کمی همان حس */
@@ -3824,5 +3831,25 @@ body.page-category .advanced-filters .filter-row.open .filter-chips-scroll {
 #advancedFilterToggle .chevron {
   color: #B8894F !important;
   background: transparent !important;
+}
+
+
+/* دکمه جستجو (ذره‌بین) — سرمه‌ای بماند */
+.filter-apply-btn,
+#searchBtn {
+  background: #14213D !important;
+  color: #FFFCFA !important;
+  border: none !important;
+}
+.filter-apply-btn:hover,
+#searchBtn:hover {
+  background: #1a2a4a !important;
+  color: #FFFCFA !important;
+}
+.filter-apply-btn .apply-btn-icon,
+.filter-apply-btn .apply-btn-label,
+#searchBtn .apply-btn-icon,
+#searchBtn .apply-btn-label {
+  color: #FFFCFA !important;
 }
 
