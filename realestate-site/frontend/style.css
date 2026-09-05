@@ -2280,6 +2280,12 @@ body.single-ad-mode .card-image-wrap {
   gap: 8px;
   margin: 10px 0 4px;
 }
+/* رفع باگ: بدون این خط، attribute «hidden» (که در script.js برای مخفی کردن
+   ردیف «تعداد خواب» در زمین/باغ/باغچه استفاده می‌شود) توسط display:flex بالا
+   خنثی می‌شد و ردیف با وجود hidden=true همچنان نمایش داده می‌شد. */
+.filter-row[hidden] {
+  display: none;
+}
 .filter-row-label {
   font-size: 0.78rem;
   font-weight: 800;
