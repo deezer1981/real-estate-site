@@ -3548,3 +3548,174 @@ body.page-category .advanced-filters .filter-row.open .filter-chips-scroll {
   }
 }
 
+
+/* =========================================================
+   Premium filter controls — depth without clutter
+   Same palette: --ink / --brass / --paper
+   ========================================================= */
+
+/* --- دکمه فیلتر پیشرفته: سایه نرم + لبه ظریف برنجی --- */
+.advanced-filter-toggle {
+  background: linear-gradient(180deg, #1a2a4a 0%, #14213D 100%) !important;
+  border: 1px solid rgba(184, 137, 79, 0.35) !important;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.06) inset,
+    0 4px 14px rgba(20, 33, 61, 0.22),
+    0 1px 3px rgba(20, 33, 61, 0.12) !important;
+  letter-spacing: 0.01em;
+  transition: transform 0.15s ease, box-shadow 0.2s ease, filter 0.2s ease !important;
+}
+.advanced-filter-toggle:hover {
+  filter: brightness(1.06);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.08) inset,
+    0 6px 18px rgba(20, 33, 61, 0.28),
+    0 2px 6px rgba(184, 137, 79, 0.12) !important;
+}
+.advanced-filter-toggle:active {
+  transform: translateY(1px) scale(0.99) !important;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.04) inset,
+    0 2px 8px rgba(20, 33, 61, 0.2) !important;
+}
+.advanced-filter-toggle.open {
+  background: linear-gradient(180deg, #1e3158 0%, #162844 100%) !important;
+  border-color: rgba(184, 137, 79, 0.55) !important;
+  box-shadow:
+    0 0 0 1px rgba(184, 137, 79, 0.15),
+    0 6px 20px rgba(20, 33, 61, 0.25) !important;
+}
+.advanced-filter-toggle .toggle-icon svg {
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.25));
+}
+.advanced-filter-toggle .chevron {
+  background: rgba(184, 137, 79, 0.18) !important;
+  color: #E8C98A !important;
+  border-radius: 50%;
+}
+
+/* --- دکمه بازنشانی: لبه کاغذی + سایه خیلی نرم --- */
+.filter-clear-btn {
+  background: linear-gradient(180deg, #FFFCFA 0%, #F5F1EA 100%) !important;
+  border: 1px solid rgba(20, 33, 61, 0.12) !important;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.9) inset,
+    0 2px 8px rgba(20, 33, 61, 0.06) !important;
+  color: var(--ink) !important;
+  transition: transform 0.15s ease, box-shadow 0.2s ease, border-color 0.2s ease !important;
+}
+.filter-clear-btn:hover {
+  border-color: rgba(184, 137, 79, 0.45) !important;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.95) inset,
+    0 4px 12px rgba(184, 137, 79, 0.12) !important;
+}
+.filter-clear-btn:active {
+  transform: translateY(1px) scale(0.98) !important;
+}
+.filter-clear-btn:not(.is-empty) {
+  border-color: rgba(184, 137, 79, 0.4) !important;
+  color: #8C6530 !important;
+}
+
+/* --- چیپ‌ها: کمی حجم + هایلایت فعال برنجی --- */
+.filter-chip {
+  background: linear-gradient(180deg, #FFFCFA 0%, #F8F2E8 100%) !important;
+  border: 1.5px solid rgba(184, 137, 79, 0.38) !important;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.85) inset,
+    0 2px 6px rgba(184, 137, 79, 0.1) !important;
+  transition: transform 0.12s ease, box-shadow 0.18s ease, background 0.18s ease, border-color 0.18s ease !important;
+}
+.filter-chip:hover {
+  background: linear-gradient(180deg, #FFF9F0 0%, #F3E4C8 100%) !important;
+  border-color: rgba(184, 137, 79, 0.55) !important;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.9) inset,
+    0 3px 10px rgba(184, 137, 79, 0.16) !important;
+  transform: translateY(-1px);
+}
+.filter-chip:active {
+  transform: translateY(0) scale(0.97) !important;
+}
+.filter-chip.active {
+  background: linear-gradient(180deg, #1a2a4a 0%, #14213D 100%) !important;
+  color: #FFFCFA !important;
+  border-color: #14213D !important;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.08) inset,
+    0 3px 12px rgba(20, 33, 61, 0.28),
+    0 0 0 1px rgba(184, 137, 79, 0.2) !important;
+}
+
+/* --- پنل فیلتر: کارت با عمق ملایم --- */
+.advanced-filters.open {
+  background: linear-gradient(180deg, #FFFFFF 0%, #FBF8F3 100%) !important;
+  border: 1px solid rgba(184, 137, 79, 0.22) !important;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.95) inset,
+    0 10px 28px rgba(20, 33, 61, 0.1),
+    0 2px 8px rgba(20, 33, 61, 0.04) !important;
+}
+
+/* لیبل ردیف‌ها کمی خواناتر */
+.advanced-filters .filter-row-label {
+  color: #1a2438 !important;
+}
+.advanced-filters .filter-row-label::after {
+  box-shadow: 0 2px 6px rgba(184, 137, 79, 0.35);
+}
+
+/* --- نوار جستجو: قاب نرم + فوکوس برنجی --- */
+.filter-search-inner {
+  background: linear-gradient(180deg, #FFFCFA 0%, #F7F3EB 100%) !important;
+  border: 1px solid rgba(20, 33, 61, 0.1) !important;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.9) inset,
+    0 3px 12px rgba(20, 33, 61, 0.06) !important;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease !important;
+}
+.filter-search-inner:focus-within {
+  border-color: rgba(184, 137, 79, 0.55) !important;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.95) inset,
+    0 0 0 3px rgba(184, 137, 79, 0.12),
+    0 4px 14px rgba(20, 33, 61, 0.08) !important;
+}
+
+/* دکمه جستجو داخل نوار */
+.filter-apply-btn {
+  background: linear-gradient(180deg, #1a2a4a 0%, #14213D 100%) !important;
+  border: 1px solid rgba(184, 137, 79, 0.25) !important;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.06) inset,
+    0 2px 8px rgba(20, 33, 61, 0.2) !important;
+  transition: filter 0.15s ease, transform 0.12s ease, box-shadow 0.15s ease !important;
+}
+.filter-apply-btn:hover {
+  filter: brightness(1.07);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.08) inset,
+    0 4px 12px rgba(20, 33, 61, 0.28) !important;
+}
+.filter-apply-btn:active {
+  transform: scale(0.97);
+}
+
+/* چیپ‌های نوع معامله بالای صفحه — کمی همان حس */
+.filter-chips-deal .filter-chip {
+  min-height: 44px;
+}
+
+/* موبایل: کمی جمع‌وجورتر ولی همان عمق */
+@media (max-width: 720px) {
+  .advanced-filter-toggle {
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.06) inset,
+      0 3px 12px rgba(20, 33, 61, 0.2) !important;
+  }
+  .filter-chip:hover {
+    transform: none; /* لمس موبایل بدون پرش */
+  }
+}
+
