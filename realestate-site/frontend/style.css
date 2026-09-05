@@ -2809,3 +2809,89 @@ body.single-ad-mode .card-more-btn { display: none !important; }
   }
   .clear-deeplink-btn:active { box-shadow: 0 2px 6px rgba(184,137,79,0.3); }
 }
+
+
+/* ===== فیلتر پیشرفته پله‌ای (ویزارد) ===== */
+.wizard-step {
+  animation: wizardStepIn 0.22s ease;
+}
+@keyframes wizardStepIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.wizard-deal-chips {
+  display: grid !important;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  overflow: visible !important;
+  max-height: none !important;
+  flex-wrap: unset !important;
+  padding-bottom: 10px !important;
+}
+.wizard-deal-chips .filter-chip {
+  width: 100%;
+  min-height: 48px;
+  font-size: 0.95rem;
+  justify-content: center;
+  box-sizing: border-box;
+}
+
+.wizard-category-chips {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 8px;
+  overflow: visible !important;
+  max-height: none !important;
+  padding-bottom: 10px !important;
+}
+.wizard-category-chips .filter-chip {
+  flex: 1 1 calc(50% - 8px);
+  min-width: 0;
+  justify-content: center;
+  min-height: 44px;
+}
+
+.wizard-back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin: 6px 0 12px;
+  padding: 8px 14px;
+  background: transparent;
+  border: 1px solid rgba(20, 33, 61, 0.18);
+  border-radius: 999px;
+  color: var(--ink);
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 0.84rem;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+.wizard-back-btn:hover {
+  background: rgba(184, 137, 79, 0.12);
+  border-color: var(--brass);
+}
+
+/* در پله‌های ویزارد، ردیف‌ها همیشه باز باشند (بدون آکاردئون بسته) */
+.advanced-filters .wizard-step .filter-row.open .filter-chips-scroll,
+.advanced-filters .wizard-step[data-wizard-step] .filter-row .filter-chips-scroll {
+  max-height: 160px !important;
+  padding-bottom: 12px !important;
+  overflow-x: auto;
+}
+.advanced-filters .wizard-step .wizard-deal-chips,
+.advanced-filters .wizard-step .wizard-category-chips {
+  max-height: none !important;
+  overflow: visible !important;
+}
+
+@media (min-width: 721px) {
+  .wizard-category-chips .filter-chip {
+    flex: 1 1 calc(33.333% - 8px);
+  }
+  .advanced-filters .wizard-step .filter-row.open .filter-chips-scroll {
+    max-height: 220px !important;
+  }
+}
+
