@@ -3720,39 +3720,69 @@ body.page-category .advanced-filters .filter-row.open .filter-chips-scroll {
 }
 
 
-/* دکمه «فیلتر پیشرفته»: برگشت به استایل اصلی سایت (بدون وزن سرمه‌ای سنگین) */
+/* دکمه «فیلتر پیشرفته»: پس‌زمینه روشن، متن مشکی، بردر برنز */
 .advanced-filter-toggle {
-  background: rgba(20, 33, 61, 0.9) !important;
-  border: 1px solid rgba(20, 33, 61, 0.9) !important;
-  box-shadow: 0 2px 8px rgba(20, 33, 61, 0.14) !important;
+  background: #FFFCFA !important;
+  border: 1.5px solid var(--brass, #B8894F) !important;
+  color: #2B2B2B !important;
+  box-shadow: 0 2px 8px rgba(184, 137, 79, 0.12) !important;
   letter-spacing: normal;
   filter: none !important;
 }
 .advanced-filter-toggle:hover {
-  background: rgba(20, 33, 61, 0.98) !important;
+  background: #FBF6EC !important;
+  border-color: #A67C4A !important;
+  color: #1a1a1a !important;
   filter: none !important;
-  box-shadow: 0 3px 10px rgba(20, 33, 61, 0.2) !important;
+  box-shadow: 0 3px 12px rgba(184, 137, 79, 0.18) !important;
 }
 .advanced-filter-toggle:active {
   transform: scale(0.99) !important;
-  box-shadow: 0 2px 8px rgba(20, 33, 61, 0.14) !important;
+  box-shadow: 0 1px 4px rgba(184, 137, 79, 0.14) !important;
 }
 .advanced-filter-toggle.open {
-  background: rgba(20, 33, 61, 0.95) !important;
-  border-color: rgba(20, 33, 61, 0.95) !important;
-  box-shadow: 0 2px 8px rgba(20, 33, 61, 0.16) !important;
+  background: #F8F1E4 !important;
+  border-color: var(--brass, #B8894F) !important;
+  color: #2B2B2B !important;
+  box-shadow: 0 2px 10px rgba(184, 137, 79, 0.16) !important;
+}
+.advanced-filter-toggle .toggle-label {
+  color: #2B2B2B !important;
+}
+.advanced-filter-toggle .toggle-icon {
+  color: #2B2B2B !important;
+}
+.advanced-filter-toggle .toggle-icon svg {
+  stroke: #2B2B2B;
+  filter: none;
+}
+.advanced-filter-toggle .toggle-icon svg path,
+.advanced-filter-toggle .toggle-icon svg circle {
+  stroke: currentColor;
+  fill: currentColor;
 }
 .advanced-filter-toggle .chevron {
   background: transparent !important;
-  color: var(--brass) !important;
+  color: var(--brass, #B8894F) !important;
 }
-.advanced-filter-toggle .toggle-icon svg {
-  filter: none;
+.advanced-filter-toggle .chevron svg {
+  stroke: var(--brass, #B8894F);
+}
+.advanced-filter-toggle .filter-badge {
+  background: var(--brass, #B8894F) !important;
+  color: #14213D !important;
 }
 
 @media (max-width: 720px) {
   .advanced-filter-toggle {
-    box-shadow: 0 2px 8px rgba(20, 33, 61, 0.14) !important;
+    background: #FFFCFA !important;
+    border: 1.5px solid var(--brass, #B8894F) !important;
+    color: #2B2B2B !important;
+    box-shadow: 0 2px 8px rgba(184, 137, 79, 0.12) !important;
+  }
+  .advanced-filter-toggle.open {
+    background: #F8F1E4 !important;
+    color: #2B2B2B !important;
   }
 }
 
