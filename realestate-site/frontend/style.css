@@ -1836,6 +1836,9 @@ a { color: inherit; text-decoration: none; }
   justify-content: flex-start;
   margin-bottom: 12px;
 }
+/* [hidden] باید همیشه برنده باشد؛ چیپ‌های کمکی/داخلی (مثل گروه ptype که
+   فقط برای سینک با منطق فیلتر نگه داشته می‌شوند) هرگز نباید دیده شوند. */
+.filter-chips[hidden] { display: none !important; }
 .filter-chip {
   border: 2px solid var(--brass);
   background: #FBF6EC;
@@ -2794,6 +2797,63 @@ body.single-ad-mode .card-more-btn { display: none !important; }
   .filter-apply-btn:active { background: #0d1830; }
   .filter-apply-btn .apply-btn-icon svg { width: 18px; height: 18px; color: #FFFCFA; }
   .filter-apply-btn .apply-btn-label { display: none; }
+
+  /* پنل فیلتر پیشرفته باز: فشرده‌تر روی موبایل — فاصله‌ها و فونت‌ها کوچک‌تر
+     تا حس زمخت/شلوغ نگیرد */
+  .advanced-filters.open {
+    padding: 8px 12px 4px;
+    border-radius: 14px;
+  }
+  .advanced-filters .filter-row-label {
+    padding: 10px 2px;
+    font-size: 0.86rem;
+  }
+
+  /* نوار پیشرفت: فشرده‌تر (برچسب متنی زیر ۴۸۰px به‌طور جداگانه حذف می‌شود) */
+  .wizard-progress { padding: 6px 2px 10px; }
+  .wizard-progress-dot { width: 18px; height: 18px; font-size: 0.62rem; }
+  .wizard-progress-line { margin: 0 4px; }
+
+  /* چیپ‌های «نوع معامله»: کمی جمع‌وجورتر */
+  .wizard-deal-chips { gap: 8px; }
+  .wizard-deal-chips .filter-chip {
+    min-height: 42px;
+    font-size: 0.86rem;
+    padding: 8px 10px;
+    gap: 6px;
+  }
+  .wizard-deal-chips .wizard-chip-icon,
+  .wizard-category-chips .wizard-chip-icon { width: 16px; height: 16px; }
+
+  /* چیپ‌های «دسته ملک»: به‌جای پیل‌های بزرگ دوستونه، کاشی‌های ظریف
+     سه‌ستونه با آیکون بالا و متن ریز پایین — سبک‌تر و کم‌حجم‌تر روی
+     عرض کم موبایل */
+  .wizard-category-chips {
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+  .wizard-category-chips .filter-chip {
+    flex-direction: column;
+    gap: 4px;
+    padding: 10px 4px;
+    min-height: 62px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    line-height: 1.15;
+    border-width: 1.5px;
+    box-shadow: none;
+    white-space: normal;
+  }
+  .wizard-category-chips .wizard-chip-icon { width: 19px; height: 19px; }
+  /* پیش‌فروش یک مسیر جداست (نه دسته‌ی ملک)؛ به‌جای کاشی کوچک، یک ردیف
+     کامل و افقی می‌گیرد تا از بقیه متمایز بماند */
+  .wizard-category-chips .filter-chip[data-category="presale"] {
+    grid-column: 1 / -1;
+    flex-direction: row;
+    min-height: 42px;
+    font-size: 0.84rem;
+  }
 }
 
 /* =====================================================================
