@@ -3434,3 +3434,37 @@ body.single-ad-mode .card-more-btn { display: none !important; }
     border-radius: 14px;
   }
 }
+
+/* =====================================================================
+   گرم‌تر و زنده‌تر کردن ویزارد فیلتر پیشرفته — فقط موبایل
+   نسخه‌ی مینیمال قبلی همه‌جا فقط سرمه‌ای/سفید/طوسی بود و با آیکون‌های
+   رنگی بالای صفحه (کلید طلایی، پین قرمز و ...) هماهنگ نبود. این‌جا فقط
+   آیکون چیپ‌ها برنزی می‌شود، حالت انتخاب‌شده گرادیان برنزی-گرم می‌گیرد
+   (به‌جای سرمه‌ای تخت)، و نقطه‌ی فعال نوار پیشرفت هم همین رنگ را می‌گیرد.
+   دسکتاپ دست‌نخورده می‌ماند. */
+@media (max-width: 720px) {
+  .wizard-deal-chips .wizard-chip-icon,
+  .wizard-category-chips .wizard-chip-icon {
+    color: var(--brass);
+    opacity: 0.9;
+  }
+  .wizard-deal-chips .filter-chip.active .wizard-chip-icon,
+  .wizard-category-chips .filter-chip.active .wizard-chip-icon {
+    color: #FFFFFF;
+    opacity: 1;
+  }
+  .wizard-deal-chips .filter-chip.active,
+  .wizard-category-chips .filter-chip.active {
+    background: linear-gradient(135deg, #C99A5D, var(--brass));
+    border-color: var(--brass);
+    box-shadow: 0 4px 14px rgba(184, 137, 79, 0.3);
+  }
+  .wizard-progress-step.active .wizard-progress-dot {
+    background: linear-gradient(135deg, #C99A5D, var(--brass));
+    border-color: var(--brass);
+    color: #FFFFFF;
+    box-shadow: 0 0 0 3px rgba(184, 137, 79, 0.16);
+  }
+  .wizard-progress-step.active .wizard-progress-label { color: #8C6530; }
+  .advanced-filters.open { background: #FFFCF6; }
+}
